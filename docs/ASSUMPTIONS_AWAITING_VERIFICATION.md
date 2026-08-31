@@ -21,7 +21,7 @@ Two libraries describe stages in two different vocabularies, and nothing reconci
   `statutory`, `design`, `planning`, `procurement`, `civil`, `mep`, `fit_out`, `commissioning`,
   `handover`, `enabling`.
 - The **fragnet library** and the simulator walk **construction stages** — `approvals`,
-  `procurement`, `enabling`, `substructure`, `superstructure`, `envelope`, `mep_power`,
+  `design`, `procurement`, `enabling`, `substructure`, `superstructure`, `envelope`, `mep_power`,
   `mep_cooling`, `fire_bms`, `fit_out`, `commissioning`, `handover`.
 
 The simulator walks stage by stage and must decide, at each one, which forks to raise. I wrote a
@@ -46,8 +46,8 @@ mapping produces one of two failures, neither of which looks like an error in th
 | Decision-point tag | Mapped to stage(s) | My reasoning — please check |
 |---|---|---|
 | `statutory` | `approvals` | Statutory pathway questions gate the approvals stage, which is where consents are obtained. |
-| `design` | `approvals` | **There is still no design stage** — approvals is the first stage that runs, so design-basis forks are raised as early as possible. Same shape as the procurement gap was (§1.1); flag it if design needs its own stage. |
-| `planning` | `approvals` | Same reasoning — planning/WBS forks need answering before anything is sequenced. |
+| `design` | `design` | Resolved — see §1.5. A design/engineering stage now exists and owns these forks. |
+| `planning` | `approvals` | Planning/Controls is its own department (§2, 5) but has no stage. Its fork (`dp.phasing`) needs answering before anything is sequenced, so the earliest stage is the right home. Flag it if planning needs its own stage. |
 | `enabling` | `enabling` | Direct match. |
 | `civil` | `substructure`, `superstructure`, `envelope` | The three stages civil/structure owns per the `DOMAIN_KNOWLEDGE.md` §3 table. |
 | `mep` | `mep_power`, `mep_cooling`, `fire_bms` | The three MEP-owned stages. Fire/BMS included because §3 lists it under services. |
@@ -69,7 +69,7 @@ The resulting behaviour — the eight curated forks and the stages each will be 
 | `dp.delivery_mode` | **procurement**, substructure, superstructure, envelope, mep_power, mep_cooling, fire_bms, fit_out |
 | `dp.ofe` | **procurement**, mep_power, mep_cooling, fire_bms |
 | `dp.grid_position` | approvals, **procurement**, mep_power, mep_cooling, fire_bms |
-| `dp.tier_topology` | approvals, **procurement**, mep_power, mep_cooling, fire_bms, commissioning |
+| `dp.tier_topology` | **design**, **procurement**, mep_power, mep_cooling, fire_bms, commissioning |
 | `dp.greenfield_brownfield` | enabling, substructure, superstructure, envelope, mep_power, mep_cooling, fire_bms, commissioning |
 | `dp.phasing` | approvals, commissioning, handover |
 | `dp.long_lead_unconfirmed` | **procurement** |
@@ -118,6 +118,36 @@ collapsing it to one question would apply a single answer to every discipline.
 The cost is that a planner may be asked a similar-sounding question at eight stages. That is a
 decision-*resolution* problem — remember the answer per discipline and stop re-asking — not a
 reason to lose the granularity. Say if you disagree; it is one line.
+
+### 1.5 Design/engineering is now a stage — but please confirm its position
+
+**Originally folded into approvals.** Design forks — notably `dp.tier_topology`, where N+1 vs 2N
+sets the equipment counts — were raised at the approvals stage because no design stage existed.
+A `design` stage now exists and owns them.
+
+**One thing to confirm: where it sits.** It is currently placed `approvals -> design ->
+procurement`, on instruction. But `DOMAIN_KNOWLEDGE.md` §2 orders the departments
+**Design/Engineering (2) → Statutory/Liaison (3) → Procurement/SCM (4)**, which would put design
+*before* approvals:
+
+| | Order |
+|---|---|
+| As built | `approvals -> design -> procurement -> ...` |
+| As §2 implies | `design -> approvals -> procurement -> ...` |
+
+Both satisfy "design before procurement", which is the relationship that matters most — the
+equipment schedule is a design output, so you cannot sensibly order before it is fixed. The
+difference is whether the basis of design precedes the consent applications. In practice it
+usually must, since drawings are what gets submitted for building sanction. **If design should
+come first, it is a one-line change — please say.**
+
+### 1.6 Still open: `frag.design.*`, and the IFC gate
+
+The design stage has **no fragnets**, so nothing is instanced for it — same position as
+procurement (§1.3). When they are written, the important part is not the activities but the
+**gate**: design completion (IFC drawings issued) should gate procurement, because ordering to an
+unfixed specification is how projects buy the wrong equipment. That is a cross-stage logic link
+the engine will own, not something the stage list can express.
 
 ### How to correct it
 

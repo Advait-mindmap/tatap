@@ -404,7 +404,11 @@ def test_procurement_is_a_walk_stage_positioned_before_construction():
 
     assert PROCUREMENT_STAGE in STAGES
     i = STAGES.index('procurement')
-    assert STAGES[i - 1] == 'approvals'
+    # After approvals and design, before any construction. The immediate predecessor is
+    # deliberately not asserted - stages get inserted ahead of it (design was) and pinning the
+    # neighbour tests the list's shape rather than the ordering that actually matters.
+    assert STAGES.index('approvals') < i
+    assert STAGES.index('design') < i
     assert i < STAGES.index('enabling') < STAGES.index('substructure')
     assert i < STAGES.index('mep_power')
 
@@ -460,3 +464,62 @@ def test_delivery_mode_still_fires_per_discipline():
     assert 'procurement' in fires_at
     for discipline_stage in ('substructure', 'mep_power', 'fit_out'):
         assert discipline_stage in fires_at, f'{discipline_stage} lost its delivery-mode fork'
+
+
+# ----------------------------------------------------------------------- design stage
+
+
+def test_design_is_a_walk_stage_before_procurement_and_construction():
+    """Design drives procurement (the equipment schedule is a design output) and construction
+    (IFC drawings are what gets built to), so it must precede both."""
+    from backend.app.reasoning import DESIGN_STAGE, STAGES
+
+    assert DESIGN_STAGE in STAGES
+    i = STAGES.index('design')
+    assert i < STAGES.index('procurement')
+    assert i < STAGES.index('substructure')
+    assert i < STAGES.index('mep_power')
+
+
+def test_design_stage_has_a_department():
+    from backend.app.reasoning import STAGE_DEPARTMENT
+    assert STAGE_DEPARTMENT['design'] == 'design'
+
+
+def test_the_design_tag_moved_off_approvals_onto_design():
+    from backend.app.reasoning import DECISION_TAGS_BY_STAGE
+
+    assert 'design' in DECISION_TAGS_BY_STAGE['design']
+    assert 'design' not in DECISION_TAGS_BY_STAGE['approvals']
+    # planning deliberately stays at approvals - it is a different department with no stage.
+    assert 'planning' in DECISION_TAGS_BY_STAGE['approvals']
+
+
+def test_tier_topology_now_fires_at_design_not_approvals():
+    """N+1 vs 2N sets equipment counts, so it must be settled before procurement orders."""
+    from backend.app.reasoning import STAGES
+
+    fires_at = [
+        s for s in STAGES
+        if 'dp.tier_topology' in
+        {d['id'] for d in gather_stage_libraries(s, 'Navi Mumbai')['decision_points']}
+    ]
+    assert fires_at[0] == 'design'
+    assert 'approvals' not in fires_at
+    assert fires_at.index('design') < fires_at.index('procurement')
+
+
+def test_design_stage_has_no_fragnets_yet():
+    """frag.design.* is future library data; IFC-issued should eventually gate procurement."""
+    libs = gather_stage_libraries('design', 'Navi Mumbai')
+    assert libs['fragnets'] == []
+    assert libs['long_lead'] == [], 'design consumes no long-lead directly'
+
+
+def test_the_walk_order_is_design_then_procurement_then_construction():
+    """The whole point of both new stages: engineering -> procurement -> construction."""
+    from backend.app.reasoning import STAGES
+
+    order = {s: i for i, s in enumerate(STAGES)}
+    assert order['design'] < order['procurement'] < order['enabling'] < order['substructure']
+    assert order['substructure'] < order['mep_power'] < order['commissioning'] < order['handover']

@@ -12,6 +12,18 @@ from typing import Dict, FrozenSet, List
 #: Canonical stages in execution order. Derived from the DOMAIN_KNOWLEDGE.md §3 stage table.
 STAGES: List[str] = [
     'approvals',
+    # Design/Engineering: basis of design, redundancy topology, equipment schedule, IFC drawings
+    # (DOMAIN_KNOWLEDGE.md §2, department 2). It sits ahead of procurement because design drives
+    # what is procured — the equipment schedule is a design output — and ahead of construction
+    # because IFC drawings are what construction builds to.
+    #
+    # ORDERING CAVEAT: §2 lists Design/Engineering (2) BEFORE Statutory/Liaison (3, = approvals),
+    # i.e. design -> approvals -> procurement. It is placed after approvals here on explicit
+    # instruction. Both satisfy "design before procurement"; the difference is whether the
+    # basis of design precedes the consent applications, which in practice it usually must,
+    # since drawings are what gets submitted for sanction. One line to swap if that is wrong —
+    # see docs/ASSUMPTIONS_AWAITING_VERIFICATION.md §1.5.
+    'design',
     # Procurement sits here per DOMAIN_KNOWLEDGE.md §2, which orders the departments
     # Statutory/Liaison (3) -> Procurement/SCM (4) -> Civil/Structure (6), and per
     # SIMULATION_AND_REASONING.md §2, which walks engineering -> procurement -> construction ->
@@ -38,9 +50,16 @@ STAGE_INDEX: Dict[str, int] = {stage: i for i, stage in enumerate(STAGES)}
 #: fragnets. Named so the special case in gather_stage_libraries() is not a bare string.
 PROCUREMENT_STAGE = 'procurement'
 
+#: FUTURE LIBRARY DATA: frag.design.* does not exist yet, so the design stage instances nothing.
+#: When it is written, design completion (IFC drawings issued) should GATE procurement — you
+#: cannot order to a specification that is not fixed. That gate is a cross-stage logic link the
+#: engine will own (Task 7), not something this table can express.
+DESIGN_STAGE = 'design'
+
 #: Owning department per stage, from the DOMAIN_KNOWLEDGE.md §3 table.
 STAGE_DEPARTMENT: Dict[str, str] = {
     'approvals': 'liaison',
+    'design': 'design',
     'procurement': 'procurement',
     'enabling': 'construction',
     'substructure': 'civil',
@@ -70,7 +89,14 @@ STAGE_DEPARTMENT: Dict[str, str] = {
 # sets RFS was not raised until mep_power — has since been resolved by adding that stage.
 # ---------------------------------------------------------------------------------------------
 DECISION_TAGS_BY_STAGE: Dict[str, FrozenSet[str]] = {
-    'approvals': frozenset({'statutory', 'design', 'planning'}),
+    # 'planning' stays here rather than moving with 'design': Planning/Controls is a separate
+    # department (§2, 5) and its fork (dp.phasing) needs answering before anything is sequenced,
+    # so the earliest stage is the right home for it.
+    'approvals': frozenset({'statutory', 'planning'}),
+    # The 'design' tag moves off approvals onto its own stage. dp.tier_topology carries it:
+    # N+1 vs 2N is a design decision that sets equipment counts, so it must be settled before
+    # procurement reasons about what to order.
+    'design': frozenset({'design'}),
     # The 'procurement' tag lives here rather than on the MEP stages. Before the procurement
     # stage existed it hung off mep_power/mep_cooling, which meant dp.long_lead_unconfirmed -
     # the fork about the lead times that set RFS - was not raised until construction was already

@@ -40,18 +40,30 @@ in `SIMULATION_AND_REASONING.md`).
 For every stage the simulation attaches: owning department, materials consumed, statutory and
 quality gates, and the P6 representation.
 
-> **Reconciliation note.** This table originally had no procurement row, while §2 above lists
-> Procurement/SCM as department 4 (between Statutory 3 and Civil 6) and
+> **Reconciliation note.** This table originally listed neither design nor procurement, while §2
+> above lists Design/Engineering as department 2 and Procurement/SCM as department 4, and
 > `SIMULATION_AND_REASONING.md` §2 walks "engineering → procurement → construction →
-> commissioning". The three disagreed, and the build followed this table, so procurement forks —
-> including the long-lead one that sets RFS — were not raised until the MEP stages. A
-> **Procurement & long-lead** row has been added so all three agree. Its activities span the
-> programme; its position here reflects when it is planned and reasoned about, not when the work
-> finishes. See `docs/ASSUMPTIONS_AWAITING_VERIFICATION.md` §1.1.
+> commissioning". The three disagreed, and the build followed this table — so procurement forks
+> (including the long-lead one that sets RFS) were not raised until the MEP stages, and design
+> forks such as tier/redundancy topology were folded into approvals. **Design & engineering** and
+> **Procurement & long-lead** rows have been added so all three sources agree.
+>
+> Both stages' activities span the programme; their position here reflects when they are planned
+> and reasoned about, not when the work finishes. Design is placed after approvals on explicit
+> instruction — note that §2 orders Design (2) *before* Statutory/Liaison (3), and in practice the
+> basis of design usually must precede the consent applications, since drawings are what gets
+> submitted for sanction. Flagged for confirmation in
+> `docs/ASSUMPTIONS_AWAITING_VERIFICATION.md` §1.5.
+>
+> Neither stage has fragnets yet (`frag.design.*`, `frag.procurement.*` are future library data).
+> Design completion — IFC drawings issued — should eventually **gate procurement**: you cannot
+> order to a specification that is not fixed. See `ASSUMPTIONS_AWAITING_VERIFICATION.md` §1.1
+> and §1.3.
 
 | Stage | Owning dept | Key materials | Key gates |
 |-------|-------------|---------------|-----------|
 | Approvals & clearances | Liaison | — | EC (SEIAA), SPCB CTE, building sanction, commencement |
+| Design & engineering | Design/Engineering | — | basis of design frozen, equipment schedule, IFC drawings issued |
 | Procurement & long-lead | Procurement/SCM | (orders the long-lead plant consumed below) | vendor award, L1 factory acceptance test, delivery milestones |
 | Enabling & site setup | Construction, HSE | temp works, fuel | BOCW, CLRA, PESO (HSD) |
 | Substructure | Civil, QA/QC | cement, aggregates, rebar, formwork | IS 456, IS 2911, geotech |
