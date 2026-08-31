@@ -24,6 +24,7 @@ from backend.app.simulator.events import (
     RunState,
     SimulationEvent,
 )
+from backend.app.simulator.output import build_simulation_output
 from backend.app.simulator.registry import RunRegistry, registry
 from backend.app.simulator.runner import Simulator, run_to_completion
 
@@ -43,6 +44,7 @@ __all__ = [
     'STAGE_STARTED',
     'DecisionAnswer',
     'RunRegistry',
+    'build_simulation_output',
     'RunState',
     'SimulationEvent',
     'Simulator',

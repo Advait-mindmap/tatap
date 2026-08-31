@@ -22,7 +22,7 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence
 from backend.app.engine import assemble
 from backend.app.reasoning import reason_stage
 from backend.app.reasoning.stages import STAGES
-from backend.app.schemas import AssemblyResult, StageReasoning
+from backend.app.schemas import AssemblyResult, SimulationOutput, StageReasoning
 from backend.app.simulator.events import (
     ACTIVITY_ADDED,
     DECISION_NEEDED,
@@ -262,6 +262,28 @@ class Simulator:
     @property
     def result(self) -> AssemblyResult:
         return self._assemble_so_far()
+
+    def output(self, questions: Optional[Sequence[str]] = None) -> SimulationOutput:
+        """The one SimulationOutput the 2D view, the 3D/4D model and the P6 export project from.
+
+        Callable on a halted run as well as a completed one: a partial simulation with open
+        forks is a legitimate thing to render, and `quality.open_decision_count` plus
+        `governance_complete` say plainly that it is not finished.
+        """
+        from backend.app.simulator.output import build_simulation_output
+
+        return build_simulation_output(
+            brief=self.brief,
+            assembly=self._assemble_so_far(),
+            stage_reasonings=[
+                self.stage_reasonings[s] for s in self.stages if s in self.stage_reasonings
+            ],
+            resolved_decisions=self.state.answers,
+            pending_decisions=self.state.pending_decisions,
+            questions=questions,
+            run_id=self.state.run_id,
+            completed_stages=self.state.completed_stages,
+        )
 
     @property
     def is_halted(self) -> bool:

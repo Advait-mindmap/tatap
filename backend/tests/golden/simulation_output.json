@@ -1,0 +1,4427 @@
+{
+  "activities": [
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 0,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.ifc-issued",
+      "name": "Design complete - IFC drawings issued",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "design",
+      "trail_ref": "trail.gate.ifc-issued",
+      "type": "gate",
+      "unverified_dependencies": [],
+      "wbs_id": "00.de.ued",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 0,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.delivery-lead-transformer-hv",
+      "name": "Delivery to site: lead.transformer_hv",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "procurement",
+      "trail_ref": "trail.gate.delivery-lead-transformer-hv",
+      "type": "milestone",
+      "unverified_dependencies": [],
+      "wbs_id": "00.dl._hv",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 0,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.delivery-lead-hv-switchgear",
+      "name": "Delivery to site: lead.hv_switchgear",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "procurement",
+      "trail_ref": "trail.gate.delivery-lead-hv-switchgear",
+      "type": "milestone",
+      "unverified_dependencies": [],
+      "wbs_id": "00.dl.ear",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 0,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.delivery-lead-chiller",
+      "name": "Delivery to site: lead.chiller",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "procurement",
+      "trail_ref": "trail.gate.delivery-lead-chiller",
+      "type": "milestone",
+      "unverified_dependencies": [],
+      "wbs_id": "00.dl.ler",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 0,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.delivery-lead-crah",
+      "name": "Delivery to site: lead.crah",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "procurement",
+      "trail_ref": "trail.gate.delivery-lead-crah",
+      "type": "milestone",
+      "unverified_dependencies": [],
+      "wbs_id": "00.dl.rah",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 0,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.delivery-lead-ups",
+      "name": "Delivery to site: lead.ups",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "procurement",
+      "trail_ref": "trail.gate.delivery-lead-ups",
+      "type": "milestone",
+      "unverified_dependencies": [],
+      "wbs_id": "00.dl.ups",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 0,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.delivery-lead-busway",
+      "name": "Delivery to site: lead.busway",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "procurement",
+      "trail_ref": "trail.gate.delivery-lead-busway",
+      "type": "milestone",
+      "unverified_dependencies": [],
+      "wbs_id": "00.dl.way",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "self-perform",
+      "dept_code": "civil",
+      "duration_days": 18,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "substructure.frag.substructure.raft.a10",
+      "name": "Excavation to formation level",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": "frag.substructure.raft",
+      "stage": "substructure",
+      "trail_ref": "trail.substructure.frag.substructure.raft.a10",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "wbs_id": "05.01.001",
+      "zone_id": "zone.shell.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "self-perform",
+      "dept_code": "civil",
+      "duration_days": 6,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "substructure.frag.substructure.raft.a20",
+      "name": "PCC and blinding",
+      "predecessors": [
+        {
+          "id": "substructure.frag.substructure.raft.a10",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.substructure.raft",
+      "stage": "substructure",
+      "trail_ref": "trail.substructure.frag.substructure.raft.a20",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "wbs_id": "05.01.002",
+      "zone_id": "zone.shell.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "qaqc",
+      "duration_days": 0,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
+      "name": "HOLD: Reinforcement inspection",
+      "predecessors": [
+        {
+          "id": "substructure.frag.substructure.raft.a30",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.substructure.raft",
+      "stage": "substructure",
+      "trail_ref": "trail.hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "wbs_id": "05.01.003",
+      "zone_id": "zone.shell.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "self-perform",
+      "dept_code": "civil",
+      "duration_days": 25,
+      "hitl_tier": "tier_2",
+      "hold_points": [
+        "Reinforcement inspection"
+      ],
+      "id": "substructure.frag.substructure.raft.a30",
+      "name": "Raft reinforcement fixing",
+      "predecessors": [
+        {
+          "id": "substructure.frag.substructure.raft.a20",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.substructure.raft",
+      "stage": "substructure",
+      "trail_ref": "trail.substructure.frag.substructure.raft.a30",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "wbs_id": "05.01.003",
+      "zone_id": "zone.shell.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "self-perform",
+      "dept_code": "civil",
+      "duration_days": 8,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "substructure.frag.substructure.raft.a40",
+      "name": "Formwork and shuttering",
+      "predecessors": [
+        {
+          "id": "substructure.frag.substructure.raft.a30",
+          "kind": "fragnet",
+          "lag": 5,
+          "type": "SS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.substructure.raft",
+      "stage": "substructure",
+      "trail_ref": "trail.substructure.frag.substructure.raft.a40",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "wbs_id": "05.01.004",
+      "zone_id": "zone.shell.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "self-perform",
+      "dept_code": "civil",
+      "duration_days": 3,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "substructure.frag.substructure.raft.a50",
+      "name": "Raft concrete pour",
+      "predecessors": [
+        {
+          "id": "substructure.frag.substructure.raft.a40",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.substructure.raft",
+      "stage": "substructure",
+      "trail_ref": "trail.substructure.frag.substructure.raft.a50",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "wbs_id": "05.01.005",
+      "zone_id": "zone.shell.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "qaqc",
+      "duration_days": 0,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
+      "name": "HOLD: Cube test results acceptance",
+      "predecessors": [
+        {
+          "id": "substructure.frag.substructure.raft.a60",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.substructure.raft",
+      "stage": "substructure",
+      "trail_ref": "trail.hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "wbs_id": "05.01.006",
+      "zone_id": "zone.shell.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "7day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "self-perform",
+      "dept_code": "civil",
+      "duration_days": 28,
+      "hitl_tier": "tier_2",
+      "hold_points": [
+        "Cube test results acceptance"
+      ],
+      "id": "substructure.frag.substructure.raft.a60",
+      "name": "Curing and cube testing",
+      "predecessors": [
+        {
+          "id": "substructure.frag.substructure.raft.a50",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.substructure.raft",
+      "stage": "substructure",
+      "trail_ref": "trail.substructure.frag.substructure.raft.a60",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "wbs_id": "05.01.006",
+      "zone_id": "zone.shell.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 12,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_power.frag.mep.power_train.c10",
+      "name": "Transformer plinth and pad preparation",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c10",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.001",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 8,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_power.frag.mep.power_train.c20",
+      "name": "Transformer placement and alignment",
+      "predecessors": [
+        {
+          "id": "gate.delivery-lead-transformer-hv",
+          "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c10",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c20",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.002",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "qaqc",
+      "duration_days": 0,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
+      "name": "HOLD: Pre-energisation inspection",
+      "predecessors": [
+        {
+          "id": "mep_power.frag.mep.power_train.c30",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "trail_ref": "trail.hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.003",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 30,
+      "hitl_tier": "tier_2",
+      "hold_points": [
+        "Pre-energisation inspection"
+      ],
+      "id": "mep_power.frag.mep.power_train.c30",
+      "name": "HV/MV switchgear installation",
+      "predecessors": [
+        {
+          "id": "gate.delivery-lead-hv-switchgear",
+          "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c20",
+          "kind": "fragnet",
+          "lag": 5,
+          "type": "SS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c30",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.003",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 35,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_power.frag.mep.power_train.c40",
+      "name": "LV panel and UPS installation",
+      "predecessors": [
+        {
+          "id": "gate.delivery-lead-ups",
+          "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c30",
+          "kind": "fragnet",
+          "lag": 10,
+          "type": "SS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c40",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.004",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 25,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_power.frag.mep.power_train.c50",
+      "name": "Busway installation and megger testing",
+      "predecessors": [
+        {
+          "id": "gate.delivery-lead-busway",
+          "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40",
+          "kind": "fragnet",
+          "lag": 8,
+          "type": "SS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c50",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.005",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 25,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_power.frag.mep.power_train.c60",
+      "name": "Cable termination and continuity test",
+      "predecessors": [
+        {
+          "id": "mep_power.frag.mep.power_train.c50",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c60",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.006",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 10,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_cooling.frag.mep.cooling.d10",
+      "name": "Chiller plinth preparation",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.cooling",
+      "stage": "mep_cooling",
+      "trail_ref": "trail.mep_cooling.frag.mep.cooling.d10",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "wbs_id": "09.01.001",
+      "zone_id": "zone.cooling-plant.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 10,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_cooling.frag.mep.cooling.d20",
+      "name": "Chiller placement and alignment",
+      "predecessors": [
+        {
+          "id": "gate.delivery-lead-chiller",
+          "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_cooling.frag.mep.cooling.d10",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.cooling",
+      "stage": "mep_cooling",
+      "trail_ref": "trail.mep_cooling.frag.mep.cooling.d20",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "wbs_id": "09.01.002",
+      "zone_id": "zone.cooling-plant.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 45,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_cooling.frag.mep.cooling.d30",
+      "name": "Chilled water piping installation",
+      "predecessors": [
+        {
+          "id": "mep_cooling.frag.mep.cooling.d20",
+          "kind": "fragnet",
+          "lag": 5,
+          "type": "SS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.cooling",
+      "stage": "mep_cooling",
+      "trail_ref": "trail.mep_cooling.frag.mep.cooling.d30",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "wbs_id": "09.01.003",
+      "zone_id": "zone.cooling-plant.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "qaqc",
+      "duration_days": 0,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
+      "name": "HOLD: Pressure test witness",
+      "predecessors": [
+        {
+          "id": "mep_cooling.frag.mep.cooling.d40",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.cooling",
+      "stage": "mep_cooling",
+      "trail_ref": "trail.hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "wbs_id": "09.01.004",
+      "zone_id": "zone.cooling-plant.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 15,
+      "hitl_tier": "tier_2",
+      "hold_points": [
+        "Pressure test witness"
+      ],
+      "id": "mep_cooling.frag.mep.cooling.d40",
+      "name": "Pressure testing and flushing",
+      "predecessors": [
+        {
+          "id": "mep_cooling.frag.mep.cooling.d30",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.cooling",
+      "stage": "mep_cooling",
+      "trail_ref": "trail.mep_cooling.frag.mep.cooling.d40",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "wbs_id": "09.01.004",
+      "zone_id": "zone.cooling-plant.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 25,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_cooling.frag.mep.cooling.d50",
+      "name": "CRAH unit installation",
+      "predecessors": [
+        {
+          "id": "gate.delivery-lead-crah",
+          "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_cooling.frag.mep.cooling.d40",
+          "kind": "fragnet",
+          "lag": 5,
+          "type": "SS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.cooling",
+      "stage": "mep_cooling",
+      "trail_ref": "trail.mep_cooling.frag.mep.cooling.d50",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "wbs_id": "09.01.005",
+      "zone_id": "zone.cooling-plant.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "5day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "commissioning",
+      "duration_days": 25,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "commissioning.frag.commissioning.ladder.e10",
+      "name": "L1 factory acceptance testing",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": "frag.commissioning.ladder",
+      "stage": "commissioning",
+      "trail_ref": "trail.commissioning.frag.commissioning.ladder.e10",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "wbs_id": "12.01.001",
+      "zone_id": "zone.data-hall.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "commissioning",
+      "duration_days": 20,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "commissioning.frag.commissioning.ladder.e20",
+      "name": "L2 site verification / delivery inspection",
+      "predecessors": [
+        {
+          "id": "commissioning.frag.commissioning.ladder.e10",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.commissioning.ladder",
+      "stage": "commissioning",
+      "trail_ref": "trail.commissioning.frag.commissioning.ladder.e20",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "wbs_id": "12.01.002",
+      "zone_id": "zone.data-hall.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "commissioning",
+      "duration_days": 35,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "commissioning.frag.commissioning.ladder.e30",
+      "name": "L3 pre-functional checks",
+      "predecessors": [
+        {
+          "id": "commissioning.frag.commissioning.ladder.e20",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.commissioning.ladder",
+      "stage": "commissioning",
+      "trail_ref": "trail.commissioning.frag.commissioning.ladder.e30",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "wbs_id": "12.01.003",
+      "zone_id": "zone.data-hall.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "commissioning",
+      "duration_days": 40,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "commissioning.frag.commissioning.ladder.e40",
+      "name": "L4 functional performance testing",
+      "predecessors": [
+        {
+          "id": "commissioning.frag.commissioning.ladder.e30",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.commissioning.ladder",
+      "stage": "commissioning",
+      "trail_ref": "trail.commissioning.frag.commissioning.ladder.e40",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "wbs_id": "12.01.004",
+      "zone_id": "zone.data-hall.01"
+    },
+    {
+      "blocks_export": true,
+      "calendar": "7day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "commissioning",
+      "duration_days": 28,
+      "hitl_tier": "tier_1",
+      "hold_points": [
+        "IST results acceptance - RFS gate"
+      ],
+      "id": "commissioning.frag.commissioning.ladder.e50",
+      "name": "L5 integrated systems test (IST)",
+      "predecessors": [
+        {
+          "id": "commissioning.frag.commissioning.ladder.e40",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": true,
+      "source_fragnet": "frag.commissioning.ladder",
+      "stage": "commissioning",
+      "trail_ref": "trail.commissioning.frag.commissioning.ladder.e50",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "wbs_id": "12.01.005",
+      "zone_id": "zone.data-hall.01"
+    },
+    {
+      "blocks_export": true,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "reviewer",
+      "duration_days": 0,
+      "hitl_tier": "tier_1",
+      "hold_points": [],
+      "id": "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
+      "name": "HOLD: IST results acceptance - RFS gate",
+      "predecessors": [
+        {
+          "id": "commissioning.frag.commissioning.ladder.e50",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.commissioning.ladder",
+      "stage": "commissioning",
+      "trail_ref": "trail.hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "wbs_id": "12.01.005",
+      "zone_id": "zone.data-hall.01"
+    },
+    {
+      "blocks_export": true,
+      "calendar": "7day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "commissioning",
+      "duration_days": 14,
+      "hitl_tier": "tier_1",
+      "hold_points": [],
+      "id": "commissioning.frag.commissioning.ladder.e60",
+      "name": "Black-building and failure-mode testing",
+      "predecessors": [
+        {
+          "id": "commissioning.frag.commissioning.ladder.e50",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": true,
+      "source_fragnet": "frag.commissioning.ladder",
+      "stage": "commissioning",
+      "trail_ref": "trail.commissioning.frag.commissioning.ladder.e60",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "wbs_id": "12.01.006",
+      "zone_id": "zone.data-hall.01"
+    }
+  ],
+  "commissioning": [
+    {
+      "activity_id": "commissioning.frag.commissioning.ladder.e60",
+      "blocks_export": true,
+      "hitl_tier": "tier_1",
+      "is_IST": false,
+      "level": "",
+      "name": "Black-building and failure-mode testing",
+      "safety_flag": true
+    },
+    {
+      "activity_id": "commissioning.frag.commissioning.ladder.e10",
+      "blocks_export": false,
+      "hitl_tier": "tier_2",
+      "is_IST": false,
+      "level": "L1",
+      "name": "L1 factory acceptance testing",
+      "safety_flag": false
+    },
+    {
+      "activity_id": "commissioning.frag.commissioning.ladder.e20",
+      "blocks_export": false,
+      "hitl_tier": "tier_2",
+      "is_IST": false,
+      "level": "L2",
+      "name": "L2 site verification / delivery inspection",
+      "safety_flag": false
+    },
+    {
+      "activity_id": "commissioning.frag.commissioning.ladder.e30",
+      "blocks_export": false,
+      "hitl_tier": "tier_2",
+      "is_IST": false,
+      "level": "L3",
+      "name": "L3 pre-functional checks",
+      "safety_flag": false
+    },
+    {
+      "activity_id": "commissioning.frag.commissioning.ladder.e40",
+      "blocks_export": false,
+      "hitl_tier": "tier_2",
+      "is_IST": false,
+      "level": "L4",
+      "name": "L4 functional performance testing",
+      "safety_flag": false
+    },
+    {
+      "activity_id": "commissioning.frag.commissioning.ladder.e50",
+      "blocks_export": true,
+      "hitl_tier": "tier_1",
+      "is_IST": true,
+      "level": "L5",
+      "name": "L5 integrated systems test (IST)",
+      "safety_flag": true
+    }
+  ],
+  "decisions": [
+    {
+      "answer": "Build dedicated substation - HT substation is on our scope",
+      "id": "dp.grid_position",
+      "impact": "Energisation sequence and long-lead placement",
+      "question": "What is the grid position: is a dedicated substation being built, or is the site feeder-ready?"
+    },
+    {
+      "answer": "Not confirmed - use library estimate and flag",
+      "id": "dp.long_lead_unconfirmed",
+      "impact": "Procurement placement and the critical path",
+      "question": "Is the assumed lead time for this long-lead package confirmed by a vendor quotation or purchase order?"
+    },
+    {
+      "answer": "Owner-furnished under the client Cummins framework",
+      "id": "dp.ofe",
+      "impact": "Delivery milestone as constraint vs procurement fragnet",
+      "question": "Which equipment packages are owner-furnished, and which are contractor-supplied?"
+    },
+    {
+      "answer": "N+1 confirmed on electrical and cooling",
+      "id": "dp.tier_topology",
+      "impact": "Equipment counts and concurrent-maintainability logic",
+      "question": "What is the confirmed redundancy topology (N+1, 2N, 2N+1) for the power and cooling trains?"
+    }
+  ],
+  "equipment_counts": [
+    {
+      "basis": "0.5/MW x 1.33",
+      "count": 14,
+      "item": "chillers",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "basis": "6.0/MW x 1.33",
+      "count": 160,
+      "item": "crah_units",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "basis": "0.5/MW x 1.33",
+      "count": 14,
+      "item": "generators",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "basis": "1.0/MW x 1.33",
+      "count": 27,
+      "item": "ups_modules",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    }
+  ],
+  "flags": [
+    {
+      "hitl_tier": "tier_2",
+      "kind": "engine_warning",
+      "message": "Gate gate.ifc-issued (Design complete - IFC drawings issued) has no producing activities: stage \"design\" instanced nothing, because frag.design.* does not exist yet. The gate still constrains its consumers, and will anchor automatically once that fragnet is added.",
+      "refs": []
+    },
+    {
+      "hitl_tier": "tier_2",
+      "kind": "engine_warning",
+      "message": "25 assembled activities rest on 4 unverified library entries; their confidence is the capped value, not the reasoner's claim.",
+      "refs": []
+    }
+  ],
+  "flow": {
+    "edges": [
+      {
+        "from": "commissioning.frag.commissioning.ladder.e10",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e20",
+        "type": "FS",
+        "why": "Fragnet logic from frag.commissioning.ladder."
+      },
+      {
+        "from": "commissioning.frag.commissioning.ladder.e20",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e30",
+        "type": "FS",
+        "why": "Fragnet logic from frag.commissioning.ladder."
+      },
+      {
+        "from": "commissioning.frag.commissioning.ladder.e30",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e40",
+        "type": "FS",
+        "why": "Fragnet logic from frag.commissioning.ladder."
+      },
+      {
+        "from": "commissioning.frag.commissioning.ladder.e40",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e50",
+        "type": "FS",
+        "why": "Fragnet logic from frag.commissioning.ladder."
+      },
+      {
+        "from": "commissioning.frag.commissioning.ladder.e50",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e60",
+        "type": "FS",
+        "why": "Fragnet logic from frag.commissioning.ladder."
+      },
+      {
+        "from": "commissioning.frag.commissioning.ladder.e50",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
+        "type": "FS",
+        "why": "Quality hold point owned by reviewer."
+      },
+      {
+        "from": "gate.delivery-lead-busway",
+        "kind": "delivery",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c50",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "gate.delivery-lead-chiller",
+        "kind": "delivery",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d20",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "gate.delivery-lead-crah",
+        "kind": "delivery",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d50",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "gate.delivery-lead-hv-switchgear",
+        "kind": "delivery",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c30",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "gate.delivery-lead-transformer-hv",
+        "kind": "delivery",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c20",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "gate.delivery-lead-ups",
+        "kind": "delivery",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c40",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d10",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d20",
+        "type": "FS",
+        "why": "Fragnet logic from frag.mep.cooling."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d20",
+        "kind": "fragnet",
+        "lag": 5,
+        "to": "mep_cooling.frag.mep.cooling.d30",
+        "type": "SS",
+        "why": "Fragnet logic from frag.mep.cooling."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d30",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d40",
+        "type": "FS",
+        "why": "Fragnet logic from frag.mep.cooling."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d40",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
+        "type": "FS",
+        "why": "Quality hold point owned by qaqc."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d40",
+        "kind": "fragnet",
+        "lag": 5,
+        "to": "mep_cooling.frag.mep.cooling.d50",
+        "type": "SS",
+        "why": "Fragnet logic from frag.mep.cooling."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c10",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c20",
+        "type": "FS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c20",
+        "kind": "fragnet",
+        "lag": 5,
+        "to": "mep_power.frag.mep.power_train.c30",
+        "type": "SS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c30",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
+        "type": "FS",
+        "why": "Quality hold point owned by qaqc."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c30",
+        "kind": "fragnet",
+        "lag": 10,
+        "to": "mep_power.frag.mep.power_train.c40",
+        "type": "SS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c40",
+        "kind": "fragnet",
+        "lag": 8,
+        "to": "mep_power.frag.mep.power_train.c50",
+        "type": "SS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c50",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c60",
+        "type": "FS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "substructure.frag.substructure.raft.a10",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a20",
+        "type": "FS",
+        "why": "Fragnet logic from frag.substructure.raft."
+      },
+      {
+        "from": "substructure.frag.substructure.raft.a20",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a30",
+        "type": "FS",
+        "why": "Fragnet logic from frag.substructure.raft."
+      },
+      {
+        "from": "substructure.frag.substructure.raft.a30",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
+        "type": "FS",
+        "why": "Quality hold point owned by qaqc."
+      },
+      {
+        "from": "substructure.frag.substructure.raft.a30",
+        "kind": "fragnet",
+        "lag": 5,
+        "to": "substructure.frag.substructure.raft.a40",
+        "type": "SS",
+        "why": "Fragnet logic from frag.substructure.raft."
+      },
+      {
+        "from": "substructure.frag.substructure.raft.a40",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a50",
+        "type": "FS",
+        "why": "Fragnet logic from frag.substructure.raft."
+      },
+      {
+        "from": "substructure.frag.substructure.raft.a50",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a60",
+        "type": "FS",
+        "why": "Fragnet logic from frag.substructure.raft."
+      },
+      {
+        "from": "substructure.frag.substructure.raft.a60",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
+        "type": "FS",
+        "why": "Quality hold point owned by qaqc."
+      }
+    ],
+    "nodes": [
+      {
+        "dept": null,
+        "id": "stage.design",
+        "kind": "stage",
+        "label": "Design",
+        "parent": null,
+        "stage": "design",
+        "trail_ref": null,
+        "zone_id": null
+      },
+      {
+        "dept": null,
+        "id": "stage.procurement",
+        "kind": "stage",
+        "label": "Procurement",
+        "parent": null,
+        "stage": "procurement",
+        "trail_ref": null,
+        "zone_id": null
+      },
+      {
+        "dept": null,
+        "id": "stage.substructure",
+        "kind": "stage",
+        "label": "Substructure",
+        "parent": null,
+        "stage": "substructure",
+        "trail_ref": null,
+        "zone_id": null
+      },
+      {
+        "confidence": 0.5,
+        "dept": null,
+        "id": "package.substructure.frag.substructure.raft",
+        "kind": "work_package",
+        "label": "frag.substructure.raft",
+        "parent": "stage.substructure",
+        "stage": "substructure",
+        "trail_ref": null,
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "zone_id": null
+      },
+      {
+        "dept": null,
+        "id": "stage.mep_power",
+        "kind": "stage",
+        "label": "Mep Power",
+        "parent": null,
+        "stage": "mep_power",
+        "trail_ref": null,
+        "zone_id": null
+      },
+      {
+        "confidence": 0.5,
+        "dept": null,
+        "id": "package.mep_power.frag.mep.power_train",
+        "kind": "work_package",
+        "label": "frag.mep.power_train",
+        "parent": "stage.mep_power",
+        "stage": "mep_power",
+        "trail_ref": null,
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "zone_id": null
+      },
+      {
+        "dept": null,
+        "id": "stage.mep_cooling",
+        "kind": "stage",
+        "label": "Mep Cooling",
+        "parent": null,
+        "stage": "mep_cooling",
+        "trail_ref": null,
+        "zone_id": null
+      },
+      {
+        "confidence": 0.5,
+        "dept": null,
+        "id": "package.mep_cooling.frag.mep.cooling",
+        "kind": "work_package",
+        "label": "frag.mep.cooling",
+        "parent": "stage.mep_cooling",
+        "stage": "mep_cooling",
+        "trail_ref": null,
+        "unverified_dependencies": [
+          "frag.mep.cooling"
+        ],
+        "zone_id": null
+      },
+      {
+        "dept": null,
+        "id": "stage.commissioning",
+        "kind": "stage",
+        "label": "Commissioning",
+        "parent": null,
+        "stage": "commissioning",
+        "trail_ref": null,
+        "zone_id": null
+      },
+      {
+        "confidence": 0.5,
+        "dept": null,
+        "id": "package.commissioning.frag.commissioning.ladder",
+        "kind": "work_package",
+        "label": "frag.commissioning.ladder",
+        "parent": "stage.commissioning",
+        "stage": "commissioning",
+        "trail_ref": null,
+        "unverified_dependencies": [
+          "frag.commissioning.ladder"
+        ],
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "design",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.ifc-issued",
+        "kind": "compliance_gate",
+        "label": "Design complete - IFC drawings issued",
+        "parent": "stage.design",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.gate.ifc-issued",
+        "unverified_dependencies": [],
+        "wbs_id": "00.de.ued",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "procurement",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.delivery-lead-transformer-hv",
+        "kind": "milestone",
+        "label": "Delivery to site: lead.transformer_hv",
+        "parent": "stage.procurement",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.gate.delivery-lead-transformer-hv",
+        "unverified_dependencies": [],
+        "wbs_id": "00.dl._hv",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "procurement",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.delivery-lead-hv-switchgear",
+        "kind": "milestone",
+        "label": "Delivery to site: lead.hv_switchgear",
+        "parent": "stage.procurement",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.gate.delivery-lead-hv-switchgear",
+        "unverified_dependencies": [],
+        "wbs_id": "00.dl.ear",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "procurement",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.delivery-lead-chiller",
+        "kind": "milestone",
+        "label": "Delivery to site: lead.chiller",
+        "parent": "stage.procurement",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.gate.delivery-lead-chiller",
+        "unverified_dependencies": [],
+        "wbs_id": "00.dl.ler",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "procurement",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.delivery-lead-crah",
+        "kind": "milestone",
+        "label": "Delivery to site: lead.crah",
+        "parent": "stage.procurement",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.gate.delivery-lead-crah",
+        "unverified_dependencies": [],
+        "wbs_id": "00.dl.rah",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "procurement",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.delivery-lead-ups",
+        "kind": "milestone",
+        "label": "Delivery to site: lead.ups",
+        "parent": "stage.procurement",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.gate.delivery-lead-ups",
+        "unverified_dependencies": [],
+        "wbs_id": "00.dl.ups",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "procurement",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.delivery-lead-busway",
+        "kind": "milestone",
+        "label": "Delivery to site: lead.busway",
+        "parent": "stage.procurement",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.gate.delivery-lead-busway",
+        "unverified_dependencies": [],
+        "wbs_id": "00.dl.way",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "civil",
+        "duration_days": 18,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "substructure.frag.substructure.raft.a10",
+        "kind": "activity",
+        "label": "Excavation to formation level",
+        "parent": "package.substructure.frag.substructure.raft",
+        "safety_flag": false,
+        "stage": "substructure",
+        "start": null,
+        "trail_ref": "trail.substructure.frag.substructure.raft.a10",
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "wbs_id": "05.01.001",
+        "zone_id": "zone.shell.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "civil",
+        "duration_days": 6,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "substructure.frag.substructure.raft.a20",
+        "kind": "activity",
+        "label": "PCC and blinding",
+        "parent": "package.substructure.frag.substructure.raft",
+        "safety_flag": false,
+        "stage": "substructure",
+        "start": null,
+        "trail_ref": "trail.substructure.frag.substructure.raft.a20",
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "wbs_id": "05.01.002",
+        "zone_id": "zone.shell.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "qaqc",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
+        "kind": "quality_hold",
+        "label": "HOLD: Reinforcement inspection",
+        "parent": "package.substructure.frag.substructure.raft",
+        "safety_flag": false,
+        "stage": "substructure",
+        "start": null,
+        "trail_ref": "trail.hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "wbs_id": "05.01.003",
+        "zone_id": "zone.shell.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "civil",
+        "duration_days": 25,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "substructure.frag.substructure.raft.a30",
+        "kind": "activity",
+        "label": "Raft reinforcement fixing",
+        "parent": "package.substructure.frag.substructure.raft",
+        "safety_flag": false,
+        "stage": "substructure",
+        "start": null,
+        "trail_ref": "trail.substructure.frag.substructure.raft.a30",
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "wbs_id": "05.01.003",
+        "zone_id": "zone.shell.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "civil",
+        "duration_days": 8,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "substructure.frag.substructure.raft.a40",
+        "kind": "activity",
+        "label": "Formwork and shuttering",
+        "parent": "package.substructure.frag.substructure.raft",
+        "safety_flag": false,
+        "stage": "substructure",
+        "start": null,
+        "trail_ref": "trail.substructure.frag.substructure.raft.a40",
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "wbs_id": "05.01.004",
+        "zone_id": "zone.shell.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "civil",
+        "duration_days": 3,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "substructure.frag.substructure.raft.a50",
+        "kind": "activity",
+        "label": "Raft concrete pour",
+        "parent": "package.substructure.frag.substructure.raft",
+        "safety_flag": false,
+        "stage": "substructure",
+        "start": null,
+        "trail_ref": "trail.substructure.frag.substructure.raft.a50",
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "wbs_id": "05.01.005",
+        "zone_id": "zone.shell.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "qaqc",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
+        "kind": "quality_hold",
+        "label": "HOLD: Cube test results acceptance",
+        "parent": "package.substructure.frag.substructure.raft",
+        "safety_flag": false,
+        "stage": "substructure",
+        "start": null,
+        "trail_ref": "trail.hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "wbs_id": "05.01.006",
+        "zone_id": "zone.shell.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "civil",
+        "duration_days": 28,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "substructure.frag.substructure.raft.a60",
+        "kind": "activity",
+        "label": "Curing and cube testing",
+        "parent": "package.substructure.frag.substructure.raft",
+        "safety_flag": false,
+        "stage": "substructure",
+        "start": null,
+        "trail_ref": "trail.substructure.frag.substructure.raft.a60",
+        "unverified_dependencies": [
+          "frag.substructure.raft"
+        ],
+        "wbs_id": "05.01.006",
+        "zone_id": "zone.shell.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 12,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_power.frag.mep.power_train.c10",
+        "kind": "activity",
+        "label": "Transformer plinth and pad preparation",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c10",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.001",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 8,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_power.frag.mep.power_train.c20",
+        "kind": "activity",
+        "label": "Transformer placement and alignment",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c20",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.002",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "qaqc",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
+        "kind": "quality_hold",
+        "label": "HOLD: Pre-energisation inspection",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.003",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 30,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_power.frag.mep.power_train.c30",
+        "kind": "activity",
+        "label": "HV/MV switchgear installation",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c30",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.003",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 35,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_power.frag.mep.power_train.c40",
+        "kind": "activity",
+        "label": "LV panel and UPS installation",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c40",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.004",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 25,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_power.frag.mep.power_train.c50",
+        "kind": "activity",
+        "label": "Busway installation and megger testing",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c50",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.005",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 25,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_power.frag.mep.power_train.c60",
+        "kind": "activity",
+        "label": "Cable termination and continuity test",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c60",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.006",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 10,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_cooling.frag.mep.cooling.d10",
+        "kind": "activity",
+        "label": "Chiller plinth preparation",
+        "parent": "package.mep_cooling.frag.mep.cooling",
+        "safety_flag": false,
+        "stage": "mep_cooling",
+        "start": null,
+        "trail_ref": "trail.mep_cooling.frag.mep.cooling.d10",
+        "unverified_dependencies": [
+          "frag.mep.cooling"
+        ],
+        "wbs_id": "09.01.001",
+        "zone_id": "zone.cooling-plant.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 10,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_cooling.frag.mep.cooling.d20",
+        "kind": "activity",
+        "label": "Chiller placement and alignment",
+        "parent": "package.mep_cooling.frag.mep.cooling",
+        "safety_flag": false,
+        "stage": "mep_cooling",
+        "start": null,
+        "trail_ref": "trail.mep_cooling.frag.mep.cooling.d20",
+        "unverified_dependencies": [
+          "frag.mep.cooling"
+        ],
+        "wbs_id": "09.01.002",
+        "zone_id": "zone.cooling-plant.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 45,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_cooling.frag.mep.cooling.d30",
+        "kind": "activity",
+        "label": "Chilled water piping installation",
+        "parent": "package.mep_cooling.frag.mep.cooling",
+        "safety_flag": false,
+        "stage": "mep_cooling",
+        "start": null,
+        "trail_ref": "trail.mep_cooling.frag.mep.cooling.d30",
+        "unverified_dependencies": [
+          "frag.mep.cooling"
+        ],
+        "wbs_id": "09.01.003",
+        "zone_id": "zone.cooling-plant.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "qaqc",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
+        "kind": "quality_hold",
+        "label": "HOLD: Pressure test witness",
+        "parent": "package.mep_cooling.frag.mep.cooling",
+        "safety_flag": false,
+        "stage": "mep_cooling",
+        "start": null,
+        "trail_ref": "trail.hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
+        "unverified_dependencies": [
+          "frag.mep.cooling"
+        ],
+        "wbs_id": "09.01.004",
+        "zone_id": "zone.cooling-plant.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 15,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_cooling.frag.mep.cooling.d40",
+        "kind": "activity",
+        "label": "Pressure testing and flushing",
+        "parent": "package.mep_cooling.frag.mep.cooling",
+        "safety_flag": false,
+        "stage": "mep_cooling",
+        "start": null,
+        "trail_ref": "trail.mep_cooling.frag.mep.cooling.d40",
+        "unverified_dependencies": [
+          "frag.mep.cooling"
+        ],
+        "wbs_id": "09.01.004",
+        "zone_id": "zone.cooling-plant.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 25,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_cooling.frag.mep.cooling.d50",
+        "kind": "activity",
+        "label": "CRAH unit installation",
+        "parent": "package.mep_cooling.frag.mep.cooling",
+        "safety_flag": false,
+        "stage": "mep_cooling",
+        "start": null,
+        "trail_ref": "trail.mep_cooling.frag.mep.cooling.d50",
+        "unverified_dependencies": [
+          "frag.mep.cooling"
+        ],
+        "wbs_id": "09.01.005",
+        "zone_id": "zone.cooling-plant.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "commissioning",
+        "duration_days": 25,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "commissioning.frag.commissioning.ladder.e10",
+        "kind": "activity",
+        "label": "L1 factory acceptance testing",
+        "parent": "package.commissioning.frag.commissioning.ladder",
+        "safety_flag": false,
+        "stage": "commissioning",
+        "start": null,
+        "trail_ref": "trail.commissioning.frag.commissioning.ladder.e10",
+        "unverified_dependencies": [
+          "frag.commissioning.ladder"
+        ],
+        "wbs_id": "12.01.001",
+        "zone_id": "zone.data-hall.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "commissioning",
+        "duration_days": 20,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "commissioning.frag.commissioning.ladder.e20",
+        "kind": "activity",
+        "label": "L2 site verification / delivery inspection",
+        "parent": "package.commissioning.frag.commissioning.ladder",
+        "safety_flag": false,
+        "stage": "commissioning",
+        "start": null,
+        "trail_ref": "trail.commissioning.frag.commissioning.ladder.e20",
+        "unverified_dependencies": [
+          "frag.commissioning.ladder"
+        ],
+        "wbs_id": "12.01.002",
+        "zone_id": "zone.data-hall.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "commissioning",
+        "duration_days": 35,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "commissioning.frag.commissioning.ladder.e30",
+        "kind": "activity",
+        "label": "L3 pre-functional checks",
+        "parent": "package.commissioning.frag.commissioning.ladder",
+        "safety_flag": false,
+        "stage": "commissioning",
+        "start": null,
+        "trail_ref": "trail.commissioning.frag.commissioning.ladder.e30",
+        "unverified_dependencies": [
+          "frag.commissioning.ladder"
+        ],
+        "wbs_id": "12.01.003",
+        "zone_id": "zone.data-hall.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "commissioning",
+        "duration_days": 40,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "commissioning.frag.commissioning.ladder.e40",
+        "kind": "activity",
+        "label": "L4 functional performance testing",
+        "parent": "package.commissioning.frag.commissioning.ladder",
+        "safety_flag": false,
+        "stage": "commissioning",
+        "start": null,
+        "trail_ref": "trail.commissioning.frag.commissioning.ladder.e40",
+        "unverified_dependencies": [
+          "frag.commissioning.ladder"
+        ],
+        "wbs_id": "12.01.004",
+        "zone_id": "zone.data-hall.01"
+      },
+      {
+        "blocks_export": true,
+        "confidence": 0.5,
+        "dept": "commissioning",
+        "duration_days": 28,
+        "finish": null,
+        "hitl_tier": "tier_1",
+        "id": "commissioning.frag.commissioning.ladder.e50",
+        "kind": "activity",
+        "label": "L5 integrated systems test (IST)",
+        "parent": "package.commissioning.frag.commissioning.ladder",
+        "safety_flag": true,
+        "stage": "commissioning",
+        "start": null,
+        "trail_ref": "trail.commissioning.frag.commissioning.ladder.e50",
+        "unverified_dependencies": [
+          "frag.commissioning.ladder"
+        ],
+        "wbs_id": "12.01.005",
+        "zone_id": "zone.data-hall.01"
+      },
+      {
+        "blocks_export": true,
+        "confidence": 0.5,
+        "dept": "reviewer",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_1",
+        "id": "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
+        "kind": "quality_hold",
+        "label": "HOLD: IST results acceptance - RFS gate",
+        "parent": "package.commissioning.frag.commissioning.ladder",
+        "safety_flag": false,
+        "stage": "commissioning",
+        "start": null,
+        "trail_ref": "trail.hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
+        "unverified_dependencies": [
+          "frag.commissioning.ladder"
+        ],
+        "wbs_id": "12.01.005",
+        "zone_id": "zone.data-hall.01"
+      },
+      {
+        "blocks_export": true,
+        "confidence": 0.5,
+        "dept": "commissioning",
+        "duration_days": 14,
+        "finish": null,
+        "hitl_tier": "tier_1",
+        "id": "commissioning.frag.commissioning.ladder.e60",
+        "kind": "activity",
+        "label": "Black-building and failure-mode testing",
+        "parent": "package.commissioning.frag.commissioning.ladder",
+        "safety_flag": true,
+        "stage": "commissioning",
+        "start": null,
+        "trail_ref": "trail.commissioning.frag.commissioning.ladder.e60",
+        "unverified_dependencies": [
+          "frag.commissioning.ladder"
+        ],
+        "wbs_id": "12.01.006",
+        "zone_id": "zone.data-hall.01"
+      },
+      {
+        "answer": "Build dedicated substation - HT substation is on our scope",
+        "blocking": true,
+        "dept": null,
+        "id": "decision.dp.grid_position",
+        "impact": "Energisation sequence and long-lead placement",
+        "kind": "decision_point",
+        "label": "What is the grid position: is a dedicated substation being built, or is the site feeder-ready?",
+        "options": [],
+        "stage": "procurement",
+        "status": "resolved",
+        "trail_ref": "trail.decision.dp.grid_position",
+        "why_stuck": "",
+        "zone_id": null
+      },
+      {
+        "answer": "Not confirmed - use library estimate and flag",
+        "blocking": true,
+        "dept": null,
+        "id": "decision.dp.long_lead_unconfirmed",
+        "impact": "Procurement placement and the critical path",
+        "kind": "decision_point",
+        "label": "Is the assumed lead time for this long-lead package confirmed by a vendor quotation or purchase order?",
+        "options": [],
+        "stage": "procurement",
+        "status": "resolved",
+        "trail_ref": "trail.decision.dp.long_lead_unconfirmed",
+        "why_stuck": "",
+        "zone_id": null
+      },
+      {
+        "answer": "Owner-furnished under the client Cummins framework",
+        "blocking": true,
+        "dept": null,
+        "id": "decision.dp.ofe",
+        "impact": "Delivery milestone as constraint vs procurement fragnet",
+        "kind": "decision_point",
+        "label": "Which equipment packages are owner-furnished, and which are contractor-supplied?",
+        "options": [],
+        "stage": "procurement",
+        "status": "resolved",
+        "trail_ref": "trail.decision.dp.ofe",
+        "why_stuck": "",
+        "zone_id": null
+      },
+      {
+        "answer": "N+1 confirmed on electrical and cooling",
+        "blocking": true,
+        "dept": null,
+        "id": "decision.dp.tier_topology",
+        "impact": "Equipment counts and concurrent-maintainability logic",
+        "kind": "decision_point",
+        "label": "What is the confirmed redundancy topology (N+1, 2N, 2N+1) for the power and cooling trains?",
+        "options": [],
+        "stage": "design",
+        "status": "resolved",
+        "trail_ref": "trail.decision.dp.tier_topology",
+        "why_stuck": "",
+        "zone_id": null
+      }
+    ]
+  },
+  "long_lead_register": [
+    {
+      "confidence": 0.5,
+      "drives_rfs": true,
+      "equipment": "HV/MV power transformer",
+      "id": "lead.transformer_hv",
+      "provenance": {
+        "note": "Indian domestic transformer manufacturing is comparatively strong (CG Power, Bharat Bijlee, TBEA, Toshiba T&D), so 33/11kV units run shorter than the 40-60 week figure often quoted for Western markets. CRGO steel is import-dependent and type testing plus utility spec approval extend the tail.",
+        "origin": "industry_estimate",
+        "source_ref": "",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      },
+      "range_weeks": [
+        24,
+        48
+      ],
+      "typical_weeks": 32,
+      "unverified_dependencies": [
+        "lead.transformer_hv"
+      ],
+      "why": "Drives energisation and therefore RFS"
+    }
+  ],
+  "project_meta": {
+    "city": "Navi Mumbai",
+    "client": null,
+    "corpus_version": "v1",
+    "delivery_mode_by_discipline": {
+      "bms": "subcontract",
+      "civil": "self-perform",
+      "electrical": "turnkey",
+      "fire": "subcontract",
+      "gensets": "owner-furnished",
+      "mechanical": "turnkey",
+      "structure": "self-perform"
+    },
+    "it_load_mw": 20,
+    "library_version": "v1",
+    "phasing": "phased-by-hall",
+    "project_name": "POC DC — Navi Mumbai",
+    "prompt_version": "v1",
+    "redundancy_topology": "N+1",
+    "run_id": "golden",
+    "scope": "turnkey",
+    "site_context": "greenfield",
+    "stages_completed": [
+      "design",
+      "procurement",
+      "substructure",
+      "mep_power",
+      "mep_cooling",
+      "commissioning"
+    ],
+    "target_rfs_date": "2027-03-31",
+    "tier": "III"
+  },
+  "quality": {
+    "dcma_summary": {
+      "activity_count": 23,
+      "checks_not_run": [
+        "float",
+        "negative_float",
+        "critical_path_length_index",
+        "baseline_execution",
+        "high_duration",
+        "invalid_dates"
+      ],
+      "dangling_count": 3,
+      "dangling_ids": [
+        "commissioning.frag.commissioning.ladder.e60",
+        "mep_cooling.frag.mep.cooling.d50",
+        "mep_power.frag.mep.power_train.c60"
+      ],
+      "lag_count": 6,
+      "lead_count": 0,
+      "missing_predecessor_count": 4,
+      "missing_predecessor_ids": [
+        "commissioning.frag.commissioning.ladder.e10",
+        "mep_cooling.frag.mep.cooling.d10",
+        "mep_power.frag.mep.power_train.c10",
+        "substructure.frag.substructure.raft.a10"
+      ],
+      "note": "Partial. The date-dependent DCMA checks are not run because scheduling (CPM dates) is not yet computed; they are listed in checks_not_run rather than reported as passing.",
+      "total_nodes": 35
+    },
+    "export_block_reason": "3 Tier-1 safety activities require a named sign-off before export (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md §7).",
+    "export_blocked": true,
+    "governance_complete": false,
+    "open_decision_count": 0,
+    "tier_1_count": 3,
+    "tier_1_ids": [
+      "commissioning.frag.commissioning.ladder.e50",
+      "commissioning.frag.commissioning.ladder.e60",
+      "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate"
+    ],
+    "tier_2_count": 25,
+    "unverified_dependencies": [
+      "frag.commissioning.ladder",
+      "frag.mep.cooling",
+      "frag.mep.power_train",
+      "frag.substructure.raft"
+    ]
+  },
+  "questions": [
+    "Confirm the client organisation name."
+  ],
+  "reasoning_trail": [
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "commissioning.frag.commissioning.ladder.e10",
+      "sources": [
+        "corpus:1#0",
+        "frag.commissioning.ladder"
+      ],
+      "stage": "commissioning",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "why": "Instanced from frag.commissioning.ladder (Commissioning - L1 to L5 ladder), selected because: frag.commissioning.ladder is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "commissioning.frag.commissioning.ladder.e20",
+      "sources": [
+        "corpus:1#0",
+        "frag.commissioning.ladder"
+      ],
+      "stage": "commissioning",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "why": "Instanced from frag.commissioning.ladder (Commissioning - L1 to L5 ladder), selected because: frag.commissioning.ladder is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "commissioning.frag.commissioning.ladder.e30",
+      "sources": [
+        "corpus:1#0",
+        "frag.commissioning.ladder"
+      ],
+      "stage": "commissioning",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "why": "Instanced from frag.commissioning.ladder (Commissioning - L1 to L5 ladder), selected because: frag.commissioning.ladder is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "commissioning.frag.commissioning.ladder.e40",
+      "sources": [
+        "corpus:1#0",
+        "frag.commissioning.ladder"
+      ],
+      "stage": "commissioning",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "why": "Instanced from frag.commissioning.ladder (Commissioning - L1 to L5 ladder), selected because: frag.commissioning.ladder is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_1",
+      "ref_id": "commissioning.frag.commissioning.ladder.e50",
+      "sources": [
+        "corpus:1#0",
+        "frag.commissioning.ladder"
+      ],
+      "stage": "commissioning",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "why": "Instanced from frag.commissioning.ladder (Commissioning - L1 to L5 ladder), selected because: frag.commissioning.ladder is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_1",
+      "ref_id": "commissioning.frag.commissioning.ladder.e60",
+      "sources": [
+        "corpus:1#0",
+        "frag.commissioning.ladder"
+      ],
+      "stage": "commissioning",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.commissioning.ladder"
+      ],
+      "why": "Instanced from frag.commissioning.ladder (Commissioning - L1 to L5 ladder), selected because: frag.commissioning.ladder is the applicable package for this stage"
+    },
+    {
+      "confidence": 1.0,
+      "decided_by": "planner",
+      "decision": "Build dedicated substation - HT substation is on our scope",
+      "hitl_tier": "tier_1",
+      "ref_id": "decision.dp.grid_position",
+      "sources": [
+        "dp.grid_position"
+      ],
+      "stage": "procurement",
+      "stated_confidence": null,
+      "unverified_dependencies": [],
+      "why": "Answered by planner: What is the grid position: is a dedicated substation being built, or is the site feeder-ready?"
+    },
+    {
+      "confidence": 1.0,
+      "decided_by": "planner",
+      "decision": "Not confirmed - use library estimate and flag",
+      "hitl_tier": "tier_1",
+      "ref_id": "decision.dp.long_lead_unconfirmed",
+      "sources": [
+        "dp.long_lead_unconfirmed"
+      ],
+      "stage": "procurement",
+      "stated_confidence": null,
+      "unverified_dependencies": [],
+      "why": "Answered by planner: Is the assumed lead time for this long-lead package confirmed by a vendor quotation or purchase order?"
+    },
+    {
+      "confidence": 1.0,
+      "decided_by": "planner",
+      "decision": "Owner-furnished under the client Cummins framework",
+      "hitl_tier": "tier_1",
+      "ref_id": "decision.dp.ofe",
+      "sources": [
+        "dp.ofe"
+      ],
+      "stage": "procurement",
+      "stated_confidence": null,
+      "unverified_dependencies": [],
+      "why": "Answered by planner: Which equipment packages are owner-furnished, and which are contractor-supplied?"
+    },
+    {
+      "confidence": 1.0,
+      "decided_by": "planner",
+      "decision": "N+1 confirmed on electrical and cooling",
+      "hitl_tier": "tier_1",
+      "ref_id": "decision.dp.tier_topology",
+      "sources": [
+        "dp.tier_topology"
+      ],
+      "stage": "design",
+      "stated_confidence": null,
+      "unverified_dependencies": [],
+      "why": "Answered by planner: What is the confirmed redundancy topology (N+1, 2N, 2N+1) for the power and cooling trains?"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_cooling.frag.mep.cooling.d10",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.cooling"
+      ],
+      "stage": "mep_cooling",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "why": "Instanced from frag.mep.cooling (MEP - cooling plant), selected because: frag.mep.cooling is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_cooling.frag.mep.cooling.d20",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.cooling"
+      ],
+      "stage": "mep_cooling",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "why": "Instanced from frag.mep.cooling (MEP - cooling plant), selected because: frag.mep.cooling is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_cooling.frag.mep.cooling.d30",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.cooling"
+      ],
+      "stage": "mep_cooling",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "why": "Instanced from frag.mep.cooling (MEP - cooling plant), selected because: frag.mep.cooling is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_cooling.frag.mep.cooling.d40",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.cooling"
+      ],
+      "stage": "mep_cooling",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "why": "Instanced from frag.mep.cooling (MEP - cooling plant), selected because: frag.mep.cooling is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_cooling.frag.mep.cooling.d50",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.cooling"
+      ],
+      "stage": "mep_cooling",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.cooling"
+      ],
+      "why": "Instanced from frag.mep.cooling (MEP - cooling plant), selected because: frag.mep.cooling is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_power.frag.mep.power_train.c10",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_power.frag.mep.power_train.c20",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_power.frag.mep.power_train.c30",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_power.frag.mep.power_train.c40",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_power.frag.mep.power_train.c50",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "mep_power.frag.mep.power_train.c60",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "substructure.frag.substructure.raft.a10",
+      "sources": [
+        "corpus:1#0",
+        "frag.substructure.raft"
+      ],
+      "stage": "substructure",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "substructure.frag.substructure.raft.a20",
+      "sources": [
+        "corpus:1#0",
+        "frag.substructure.raft"
+      ],
+      "stage": "substructure",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "substructure.frag.substructure.raft.a30",
+      "sources": [
+        "corpus:1#0",
+        "frag.substructure.raft"
+      ],
+      "stage": "substructure",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "substructure.frag.substructure.raft.a40",
+      "sources": [
+        "corpus:1#0",
+        "frag.substructure.raft"
+      ],
+      "stage": "substructure",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "substructure.frag.substructure.raft.a50",
+      "sources": [
+        "corpus:1#0",
+        "frag.substructure.raft"
+      ],
+      "stage": "substructure",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "substructure.frag.substructure.raft.a60",
+      "sources": [
+        "corpus:1#0",
+        "frag.substructure.raft"
+      ],
+      "stage": "substructure",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.substructure.raft"
+      ],
+      "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
+    }
+  ],
+  "statutory_pathway": [
+    {
+      "approval": "PESO licence for HSD (diesel) storage",
+      "authority": "Petroleum and Explosives Safety Organisation (PESO)",
+      "blocks": [
+        "commissioning"
+      ],
+      "compliance_approved": false,
+      "confidence": 0.5,
+      "gates_stage": "mep_power",
+      "hard_constraint": "",
+      "id": "path.nm.peso_hsd",
+      "provenance": {
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. PESO licence for bulk HSD storage serving the generators; layout approval then licence.",
+        "origin": "industry_estimate",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      },
+      "typical_weeks": 22,
+      "unverified_dependencies": [
+        "path.nm.peso_hsd"
+      ],
+      "why": "Bulk HSD storage for the generators"
+    }
+  ],
+  "zones": [
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:site",
+      "id": "zone.site.01",
+      "kind": "site",
+      "name": "Site and external works",
+      "stage": "enabling",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:shell",
+      "id": "zone.shell.01",
+      "kind": "shell",
+      "name": "Building shell and core",
+      "stage": "substructure",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:data_hall",
+      "id": "zone.data-hall.01",
+      "kind": "data_hall",
+      "name": "Data hall 01",
+      "stage": "superstructure",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:data_hall",
+      "id": "zone.data-hall.02",
+      "kind": "data_hall",
+      "name": "Data hall 02",
+      "stage": "superstructure",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:data_hall",
+      "id": "zone.data-hall.03",
+      "kind": "data_hall",
+      "name": "Data hall 03",
+      "stage": "superstructure",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:data_hall",
+      "id": "zone.data-hall.04",
+      "kind": "data_hall",
+      "name": "Data hall 04",
+      "stage": "superstructure",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:data_hall",
+      "id": "zone.data-hall.05",
+      "kind": "data_hall",
+      "name": "Data hall 05",
+      "stage": "superstructure",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:data_hall",
+      "id": "zone.data-hall.06",
+      "kind": "data_hall",
+      "name": "Data hall 06",
+      "stage": "superstructure",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:data_hall",
+      "id": "zone.data-hall.07",
+      "kind": "data_hall",
+      "name": "Data hall 07",
+      "stage": "superstructure",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:electrical_room",
+      "id": "zone.electrical-room.01",
+      "kind": "electrical_room",
+      "name": "Electrical room 01",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:electrical_room",
+      "id": "zone.electrical-room.02",
+      "kind": "electrical_room",
+      "name": "Electrical room 02",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:electrical_room",
+      "id": "zone.electrical-room.03",
+      "kind": "electrical_room",
+      "name": "Electrical room 03",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:electrical_room",
+      "id": "zone.electrical-room.04",
+      "kind": "electrical_room",
+      "name": "Electrical room 04",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:electrical_room",
+      "id": "zone.electrical-room.05",
+      "kind": "electrical_room",
+      "name": "Electrical room 05",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:electrical_room",
+      "id": "zone.electrical-room.06",
+      "kind": "electrical_room",
+      "name": "Electrical room 06",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:electrical_room",
+      "id": "zone.electrical-room.07",
+      "kind": "electrical_room",
+      "name": "Electrical room 07",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:ups_room",
+      "id": "zone.ups-room.01",
+      "kind": "ups_room",
+      "name": "UPS and battery room 01",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:ups_room",
+      "id": "zone.ups-room.02",
+      "kind": "ups_room",
+      "name": "UPS and battery room 02",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:ups_room",
+      "id": "zone.ups-room.03",
+      "kind": "ups_room",
+      "name": "UPS and battery room 03",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:ups_room",
+      "id": "zone.ups-room.04",
+      "kind": "ups_room",
+      "name": "UPS and battery room 04",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:ups_room",
+      "id": "zone.ups-room.05",
+      "kind": "ups_room",
+      "name": "UPS and battery room 05",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:ups_room",
+      "id": "zone.ups-room.06",
+      "kind": "ups_room",
+      "name": "UPS and battery room 06",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:ups_room",
+      "id": "zone.ups-room.07",
+      "kind": "ups_room",
+      "name": "UPS and battery room 07",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:generator_yard",
+      "id": "zone.generator-yard.01",
+      "kind": "generator_yard",
+      "name": "Generator yard",
+      "stage": "mep_power",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    },
+    {
+      "derived_from": {
+        "it_load_mw": 20.0,
+        "mw_per_hall": 3.0,
+        "redundancy_multiplier": 1.33,
+        "topology": "N+1"
+      },
+      "equipment_counts": [
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "chillers",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "6.0/MW x 1.33",
+          "count": 160,
+          "item": "crah_units",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "0.5/MW x 1.33",
+          "count": 14,
+          "item": "generators",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        },
+        {
+          "basis": "1.0/MW x 1.33",
+          "count": 27,
+          "item": "ups_modules",
+          "unverified_dependencies": [
+            "tier.hall_sizing",
+            "tier.plant_per_mw",
+            "tier.redundancy_multipliers"
+          ]
+        }
+      ],
+      "geometry_ref": "schematic:cooling_plant",
+      "id": "zone.cooling-plant.01",
+      "kind": "cooling_plant",
+      "name": "Cooling plant",
+      "stage": "mep_cooling",
+      "unverified_dependencies": [
+        "tier.hall_sizing",
+        "tier.plant_per_mw",
+        "tier.redundancy_multipliers"
+      ]
+    }
+  ]
+}

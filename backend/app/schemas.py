@@ -138,7 +138,12 @@ class SimulationOutput(BaseModel):
     project_meta: Dict[str, Any]
     questions: List[str] = Field(default_factory=list)
     decisions: List[Decision] = Field(default_factory=list)
-    flow: Dict[str, List[Dict[str, Any]]] = Field(default_factory={'nodes': [], 'edges': []})
+    # default_factory must be CALLABLE. This was a dict literal, so constructing a
+    # SimulationOutput without an explicit `flow` raised TypeError: 'dict' object is not
+    # callable. Task 2's test always passed flow explicitly, so it never surfaced.
+    flow: Dict[str, List[Dict[str, Any]]] = Field(
+        default_factory=lambda: {'nodes': [], 'edges': []}
+    )
     statutory_pathway: List[Dict[str, Any]] = Field(default_factory=list)
     equipment_counts: List[Dict[str, Any]] = Field(default_factory=list)
     long_lead_register: List[Dict[str, Any]] = Field(default_factory=list)
@@ -146,8 +151,10 @@ class SimulationOutput(BaseModel):
     commissioning: List[Dict[str, Any]] = Field(default_factory=list)
     zones: List[Dict[str, Any]] = Field(default_factory=list)
     reasoning_trail: List[Dict[str, Any]] = Field(default_factory=list)
-    quality: Dict[str, Any]
-    flags: List[str] = Field(default_factory=list)
+    quality: Dict[str, Any] = Field(default_factory=dict)
+    #: Structured rather than bare strings: a flag carries its kind, refs and HITL tier so
+    #: the UI can route it (Tier-2 confirmations differ from reasoner notes).
+    flags: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 # --------------------------------------------------------------------------------------------
