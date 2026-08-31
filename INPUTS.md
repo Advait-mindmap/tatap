@@ -19,9 +19,11 @@ setup, build, run-time, and the ongoing input that makes it an expert (the corpu
   Keys: `LLM_PROVIDER`, `LLM_MODEL`, `BASE44_FN_URL`, `BASE44_SHARED_SECRET` (or `OPENAI_API_KEY`/
   `ANTHROPIC_API_KEY`), `DATABASE_URL`, `CONF_THRESHOLD`, `LIBRARY_VERSION`, `PROMPT_VERSION`,
   `CORPUS_VERSION`.
-- **Base44 function (if LLM_PROVIDER=base44):** Claude Code generates the code (task 3). In Base44:
-  create a backend function, paste it, set `SHARED_SECRET`, copy the URL into `BASE44_FN_URL`. This
-  spends your Base44 credits.
+- **Base44 function (if LLM_PROVIDER=base44):** yours to own. It lives in the Base44 dashboard,
+  which is its source of truth; it is not generated into this repo. In Base44: create the backend
+  function, set `SHARED_SECRET`, copy the URL into `BASE44_FN_URL`. It must take
+  `{prompt, schema, model}` and return the schema-conforming JSON — the contract the backend relies
+  on is documented in `docs/BASE44_GATEWAY.md`. This spends your Base44 credits.
 - **Railway:** New Project -> add PostgreSQL (gives `DATABASE_URL`) -> set Variables -> connect repo
   or `railway up`.
 
