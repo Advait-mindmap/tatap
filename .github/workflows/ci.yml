@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Guards the failure that took production down: a runtime dependency that is
+  # installed in someone's local venv but missing from backend/requirements.txt.
+  # The container installs ONLY requirements.txt, so if the app cannot be imported
+  # from that file alone, uvicorn cannot boot and the deploy crashes on startup.
+  clean-import:
+    name: Clean-import check (requirements.txt alone must boot the app)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          # Must match the Dockerfile's python:3.12-slim base image.
+          python-version: '3.12'
+
+      - name: Create an isolated virtualenv
+        # No --system-site-packages: the runner's preinstalled packages must not
+        # be able to mask a dependency missing from requirements.txt.
+        run: python -m venv .ci-clean
+
+      - name: Install ONLY backend/requirements.txt
+        run: |
+          .ci-clean/bin/python -m pip install --upgrade pip
+          .ci-clean/bin/python -m pip install -r backend/requirements.txt
+
+      - name: Import the app exactly as uvicorn does
+        # Deliberately no DATABASE_URL and no .env: database.py must fall back to
+        # sqlite at import time, as it does in a cold container.
+        run: |
+          .ci-clean/bin/python - <<'PY'
+          import sys, traceback
+          try:
+              from backend.app.main import app
+          except Exception:
+              traceback.print_exc()
+              print(
+                  "\n::error::Could not import backend.app.main from requirements.txt alone.\n"
+                  "A module the app imports at runtime is missing from backend/requirements.txt.\n"
+                  "Add it (pinned) or the next deploy will crash on startup.",
+                  file=sys.stderr,
+              )
+              raise SystemExit(1)
+          print(f"OK: imported backend.app.main -> {app.title}")
+          PY
+
+  tests:
+    name: Tests (mocked)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Run the mocked suite
+        # The `live` tests hit the real Base44 gateway and spend credits; they are
+        # deselected here and skip themselves anyway without BASE44_* secrets.
+        run: python -m pytest -m "not live" -q
