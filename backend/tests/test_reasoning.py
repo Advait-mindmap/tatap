@@ -373,7 +373,7 @@ def test_reason_stage_sends_boundaries_and_closed_vocabulary(libs):
     assert 'frag.mep.power_train' in call['user']
     assert 'path.nm.peso_hsd' in call['user']
     # And the unverified marker is visible to the model, not hidden from it.
-    assert 'UNVERIFIED MODEL-GENERATED PLACEHOLDER' in call['user']
+    assert 'UNVERIFIED' in call['user'] or 'industry_estimate/unverified' in call['user']
 
 
 def test_reason_stage_rejects_an_unknown_stage():

@@ -2,143 +2,167 @@
   "library": "equipment_lead_times",
   "library_version": "v1",
   "description": "Lead times for long-lead data centre equipment in the Indian market. Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md section 4), so these numbers land directly on the critical path.",
-  "provenance_summary": "!!! EVERY NUMBER IN THIS FILE IS INVENTED BY THE MODEL. !!! No vendor quotation, no purchase order, no historical project informed any of it. They are plausible-looking placeholders that exist so the engine has a shape to instance, and they must be replaced with real procurement data before any plan built on them is shown to a client. Because lead time drives RFS, a wrong number here silently produces a wrong completion date that looks fully researched. Decision point dp.long_lead_unconfirmed exists precisely to stop the simulator from using these unchallenged.",
+  "provenance_summary": "INDUSTRY ESTIMATES, NOT PROJECT ACTUALS. Every figure is a defensible typical value for the Indian data-centre market, chosen to be in the right range and argued for in each entry's note. None is drawn from a vendor quotation, a purchase order, or a delivered project. Because lead time drives RFS, a wrong number here silently produces a wrong completion date that looks fully researched - so these remain unverified, assert_usable_in_live_plan() refuses them, and reasoning that rests on them is confidence-capped and flagged Tier-2. Decision point dp.long_lead_unconfirmed exists to stop the simulator using them unchallenged. Replace with real procurement data.",
   "units": "calendar weeks, ex-works to site delivery",
   "entries": [
     {
       "id": "lead.transformer_hv",
       "equipment": "HV/MV power transformer",
-      "typical_weeks": 48,
-      "range_weeks": [40, 64],
+      "typical_weeks": 32,
+      "range_weeks": [
+        24,
+        48
+      ],
       "notes": "Commonly cited as the single most frequent RFS driver. CRGO steel and copper supply, type testing and utility spec approval all extend it.",
       "drives_rfs": true,
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED. No vendor or project source.",
+        "note": "Indian domestic transformer manufacturing is comparatively strong (CG Power, Bharat Bijlee, TBEA, Toshiba T&D), so 33/11kV units run shorter than the 40-60 week figure often quoted for Western markets. CRGO steel is import-dependent and type testing plus utility spec approval extend the tail.",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "lead.hv_switchgear",
       "equipment": "HV/MV switchgear (GIS/AIS panels)",
-      "typical_weeks": 44,
-      "range_weeks": [36, 60],
+      "typical_weeks": 30,
+      "range_weeks": [
+        24,
+        44
+      ],
       "notes": "Often paired with the transformer on the critical path into energisation.",
       "drives_rfs": true,
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED. No vendor or project source.",
+        "note": "AIS panels are largely domestic; GIS is typically imported (Siemens, Hitachi Energy, Schneider), which sets the upper end.",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "lead.generator",
       "equipment": "Diesel generator set (2-3 MW class)",
-      "typical_weeks": 36,
-      "range_weeks": [28, 52],
+      "typical_weeks": 30,
+      "range_weeks": [
+        22,
+        44
+      ],
       "notes": "Frequently owner-furnished, which moves control of the date to the client - see decision point dp.ofe.",
       "drives_rfs": true,
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED. No vendor or project source.",
+        "note": "Cummins and Kirloskar manufacture in India, but 2-3 MW frames often draw on imported alternators and sit in an order queue lengthened by DC demand.",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "lead.ups",
       "equipment": "UPS modules and static switches",
-      "typical_weeks": 30,
-      "range_weeks": [24, 44],
+      "typical_weeks": 22,
+      "range_weeks": [
+        16,
+        32
+      ],
       "notes": "Count depends on the redundancy topology - see decision point dp.tier_topology.",
       "drives_rfs": true,
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED. No vendor or project source.",
+        "note": "Modular UPS from Vertiv, Schneider and ABB, mostly imported; a shorter lead than the power train ahead of it, so rarely the binding constraint.",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "lead.chiller",
       "equipment": "Chillers (air/water cooled)",
-      "typical_weeks": 32,
-      "range_weeks": [24, 48],
+      "typical_weeks": 24,
+      "range_weeks": [
+        18,
+        36
+      ],
       "notes": "Cooling plant sizing follows IT load and topology.",
       "drives_rfs": true,
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED. No vendor or project source.",
+        "note": "Carrier, Trane and Daikin have Indian capacity for the common 500-1000 TR range; imported high-efficiency units sit at the upper end.",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "lead.busway",
       "equipment": "Busway / busduct distribution",
-      "typical_weeks": 26,
-      "range_weeks": [18, 36],
+      "typical_weeks": 16,
+      "range_weeks": [
+        12,
+        24
+      ],
       "notes": "Ties to hall fit-out sequence.",
       "drives_rfs": false,
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED. No vendor or project source.",
+        "note": "Largely domestic (C&S, Schneider India). Short enough that it follows the hall fit-out sequence rather than driving it.",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "lead.crah",
       "equipment": "CRAH / in-row cooling units",
-      "typical_weeks": 22,
-      "range_weeks": [16, 32],
+      "typical_weeks": 18,
+      "range_weeks": [
+        12,
+        26
+      ],
       "notes": "Unit count scales with hall count and topology.",
       "drives_rfs": false,
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED. No vendor or project source.",
+        "note": "Vertiv and Schneider, part-domestic. Unit count scales with hall count, so quantity rather than lead time is usually the constraint.",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "lead.gas_suppression",
       "equipment": "Gas fire-suppression system",
-      "typical_weeks": 20,
-      "range_weeks": [14, 30],
+      "typical_weeks": 16,
+      "range_weeks": [
+        12,
+        24
+      ],
       "notes": "Discharge testing is a Tier-1 safety activity - see safety.gas_suppression_discharge.",
       "drives_rfs": false,
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED. No vendor or project source.",
+        "note": "Agent and cylinder supply is routine; the schedule risk sits in the discharge test, which is a Tier-1 safety activity (safety.gas_suppression_discharge).",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     }
   ]

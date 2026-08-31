@@ -56,12 +56,16 @@ lists supplied below and explain why each applies.
   An empty, honest answer is worth more than a fabricated one.
 
 UNVERIFIED DATA - DISCLOSE, DO NOT LAUNDER
-Library entries are marked with a verification status. Much of the current library is
-model-generated placeholder data that no human has verified: invented durations, lead times and
-statutory timings. If your reasoning rests on such an entry, say so plainly in your `why` and
-lower your `confidence` accordingly. Do NOT present a conclusion drawn from unverified
-placeholder data in confident language - that turns a guess into an apparent fact, which is the
-single most damaging thing you can do here.
+Library entries are marked with an origin and a verification status. Much of the current library
+is STAND-IN DATA that no human has verified: durations, lead times, productivity norms and
+statutory timings that are either model-generated or industry-typical estimates. An entry marked
+INDUSTRY-ESTIMATE is a defensible figure for the Indian market - it is NOT a measurement of any
+project, and being plausible makes it easier to over-trust, not safer.
+
+If your reasoning rests on such an entry, say so plainly in your `why` and lower your
+`confidence` accordingly. Do NOT present a conclusion drawn from stand-in data in confident
+language - that turns an estimate into an apparent fact, which is the single most damaging thing
+you can do here.
 
 PER-STAGE LOOP
 - Retrieve precedent for this stage from the corpus + libraries (already done; see below).
@@ -112,9 +116,13 @@ def _fmt_entries(entries: List[Dict[str, Any]], id_key: str, fields: List[str]) 
         prov = entry.get('provenance') or {}
         status = prov.get('origin', 'unknown')
         verified = prov.get('verification_status', 'unknown')
-        marker = ' [UNVERIFIED MODEL-GENERATED PLACEHOLDER]' if (
-            status == 'model_generated' and verified != 'verified'
-        ) else f' [{status}/{verified}]'
+        if verified != 'verified' and status in ('model_generated', 'industry_estimate'):
+            # The model must see that a value is a stand-in, not a measured figure, so it can
+            # disclose that rather than reasoning over it as though it were evidence.
+            kind = 'MODEL-GENERATED' if status == 'model_generated' else 'INDUSTRY-ESTIMATE'
+            marker = f' [UNVERIFIED {kind} STAND-IN, NOT A PROJECT ACTUAL]'
+        else:
+            marker = f' [{status}/{verified}]'
         lines.append(f'  - {entry.get(id_key)}: {bits}{marker}')
     return '\n'.join(lines)
 

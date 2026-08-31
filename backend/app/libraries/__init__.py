@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from backend.app.libraries.provenance import (
+    NOT_REAL_DATA,
     Origin,
     UnverifiedDomainDataError,
     VerificationStatus,
@@ -26,6 +27,8 @@ from backend.app.libraries.provenance import (
     is_verified,
     unverified_entries,
 )
+
+NOT_REAL_DATA_VALUES = {o.value for o in NOT_REAL_DATA}
 
 DATA_DIR = Path(__file__).parent / 'data'
 CITY_PATHWAY_DIR = DATA_DIR / 'city_pathways'
@@ -149,15 +152,21 @@ def verification_report() -> Dict[str, Any]:
         origin = entry['provenance'].get('origin', 'unknown')
         by_origin[origin] = by_origin.get(origin, 0) + 1
         lib = entry.get('_library', 'unknown')
-        bucket = by_library.setdefault(lib, {'total': 0, 'invented': 0, 'verified': 0})
+        bucket = by_library.setdefault(
+            lib, {'total': 0, 'not_real_data': 0, 'verified': 0}
+        )
         bucket['total'] += 1
-        if origin == Origin.MODEL_GENERATED.value:
-            bucket['invented'] += 1
+        if origin in NOT_REAL_DATA_VALUES:
+            bucket['not_real_data'] += 1
         if is_verified(entry):
             bucket['verified'] += 1
 
     pending = unverified_entries(entries)
-    invented = [e for e in entries if e['provenance'].get('origin') == Origin.MODEL_GENERATED.value]
+    estimated = [e for e in entries if e['provenance'].get('origin') in NOT_REAL_DATA_VALUES]
+    invented = [
+        e for e in entries
+        if e['provenance'].get('origin') == Origin.MODEL_GENERATED.value
+    ]
 
     return {
         'library_version': library_version(),
@@ -166,11 +175,14 @@ def verification_report() -> Dict[str, Any]:
         'by_library': by_library,
         'unverified_count': len(pending),
         'invented_count': len(invented),
+        'not_real_data_count': len(estimated),
         'all_verified': not pending,
         'invented_ids': sorted(e.get('id', '?') for e in invented),
+        'estimated_ids': sorted(e.get('id', '?') for e in estimated),
         'summary': (
-            f'{len(invented)} of {len(entries)} entries were INVENTED BY THE MODEL '
-            f'(durations, lead times, norms, city-pathway timings). '
+            f'{len(estimated)} of {len(entries)} entries are STAND-IN DATA, not project '
+            f'actuals ({len(invented)} model-invented, '
+            f'{len(estimated) - len(invented)} industry estimates). '
             f'{len(pending)} entries are unverified and must not drive a live plan.'
         ),
     }

@@ -2,55 +2,109 @@
   "library": "productivity_norms",
   "library_version": "v1",
   "description": "Productivity norms used by the engine to derive activity durations from quantities. Managed in admin alongside the fragnet library (ADMIN_SPEC.md section 2).",
-  "provenance_summary": "!!! EVERY NORM IN THIS FILE IS INVENTED BY THE MODEL. !!! None is drawn from a rate analysis, a real project's actuals, or any published schedule of rates. Durations computed from these norms will look precise and be baseless. Replace with the client's own productivity data - DOMAIN_KNOWLEDGE.md section 1 is explicit that real execution records and actuals are what make the output expert.",
+  "provenance_summary": "INDUSTRY ESTIMATES, NOT PROJECT ACTUALS. Typical output rates for Indian construction, in the right range and argued for per entry, but not drawn from any rate analysis or from a delivered project's actuals. Durations computed from these norms will look precise and are not evidence. DOMAIN_KNOWLEDGE.md section 1 is explicit that real execution records and actuals are what make the output expert - replace these with the client's own data.",
   "entries": [
     {
       "id": "norm.rcc_raft",
       "activity": "RCC raft foundation pour",
       "unit": "cum",
-      "output_per_crew_day": 45,
+      "output_per_crew_day": 80,
       "crew": "1 gang + pump",
-      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Placement rate for one boom pump and a placing gang on a large raft. Excludes the rebar and formwork cycle, which is the real constraint on a raft pour.",
+        "source_ref": "",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      },
+      "note": "Placement rate for one boom pump and a placing gang on a large raft. Excludes the rebar and formwork cycle, which is the real constraint on a raft pour."
     },
     {
       "id": "norm.structural_steel_erect",
       "activity": "Structural steel erection",
       "unit": "MT",
-      "output_per_crew_day": 6,
+      "output_per_crew_day": 10,
       "crew": "1 erection gang + crane",
-      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "One erection gang with a crawler crane on regular portal/frame steel. Falls sharply for heavy transfer members or congested areas.",
+        "source_ref": "",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      },
+      "note": "One erection gang with a crawler crane on regular portal/frame steel. Falls sharply for heavy transfer members or congested areas."
     },
     {
       "id": "norm.blockwork",
       "activity": "Blockwork / partition walls",
       "unit": "sqm",
-      "output_per_crew_day": 25,
+      "output_per_crew_day": 35,
       "crew": "1 mason gang",
-      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "A gang of roughly four masons with helpers, AAC or concrete block, at typical DC partition heights.",
+        "source_ref": "",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      },
+      "note": "A gang of roughly four masons with helpers, AAC or concrete block, at typical DC partition heights."
     },
     {
       "id": "norm.containment_install",
       "activity": "Cable containment installation",
       "unit": "rm",
-      "output_per_crew_day": 60,
+      "output_per_crew_day": 50,
       "crew": "1 electrical gang",
-      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "One electrical gang installing cable tray and ladder at height, including supports.",
+        "source_ref": "",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      },
+      "note": "One electrical gang installing cable tray and ladder at height, including supports."
     },
     {
       "id": "norm.structured_cabling",
       "activity": "Structured cabling termination and test",
       "unit": "port",
-      "output_per_crew_day": 40,
+      "output_per_crew_day": 48,
       "crew": "1 cabling technician pair",
-      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "A technician pair terminating and certifying Cat6A. Certification, not termination, sets the pace.",
+        "source_ref": "",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      },
+      "note": "A technician pair terminating and certifying Cat6A. Certification, not termination, sets the pace."
     },
     {
       "id": "norm.chilled_water_piping",
       "activity": "Chilled water piping install and pressure test",
       "unit": "rm",
-      "output_per_crew_day": 18,
+      "output_per_crew_day": 15,
       "crew": "1 mechanical gang",
-      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "One mechanical gang on the 150-300mm MS pipework typical of DC chilled water; large diameters and welded joints pull this down.",
+        "source_ref": "",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      },
+      "note": "One mechanical gang on the 150-300mm MS pipework typical of DC chilled water; large diameters and welded joints pull this down."
     }
   ]
 }

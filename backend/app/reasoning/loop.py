@@ -27,7 +27,7 @@ from backend.app.libraries import (
     load_city_pathway,
     load_library,
 )
-from backend.app.libraries.provenance import Origin, is_verified
+from backend.app.libraries.provenance import rests_on_estimated_data
 from backend.app.llm import get_adapter
 from backend.app.reasoning.prompt import (
     PROMPT_VERSION,
@@ -72,8 +72,12 @@ def corpus_version() -> str:
 
 
 def _entry_is_unverified_invention(entry: Dict[str, Any]) -> bool:
-    prov = entry.get('provenance') or {}
-    return prov.get('origin') == Origin.MODEL_GENERATED.value and not is_verified(entry)
+    """Does this entry stand in for real data rather than record it?
+
+    Delegates to provenance.rests_on_estimated_data so that adding an origin (as
+    INDUSTRY_ESTIMATE was) cannot silently switch the confidence cap off here.
+    """
+    return rests_on_estimated_data(entry)
 
 
 def gather_stage_libraries(stage: str, city: Optional[str] = None) -> Dict[str, List[Dict]]:

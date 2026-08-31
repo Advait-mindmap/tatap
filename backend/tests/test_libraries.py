@@ -1,8 +1,9 @@
 """Tests for the versioned domain libraries and their provenance guarantees.
 
-The point of these tests is not that the numbers are right — they are invented and definitely
-are not. The point is that the system knows they are invented and refuses to let them pass as
-verified fact.
+The point of these tests is not that the numbers are right. They are industry estimates, not
+measurements of any project. The point is that the system knows they are stand-in data and
+refuses to let them pass as verified fact — which matters MORE now they look plausible, since a
+realistic number stops being questioned.
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ from backend.app.libraries import (
     verification_report,
 )
 from backend.app.libraries.provenance import (
+    NOT_REAL_DATA,
     Origin,
     UnverifiedDomainDataError,
     VerificationStatus,
@@ -97,21 +99,41 @@ def test_nothing_in_the_seed_libraries_is_marked_verified():
         assert entry['provenance']['verified_by'] is None
 
 
-def test_invented_entries_carry_an_explicit_warning():
-    invented = [e for e in all_entries()
-                if e['provenance']['origin'] == Origin.MODEL_GENERATED.value]
-    assert invented, 'expected the seed to contain model-generated entries'
-    for entry in invented:
-        assert 'INVENTED' in entry['provenance'].get('warning', ''), entry.get('id')
+def test_stand_in_entries_carry_an_explicit_warning():
+    """Estimated data is easier to trust than invented data, so it must say what it is."""
+    stand_in = [e for e in all_entries()
+                if e['provenance']['origin'] in {o.value for o in NOT_REAL_DATA}]
+    assert stand_in, 'expected the seed to contain stand-in entries'
+    for entry in stand_in:
+        warning = entry['provenance'].get('warning', '')
+        assert 'NOT A PROJECT ACTUAL' in warning or 'INVENTED' in warning, entry.get('id')
 
 
-def test_durations_and_lead_times_are_all_flagged_as_invented():
-    """The dangerous values specifically: they land on the critical path looking researched."""
+def test_durations_and_lead_times_are_flagged_as_stand_in_data():
+    """The dangerous values specifically: they land on the critical path looking researched.
+
+    Making them realistic does not make them evidence - it makes them harder to doubt.
+    """
+    stand_in = {o.value for o in NOT_REAL_DATA}
     for entry in load_library('equipment_lead_times')['entries']:
-        assert entry['provenance']['origin'] == Origin.MODEL_GENERATED.value
+        assert entry['provenance']['origin'] in stand_in
+        assert entry['provenance']['verification_status'] == 'unverified'
         assert 'typical_weeks' in entry
     for entry in load_library('productivity_norms')['entries']:
-        assert entry['provenance']['origin'] == Origin.MODEL_GENERATED.value
+        assert entry['provenance']['origin'] in stand_in
+        assert entry['provenance']['verification_status'] == 'unverified'
+
+
+def test_industry_estimates_still_require_verification():
+    """Regression guard: reseeding with realistic figures must not relax the gate."""
+    from backend.app.libraries.provenance import REQUIRES_VERIFICATION
+
+    assert Origin.INDUSTRY_ESTIMATE in REQUIRES_VERIFICATION
+    assert Origin.INDUSTRY_ESTIMATE in NOT_REAL_DATA
+    estimates = [e for e in all_entries()
+                 if e['provenance']['origin'] == Origin.INDUSTRY_ESTIMATE.value]
+    assert estimates, 'expected industry estimates in the seed'
+    assert unverified_entries(estimates) == estimates, 'every estimate must count as unverified'
 
 
 def test_spec_transcribed_entries_cite_the_document_they_came_from():
@@ -210,14 +232,14 @@ def test_commissioning_ist_is_marked_tier_1_safety():
 # ------------------------------------------------------------------------- reporting / DB
 
 
-def test_verification_report_counts_the_invented_entries():
+def test_verification_report_counts_the_stand_in_entries():
     report = verification_report()
     assert report['total_entries'] > 0
-    assert report['invented_count'] > 0
+    assert report['not_real_data_count'] > 0
     assert report['all_verified'] is False
     assert report['unverified_count'] == report['total_entries']
-    assert 'INVENTED BY THE MODEL' in report['summary']
-    assert Origin.MODEL_GENERATED.value in report['by_origin']
+    assert 'STAND-IN DATA' in report['summary']
+    assert Origin.INDUSTRY_ESTIMATE.value in report['by_origin']
 
 
 def test_register_libraries_records_the_version(session):
@@ -229,7 +251,7 @@ def test_register_libraries_records_the_version(session):
     names = {row.name for row in session.execute(select(Library)).scalars().all()}
     assert set(REQUIRED_LIBRARIES).issubset(names)
     assert any(n.startswith('city_pathways/') for n in names)
-    assert any('INVENTED' in w for w in result['warnings'])
+    assert any('STAND-IN DATA' in w for w in result['warnings'])
 
 
 def test_register_libraries_is_idempotent(session):

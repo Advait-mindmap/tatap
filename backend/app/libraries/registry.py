@@ -130,12 +130,13 @@ def register_compliance_registers(session: Session) -> Dict[str, Any]:
 
 def _registry_warnings(report: Dict[str, Any]) -> List[str]:
     warnings: List[str] = []
-    if report['invented_count']:
+    if report['not_real_data_count']:
         warnings.append(
-            f'{report["invented_count"]} of {report["total_entries"]} library entries were '
-            'INVENTED BY THE MODEL (durations, lead times, productivity norms, city-pathway '
-            'timings). They are placeholders so the engine has a shape to instance, and will '
-            'look researched once inside a schedule. Verify in admin before any live plan.'
+            f'{report["not_real_data_count"]} of {report["total_entries"]} library entries are '
+            'STAND-IN DATA, NOT PROJECT ACTUALS (durations, lead times, productivity norms, '
+            'city-pathway timings). They are industry-typical estimates so the engine has '
+            'realistic values to instance, and they will look researched once inside a '
+            'schedule. Verify against real project data before any live plan.'
         )
     if not report['all_verified']:
         warnings.append(

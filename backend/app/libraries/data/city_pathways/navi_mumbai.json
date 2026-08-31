@@ -4,24 +4,27 @@
   "city": "Navi Mumbai",
   "state": "Maharashtra",
   "description": "Statutory approval pathway gating a data centre build. Each entry becomes a gating milestone with a finish-to-start constraint (DOMAIN_KNOWLEDGE.md section 5).",
-  "provenance_summary": "MIXED, and the split matters. The AUTHORITY NAMES and the existence of each approval are transcribed from DOMAIN_KNOWLEDGE.md section 5, which names CIDCO/MIDC, SEIAA, State PCB, State Fire Services, CEIG, PESO, CGWA, AAI and DoT. Every DURATION and every SEQUENCE POSITION is INVENTED BY THE MODEL. DOMAIN_KNOWLEDGE.md section 5 states plainly that the exact set varies by city, parcel and project and is confirmed with the client's compliance team - so this file is a template of the right shape, not a statement of what this project actually needs. It is NOT legal advice. The compliance register must be marked approved in admin (ADMIN_SPEC.md section 4) before it can drive a live plan.",
+  "provenance_summary": "MIXED, and the split matters. The AUTHORITY NAMES and the existence of each approval are transcribed from DOMAIN_KNOWLEDGE.md section 5 (CIDCO/MIDC, SEIAA, MPCB, State Fire Services, CEIG, PESO). The DURATIONS are INDUSTRY ESTIMATES - typical elapsed times, not measured from any submission. Statutory durations vary enormously with completeness of submission and authority workload. DOMAIN_KNOWLEDGE.md section 5 states plainly that the exact set varies by city, parcel and project and is confirmed with the compliance team, so this is a template of the right shape rather than a statement of what this project needs. NOT LEGAL ADVICE. The compliance register must be approved in admin before driving a live plan.",
   "entries": [
     {
       "id": "path.nm.environmental_clearance",
       "approval": "Environmental Clearance (EC)",
       "authority": "SEIAA Maharashtra (EIA Notification 2006)",
       "gates_stage": "approvals",
-      "typical_weeks": 32,
+      "typical_weeks": 30,
       "applies_when": "Large campus above the notified built-up area threshold",
-      "blocks": ["enabling", "substructure"],
+      "blocks": [
+        "enabling",
+        "substructure"
+      ],
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Authority name and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION AND SEQUENCE INVENTED. Applicability threshold not verified.",
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. SEIAA clearance for a building/construction project under EIA 2006. Highly variable with completeness of submission and appraisal committee cycles.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
@@ -29,17 +32,19 @@
       "approval": "Consent to Establish (CTE)",
       "authority": "Maharashtra Pollution Control Board (MPCB)",
       "gates_stage": "approvals",
-      "typical_weeks": 12,
+      "typical_weeks": 14,
       "applies_when": "Always",
-      "blocks": ["enabling"],
+      "blocks": [
+        "enabling"
+      ],
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Authority name and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION AND SEQUENCE INVENTED.",
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. MPCB Consent to Establish, typical for a non-polluting IT/DC use.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
@@ -47,17 +52,19 @@
       "approval": "Building plan sanction",
       "authority": "CIDCO / MIDC (as applicable to the parcel)",
       "gates_stage": "approvals",
-      "typical_weeks": 16,
+      "typical_weeks": 18,
       "applies_when": "Always",
-      "blocks": ["substructure"],
+      "blocks": [
+        "substructure"
+      ],
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Authority name from docs/DOMAIN_KNOWLEDGE.md#5. DURATION AND SEQUENCE INVENTED. Which of CIDCO or MIDC applies depends on the parcel and is NOT determined here.",
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. Plan sanction by the planning authority for the parcel; CIDCO and MIDC differ.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
@@ -65,17 +72,19 @@
       "approval": "Commencement Certificate",
       "authority": "CIDCO / MIDC",
       "gates_stage": "enabling",
-      "typical_weeks": 4,
+      "typical_weeks": 6,
       "applies_when": "Always",
-      "blocks": ["substructure"],
+      "blocks": [
+        "substructure"
+      ],
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Approval type from docs/DOMAIN_KNOWLEDGE.md#3 gates column. DURATION AND SEQUENCE INVENTED.",
-        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. Issued on sanction plus fee and compliance closure.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
@@ -83,17 +92,19 @@
       "approval": "PESO licence for HSD (diesel) storage",
       "authority": "Petroleum and Explosives Safety Organisation (PESO)",
       "gates_stage": "mep_power",
-      "typical_weeks": 20,
+      "typical_weeks": 22,
       "applies_when": "Bulk diesel storage for generators",
-      "blocks": ["commissioning"],
+      "blocks": [
+        "commissioning"
+      ],
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Authority name from docs/DOMAIN_KNOWLEDGE.md#5. DURATION AND SEQUENCE INVENTED.",
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. PESO licence for bulk HSD storage serving the generators; layout approval then licence.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
@@ -101,18 +112,22 @@
       "approval": "HT installation approval and permission to energise",
       "authority": "Chief Electrical Inspector to Government (CEIG), Maharashtra",
       "gates_stage": "commissioning",
-      "typical_weeks": 10,
+      "typical_weeks": 8,
       "applies_when": "Always for HT installations",
-      "blocks": ["energisation", "commissioning_l4", "commissioning_l5"],
+      "blocks": [
+        "energisation",
+        "commissioning_l4",
+        "commissioning_l5"
+      ],
       "hard_constraint": "Energisation cannot precede CEIG approval (DOMAIN_KNOWLEDGE.md section 4).",
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Authority name and the hard constraint are from docs/DOMAIN_KNOWLEDGE.md#4 and #5, and were independently corroborated by the live Base44 gateway naming CEIG for Maharashtra. DURATION INVENTED.",
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. CEIG drawing approval and inspection for the HT installation. Applied for well ahead; the constraint is that energisation cannot precede it.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
@@ -120,18 +135,20 @@
       "approval": "Final Fire NOC",
       "authority": "Maharashtra Fire Services (NBC 2016 Part 4)",
       "gates_stage": "handover",
-      "typical_weeks": 8,
+      "typical_weeks": 10,
       "applies_when": "Always",
-      "blocks": ["occupancy"],
+      "blocks": [
+        "occupancy"
+      ],
       "hard_constraint": "Occupancy cannot precede the final fire NOC (DOMAIN_KNOWLEDGE.md section 4).",
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Authority name and the hard constraint from docs/DOMAIN_KNOWLEDGE.md#4 and #5. DURATION INVENTED.",
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. Final fire NOC after installation and witnessed testing.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
@@ -139,17 +156,19 @@
       "approval": "Occupancy Certificate",
       "authority": "CIDCO / MIDC",
       "gates_stage": "handover",
-      "typical_weeks": 6,
+      "typical_weeks": 8,
       "applies_when": "Always",
-      "blocks": ["handover"],
+      "blocks": [
+        "handover"
+      ],
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Approval type from docs/DOMAIN_KNOWLEDGE.md#3 gates column. DURATION AND SEQUENCE INVENTED.",
-        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. OC following final fire NOC and completion certification.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     }
   ]

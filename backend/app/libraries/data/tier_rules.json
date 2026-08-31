@@ -2,56 +2,72 @@
   "library": "tier_rules",
   "library_version": "v1",
   "description": "Sizing and sequencing rules that turn IT load + tier + topology into equipment counts and hall counts. This is the 'size from the load' move in DOMAIN_KNOWLEDGE.md section 4, and it drives the activity count for the whole plan.",
-  "provenance_summary": "MIXED. The PRINCIPLES are transcribed from DOMAIN_KNOWLEDGE.md section 4: size from load, tier constrains the sequence into independent paths, 2N implies concurrent maintainability. Every NUMBER - MW per hall, units per MW, redundancy multipliers - is INVENTED BY THE MODEL. These numbers multiply directly into equipment counts and therefore into the activity count and the programme, so an error here scales through the entire plan. Do not treat any figure below as an engineering rule.",
+  "provenance_summary": "MIXED. The PRINCIPLES are transcribed from DOMAIN_KNOWLEDGE.md section 4 (size from load; tier constrains the sequence; 2N implies concurrent maintainability). The NUMBERS are INDUSTRY ESTIMATES - typical sizing ratios, not engineering rules. They multiply directly into equipment counts and therefore into the activity count and the programme, so an error scales through the entire plan. Confirm against the actual design before use.",
   "entries": [
     {
       "id": "tier.hall_sizing",
       "rule": "Data hall count from IT load",
-      "mw_per_hall": 2.5,
+      "mw_per_hall": 3.0,
       "principle": "IT load (MW) plus tier and topology determine the number of data halls, electrical/UPS rooms, generators, chillers and CRAH units.",
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Principle from docs/DOMAIN_KNOWLEDGE.md#4. THE 2.5 MW/HALL FIGURE IS INVENTED.",
+        "note": "Typical DC hall sizing is 2-4 MW; 3.0 sits mid-range. Principle from docs/DOMAIN_KNOWLEDGE.md#4; the figure is an estimate.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#4",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "tier.redundancy_multipliers",
       "rule": "Redundancy multiplier applied to power and cooling trains",
-      "multipliers": {"N": 1.0, "N+1": 1.25, "2N": 2.0, "2N+1": 2.25},
+      "multipliers": {
+        "N": 1.0,
+        "N+1": 1.33,
+        "2N": 2.0,
+        "2N+1": 2.25
+      },
       "principle": "Tier IV fault tolerance and concurrent maintainability (2N) constrain the build and commissioning sequence into independent paths.",
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Principle from docs/DOMAIN_KNOWLEDGE.md#4. THE MULTIPLIER VALUES ARE INVENTED - in particular N+1 is not a fixed 1.25 in practice, it depends on module size.",
+        "note": "N+1 raised to 1.33, reflecting a common 3+1 module arrangement; the true value depends on module count and size, so this is the weakest figure here. 2N is exact by definition. Principle from docs/DOMAIN_KNOWLEDGE.md#4.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#4",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "tier.plant_per_mw",
       "rule": "Base plant counts per MW of IT load, before redundancy",
-      "per_mw": {"generators": 0.5, "chillers": 0.5, "ups_modules": 1.0, "crah_units": 4.0},
+      "per_mw": {
+        "generators": 0.5,
+        "chillers": 0.5,
+        "ups_modules": 1.0,
+        "crah_units": 6.0
+      },
       "provenance": {
-        "origin": "model_generated",
+        "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "ENTIRELY INVENTED. No engineering basis. Placeholder shape only.",
+        "note": "Sanity-checked at 20 MW: 10 gensets at ~2 MW, 10 chillers at ~800 TR against a ~25 MW cooling load, 20 UPS modules at ~1 MW. CRAH raised from 4.0 to 6.0 per MW, since 4.0 implied ~250 kW per unit against a typical 120-170 kW.",
         "source_ref": "",
-        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     },
     {
       "id": "tier.commissioning_ladder",
       "rule": "Commissioning must run L1 to L5 and RFS ties to a passed IST",
-      "levels": ["L1 factory test", "L2 site verification", "L3 pre-functional", "L4 functional", "L5 integrated systems test"],
+      "levels": [
+        "L1 factory test",
+        "L2 site verification",
+        "L3 pre-functional",
+        "L4 functional",
+        "L5 integrated systems test"
+      ],
       "principle": "IST is the longest-pole risk; RFS ties to a passed IST.",
       "provenance": {
         "origin": "spec_transcribed",
