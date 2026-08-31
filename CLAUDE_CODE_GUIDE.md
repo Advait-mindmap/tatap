@@ -42,8 +42,13 @@ Do Task N only, from docs/ARCHITECTURE_AND_BUILD.md section 4. Follow the releva
 
 Task-specific notes to add:
 
-- **Task 3 (LLM layer):** "Also give me the Base44 backend-function file to paste into Base44.
-  Default provider Base44; OpenAI/Anthropic as adapters. All return schema-valid JSON."
+- **Task 3 (LLM layer):** "Default provider Base44; OpenAI/Anthropic as adapters. All return
+  schema-valid JSON." The Base44 backend function itself is **not** a repo artifact: it lives in
+  the Base44 dashboard, which is its source of truth. Do not ask Claude Code to write or mirror
+  it — it cannot see that code, and a guessed copy will disagree with the live endpoint. The repo
+  instead documents the endpoint's *observed* contract in `docs/BASE44_GATEWAY.md` (URL, headers,
+  request/response shape, models, failure modes), verified by the live tests in
+  `backend/tests/test_llm_live.py`.
 - **Task 4 (corpus + libraries):** "Load the seed corpus and libraries. Flag clearly anything you
   invented (durations, lead times, city pathway) so my domain/compliance team verifies it in admin.
   Do not treat model-generated domain data as truth."
