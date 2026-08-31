@@ -20,8 +20,8 @@ Two libraries describe stages in two different vocabularies, and nothing reconci
 - The **decision-point library** (`DOMAIN_KNOWLEDGE.md` §6) tags each fork with departments —
   `statutory`, `design`, `planning`, `procurement`, `civil`, `mep`, `fit_out`, `commissioning`,
   `handover`, `enabling`.
-- The **fragnet library** and the simulator walk **construction stages** — `approvals`,
-  `design`, `procurement`, `enabling`, `substructure`, `superstructure`, `envelope`, `mep_power`,
+- The **fragnet library** and the simulator walk **construction stages** — `design`,
+  `approvals`, `procurement`, `enabling`, `substructure`, `superstructure`, `envelope`, `mep_power`,
   `mep_cooling`, `fire_bms`, `fit_out`, `commissioning`, `handover`.
 
 The simulator walks stage by stage and must decide, at each one, which forks to raise. I wrote a
@@ -119,27 +119,40 @@ The cost is that a planner may be asked a similar-sounding question at eight sta
 decision-*resolution* problem — remember the answer per discipline and stop re-asking — not a
 reason to lose the granularity. Say if you disagree; it is one line.
 
-### 1.5 Design/engineering is now a stage — but please confirm its position
+### 1.5 Design/engineering is a stage, and now leads the walk
 
 **Originally folded into approvals.** Design forks — notably `dp.tier_topology`, where N+1 vs 2N
 sets the equipment counts — were raised at the approvals stage because no design stage existed.
-A `design` stage now exists and owns them.
 
-**One thing to confirm: where it sits.** It is currently placed `approvals -> design ->
-procurement`, on instruction. But `DOMAIN_KNOWLEDGE.md` §2 orders the departments
-**Design/Engineering (2) → Statutory/Liaison (3) → Procurement/SCM (4)**, which would put design
-*before* approvals:
+**Resolved.** A `design` stage exists and owns them, and it now **leads the walk**:
 
-| | Order |
-|---|---|
-| As built | `approvals -> design -> procurement -> ...` |
-| As §2 implies | `design -> approvals -> procurement -> ...` |
+```
+design -> approvals -> procurement -> enabling -> substructure -> ... -> handover
+```
 
-Both satisfy "design before procurement", which is the relationship that matters most — the
-equipment schedule is a design output, so you cannot sensibly order before it is fixed. The
-difference is whether the basis of design precedes the consent applications. In practice it
-usually must, since drawings are what gets submitted for building sanction. **If design should
-come first, it is a one-line change — please say.**
+This matches `DOMAIN_KNOWLEDGE.md` §2, which orders Design/Engineering (2) ahead of
+Statutory/Liaison (3) and Procurement/SCM (4). The reasoning: the basis of design normally must
+precede the consent applications, because drawings are what gets submitted for building sanction;
+and the equipment schedule is a design output, so procurement cannot sensibly order ahead of it.
+
+### 1.5.1 Still open: approvals that legitimately precede design
+
+**The walk is a single ordered sequence, and reality is not.** Some early approvals genuinely can
+and do run before design is meaningfully advanced:
+
+- land acquisition and title
+- environmental clearance (SEIAA) on a large campus
+- DC-park / SEZ plot allotment (CIDCO, MIDC, SIPCOT, TSIIC, YEIDA, KIADB)
+
+Placing `design` first means the simulation reasons about design before it reasons about any of
+these, which understates how early the land and environmental track really starts. In a real
+programme the two run in parallel, with different approvals attaching to different points.
+
+This is a **modelling limitation, not a claim that design always comes first**. If it matters for
+your programmes, the options are roughly: split `approvals` into an early track (land, EC,
+allotment) and a late track (building sanction, commencement) that sits after design; or let the
+engine express the overlap through logic links rather than through walk order. Tell us which
+reflects how you actually run it.
 
 ### 1.6 Still open: `frag.design.*`, and the IFC gate
 

@@ -49,10 +49,11 @@ quality gates, and the P6 representation.
 > **Procurement & long-lead** rows have been added so all three sources agree.
 >
 > Both stages' activities span the programme; their position here reflects when they are planned
-> and reasoned about, not when the work finishes. Design is placed after approvals on explicit
-> instruction — note that §2 orders Design (2) *before* Statutory/Liaison (3), and in practice the
-> basis of design usually must precede the consent applications, since drawings are what gets
-> submitted for sanction. Flagged for confirmation in
+> and reasoned about, not when the work finishes. Design leads, matching §2's ordering of
+> Design/Engineering (2) ahead of Statutory/Liaison (3): the basis of design normally must precede
+> the consent applications, since drawings are what gets submitted for sanction. Note that some
+> early approvals — land, environmental clearance, DC-park allotment — genuinely can precede
+> design; a single ordered walk cannot express that overlap. See
 > `docs/ASSUMPTIONS_AWAITING_VERIFICATION.md` §1.5.
 >
 > Neither stage has fragnets yet (`frag.design.*`, `frag.procurement.*` are future library data).
@@ -62,8 +63,8 @@ quality gates, and the P6 representation.
 
 | Stage | Owning dept | Key materials | Key gates |
 |-------|-------------|---------------|-----------|
-| Approvals & clearances | Liaison | — | EC (SEIAA), SPCB CTE, building sanction, commencement |
 | Design & engineering | Design/Engineering | — | basis of design frozen, equipment schedule, IFC drawings issued |
+| Approvals & clearances | Liaison | — | EC (SEIAA), SPCB CTE, building sanction, commencement |
 | Procurement & long-lead | Procurement/SCM | (orders the long-lead plant consumed below) | vendor award, L1 factory acceptance test, delivery milestones |
 | Enabling & site setup | Construction, HSE | temp works, fuel | BOCW, CLRA, PESO (HSD) |
 | Substructure | Civil, QA/QC | cement, aggregates, rebar, formwork | IS 456, IS 2911, geotech |

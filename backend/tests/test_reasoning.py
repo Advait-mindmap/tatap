@@ -476,6 +476,11 @@ def test_design_is_a_walk_stage_before_procurement_and_construction():
 
     assert DESIGN_STAGE in STAGES
     i = STAGES.index('design')
+    # Design leads the walk, per DOMAIN_KNOWLEDGE.md §2 (Design 2 ahead of Statutory 3): the
+    # basis of design normally precedes the consent applications, since drawings are what gets
+    # submitted for sanction.
+    assert i == 0
+    assert i < STAGES.index('approvals')
     assert i < STAGES.index('procurement')
     assert i < STAGES.index('substructure')
     assert i < STAGES.index('mep_power')
@@ -521,5 +526,6 @@ def test_the_walk_order_is_design_then_procurement_then_construction():
     from backend.app.reasoning import STAGES
 
     order = {s: i for i, s in enumerate(STAGES)}
-    assert order['design'] < order['procurement'] < order['enabling'] < order['substructure']
+    assert order['design'] < order['approvals'] < order['procurement']
+    assert order['procurement'] < order['enabling'] < order['substructure']
     assert order['substructure'] < order['mep_power'] < order['commissioning'] < order['handover']

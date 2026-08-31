@@ -11,19 +11,18 @@ from typing import Dict, FrozenSet, List
 
 #: Canonical stages in execution order. Derived from the DOMAIN_KNOWLEDGE.md §3 stage table.
 STAGES: List[str] = [
-    'approvals',
     # Design/Engineering: basis of design, redundancy topology, equipment schedule, IFC drawings
-    # (DOMAIN_KNOWLEDGE.md §2, department 2). It sits ahead of procurement because design drives
-    # what is procured — the equipment schedule is a design output — and ahead of construction
-    # because IFC drawings are what construction builds to.
+    # (DOMAIN_KNOWLEDGE.md §2, department 2 — ahead of Statutory/Liaison at 3). It leads the walk
+    # because the basis of design normally must precede the consent applications: drawings are
+    # what gets submitted for building sanction. It also sits ahead of procurement, because the
+    # equipment schedule is a design output, and ahead of construction, which builds to IFC.
     #
-    # ORDERING CAVEAT: §2 lists Design/Engineering (2) BEFORE Statutory/Liaison (3, = approvals),
-    # i.e. design -> approvals -> procurement. It is placed after approvals here on explicit
-    # instruction. Both satisfy "design before procurement"; the difference is whether the
-    # basis of design precedes the consent applications, which in practice it usually must,
-    # since drawings are what gets submitted for sanction. One line to swap if that is wrong —
-    # see docs/ASSUMPTIONS_AWAITING_VERIFICATION.md §1.5.
+    # RESIDUAL NUANCE: some early approvals — land, environmental clearance, DC-park allotment —
+    # genuinely can and do precede design. The walk is a single ordered sequence, so it cannot
+    # express that overlap; see docs/ASSUMPTIONS_AWAITING_VERIFICATION.md §1.5 for the refinement
+    # the domain team may want.
     'design',
+    'approvals',
     # Procurement sits here per DOMAIN_KNOWLEDGE.md §2, which orders the departments
     # Statutory/Liaison (3) -> Procurement/SCM (4) -> Civil/Structure (6), and per
     # SIMULATION_AND_REASONING.md §2, which walks engineering -> procurement -> construction ->
@@ -89,14 +88,14 @@ STAGE_DEPARTMENT: Dict[str, str] = {
 # sets RFS was not raised until mep_power — has since been resolved by adding that stage.
 # ---------------------------------------------------------------------------------------------
 DECISION_TAGS_BY_STAGE: Dict[str, FrozenSet[str]] = {
-    # 'planning' stays here rather than moving with 'design': Planning/Controls is a separate
-    # department (§2, 5) and its fork (dp.phasing) needs answering before anything is sequenced,
-    # so the earliest stage is the right home for it.
-    'approvals': frozenset({'statutory', 'planning'}),
-    # The 'design' tag moves off approvals onto its own stage. dp.tier_topology carries it:
-    # N+1 vs 2N is a design decision that sets equipment counts, so it must be settled before
-    # procurement reasons about what to order.
+    # The 'design' tag has its own stage. dp.tier_topology carries it: N+1 vs 2N is a design
+    # decision that sets equipment counts, so it must be settled before procurement reasons
+    # about what to order.
     'design': frozenset({'design'}),
+    # 'planning' lives here rather than with 'design': Planning/Controls is a separate department
+    # (§2, 5) with no stage of its own, and its fork (dp.phasing) needs answering before anything
+    # is sequenced, so an early stage is the right home for it.
+    'approvals': frozenset({'statutory', 'planning'}),
     # The 'procurement' tag lives here rather than on the MEP stages. Before the procurement
     # stage existed it hung off mep_power/mep_cooling, which meant dp.long_lead_unconfirmed -
     # the fork about the lead times that set RFS - was not raised until construction was already
