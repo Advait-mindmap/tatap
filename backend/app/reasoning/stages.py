@@ -50,6 +50,11 @@ STAGE_DEPARTMENT: Dict[str, str] = {
 # reading, not the client's. Getting it wrong means a genuine fork is raised at the wrong stage
 # or missed entirely, so it belongs in the admin decision-point editor (ADMIN_SPEC.md §3) rather
 # than hard-coded here long-term.
+#
+# DOCUMENTED FOR THE DOMAIN TEAM in docs/ASSUMPTIONS_AWAITING_VERIFICATION.md §1, which explains
+# each row's reasoning and lists three specific challenges — chief among them that there is no
+# procurement STAGE, so procurement forks (including the long-lead one that sets RFS) are not
+# raised until mep_power, which may be far too late. Keep that note in step with this table.
 # ---------------------------------------------------------------------------------------------
 DECISION_TAGS_BY_STAGE: Dict[str, FrozenSet[str]] = {
     'approvals': frozenset({'statutory', 'design', 'planning'}),
