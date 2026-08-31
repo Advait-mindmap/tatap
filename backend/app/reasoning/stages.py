@@ -17,10 +17,11 @@ STAGES: List[str] = [
     # what gets submitted for building sanction. It also sits ahead of procurement, because the
     # equipment schedule is a design output, and ahead of construction, which builds to IFC.
     #
-    # RESIDUAL NUANCE: some early approvals — land, environmental clearance, DC-park allotment —
-    # genuinely can and do precede design. The walk is a single ordered sequence, so it cannot
-    # express that overlap; see docs/ASSUMPTIONS_AWAITING_VERIFICATION.md §1.5 for the refinement
-    # the domain team may want.
+    # DECIDED: some early approvals — land, environmental clearance, DC-park allotment — do
+    # precede design in reality. That overlap is expressed as LOGIC LINKS IN THE ENGINE, not by
+    # splitting the approvals stage. Walk order governs the sequence stages are reasoned about;
+    # calendar overlap is a dependency-graph concern. Do not split `approvals`.
+    # See docs/ASSUMPTIONS_AWAITING_VERIFICATION.md §0.1.
     'design',
     'approvals',
     # Procurement sits here per DOMAIN_KNOWLEDGE.md §2, which orders the departments

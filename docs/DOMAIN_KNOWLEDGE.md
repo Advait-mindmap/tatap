@@ -51,10 +51,10 @@ quality gates, and the P6 representation.
 > Both stages' activities span the programme; their position here reflects when they are planned
 > and reasoned about, not when the work finishes. Design leads, matching §2's ordering of
 > Design/Engineering (2) ahead of Statutory/Liaison (3): the basis of design normally must precede
-> the consent applications, since drawings are what gets submitted for sanction. Note that some
-> early approvals — land, environmental clearance, DC-park allotment — genuinely can precede
-> design; a single ordered walk cannot express that overlap. See
-> `docs/ASSUMPTIONS_AWAITING_VERIFICATION.md` §1.5.
+> the consent applications, since drawings are what gets submitted for sanction. Early approvals
+> that do precede design — land, environmental clearance, DC-park allotment — are expressed as
+> logic links in the engine rather than by splitting this stage. Decided; see
+> `docs/ASSUMPTIONS_AWAITING_VERIFICATION.md` §0.1.
 >
 > Neither stage has fragnets yet (`frag.design.*`, `frag.procurement.*` are future library data).
 > Design completion — IFC drawings issued — should eventually **gate procurement**: you cannot
