@@ -1,0 +1,156 @@
+{
+  "library": "city_pathways",
+  "library_version": "v1",
+  "city": "Navi Mumbai",
+  "state": "Maharashtra",
+  "description": "Statutory approval pathway gating a data centre build. Each entry becomes a gating milestone with a finish-to-start constraint (DOMAIN_KNOWLEDGE.md section 5).",
+  "provenance_summary": "MIXED, and the split matters. The AUTHORITY NAMES and the existence of each approval are transcribed from DOMAIN_KNOWLEDGE.md section 5, which names CIDCO/MIDC, SEIAA, State PCB, State Fire Services, CEIG, PESO, CGWA, AAI and DoT. Every DURATION and every SEQUENCE POSITION is INVENTED BY THE MODEL. DOMAIN_KNOWLEDGE.md section 5 states plainly that the exact set varies by city, parcel and project and is confirmed with the client's compliance team - so this file is a template of the right shape, not a statement of what this project actually needs. It is NOT legal advice. The compliance register must be marked approved in admin (ADMIN_SPEC.md section 4) before it can drive a live plan.",
+  "entries": [
+    {
+      "id": "path.nm.environmental_clearance",
+      "approval": "Environmental Clearance (EC)",
+      "authority": "SEIAA Maharashtra (EIA Notification 2006)",
+      "gates_stage": "approvals",
+      "typical_weeks": 32,
+      "applies_when": "Large campus above the notified built-up area threshold",
+      "blocks": ["enabling", "substructure"],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Authority name and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION AND SEQUENCE INVENTED. Applicability threshold not verified.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "path.nm.cte",
+      "approval": "Consent to Establish (CTE)",
+      "authority": "Maharashtra Pollution Control Board (MPCB)",
+      "gates_stage": "approvals",
+      "typical_weeks": 12,
+      "applies_when": "Always",
+      "blocks": ["enabling"],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Authority name and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION AND SEQUENCE INVENTED.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "path.nm.building_sanction",
+      "approval": "Building plan sanction",
+      "authority": "CIDCO / MIDC (as applicable to the parcel)",
+      "gates_stage": "approvals",
+      "typical_weeks": 16,
+      "applies_when": "Always",
+      "blocks": ["substructure"],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Authority name from docs/DOMAIN_KNOWLEDGE.md#5. DURATION AND SEQUENCE INVENTED. Which of CIDCO or MIDC applies depends on the parcel and is NOT determined here.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "path.nm.commencement_certificate",
+      "approval": "Commencement Certificate",
+      "authority": "CIDCO / MIDC",
+      "gates_stage": "enabling",
+      "typical_weeks": 4,
+      "applies_when": "Always",
+      "blocks": ["substructure"],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Approval type from docs/DOMAIN_KNOWLEDGE.md#3 gates column. DURATION AND SEQUENCE INVENTED.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "path.nm.peso_hsd",
+      "approval": "PESO licence for HSD (diesel) storage",
+      "authority": "Petroleum and Explosives Safety Organisation (PESO)",
+      "gates_stage": "mep_power",
+      "typical_weeks": 20,
+      "applies_when": "Bulk diesel storage for generators",
+      "blocks": ["commissioning"],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Authority name from docs/DOMAIN_KNOWLEDGE.md#5. DURATION AND SEQUENCE INVENTED.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "path.nm.ceig_energisation",
+      "approval": "HT installation approval and permission to energise",
+      "authority": "Chief Electrical Inspector to Government (CEIG), Maharashtra",
+      "gates_stage": "commissioning",
+      "typical_weeks": 10,
+      "applies_when": "Always for HT installations",
+      "blocks": ["energisation", "commissioning_l4", "commissioning_l5"],
+      "hard_constraint": "Energisation cannot precede CEIG approval (DOMAIN_KNOWLEDGE.md section 4).",
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Authority name and the hard constraint are from docs/DOMAIN_KNOWLEDGE.md#4 and #5, and were independently corroborated by the live Base44 gateway naming CEIG for Maharashtra. DURATION INVENTED.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "path.nm.fire_noc_final",
+      "approval": "Final Fire NOC",
+      "authority": "Maharashtra Fire Services (NBC 2016 Part 4)",
+      "gates_stage": "handover",
+      "typical_weeks": 8,
+      "applies_when": "Always",
+      "blocks": ["occupancy"],
+      "hard_constraint": "Occupancy cannot precede the final fire NOC (DOMAIN_KNOWLEDGE.md section 4).",
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Authority name and the hard constraint from docs/DOMAIN_KNOWLEDGE.md#4 and #5. DURATION INVENTED.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "path.nm.occupancy_certificate",
+      "approval": "Occupancy Certificate",
+      "authority": "CIDCO / MIDC",
+      "gates_stage": "handover",
+      "typical_weeks": 6,
+      "applies_when": "Always",
+      "blocks": ["handover"],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Approval type from docs/DOMAIN_KNOWLEDGE.md#3 gates column. DURATION AND SEQUENCE INVENTED.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    }
+  ]
+}

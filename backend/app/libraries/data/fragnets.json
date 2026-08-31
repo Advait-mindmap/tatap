@@ -1,0 +1,182 @@
+{
+  "library": "fragnets",
+  "library_version": "v1",
+  "description": "Work-package fragnet templates: the activities, logic (FS/SS/FF with lag), durations, materials and quality hold points the deterministic engine instances. This is the structure the admin fragnet editor exposes for editing (ADMIN_SPEC.md section 2). The LLM never emits these - it selects and reasons over them, and the engine instances them (CLAUDE.md rule 2).",
+  "provenance_summary": "MIXED, and the split matters. The STAGE / OWNING DEPARTMENT / KEY MATERIALS / KEY GATES structure is transcribed from the DOMAIN_KNOWLEDGE.md section 3 table. The ACTIVITY BREAKDOWNS, all DURATIONS, all LOGIC LINKS and all LAGS are INVENTED BY THE MODEL. A fragnet whose durations and logic are wrong produces a schedule that is internally consistent and completely wrong, which is harder to catch than an obvious error. This is a starter set that establishes the shape; full discipline and commissioning depth is Task 19, and the real depth should come from the client's historical schedules.",
+  "entries": [
+    {
+      "id": "frag.substructure.raft",
+      "name": "Substructure - raft foundation",
+      "stage": "substructure",
+      "dept": "civil",
+      "materials": ["cement", "aggregates", "rebar", "formwork"],
+      "gates": ["IS 456", "geotech clearance", "cube test"],
+      "activities": [
+        {"id": "a10", "name": "Excavation to formation level", "duration_days": 12, "calendar": "6day"},
+        {"id": "a20", "name": "PCC and blinding", "duration_days": 5, "calendar": "6day"},
+        {"id": "a30", "name": "Raft reinforcement fixing", "duration_days": 18, "calendar": "6day"},
+        {"id": "a40", "name": "Formwork and shuttering", "duration_days": 10, "calendar": "6day"},
+        {"id": "a50", "name": "Raft concrete pour", "duration_days": 4, "calendar": "6day"},
+        {"id": "a60", "name": "Curing and cube testing", "duration_days": 28, "calendar": "7day"}
+      ],
+      "logic": [
+        {"from": "a10", "to": "a20", "type": "FS", "lag": 0},
+        {"from": "a20", "to": "a30", "type": "FS", "lag": 0},
+        {"from": "a30", "to": "a40", "type": "SS", "lag": 5},
+        {"from": "a40", "to": "a50", "type": "FS", "lag": 0},
+        {"from": "a50", "to": "a60", "type": "FS", "lag": 0}
+      ],
+      "hold_points": [{"after": "a30", "name": "Reinforcement inspection", "role": "qaqc"}, {"after": "a60", "name": "Cube test results acceptance", "role": "qaqc"}],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Stage/dept/materials/gates from docs/DOMAIN_KNOWLEDGE.md#3. ACTIVITY LIST, DURATIONS, LOGIC AND LAGS ALL INVENTED. The 28-day cure is a conventional figure, not a project-specific one.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "frag.superstructure.steel",
+      "name": "Superstructure - structural steel frame",
+      "stage": "superstructure",
+      "dept": "civil",
+      "materials": ["structural steel", "RMC", "rebar"],
+      "gates": ["IS 800", "IS 456", "weld inspection"],
+      "activities": [
+        {"id": "b10", "name": "Column base plate setting", "duration_days": 8, "calendar": "6day"},
+        {"id": "b20", "name": "Primary steel erection", "duration_days": 30, "calendar": "6day"},
+        {"id": "b30", "name": "Secondary steel and bracing", "duration_days": 20, "calendar": "6day"},
+        {"id": "b40", "name": "Metal decking and shear studs", "duration_days": 15, "calendar": "6day"},
+        {"id": "b50", "name": "Composite slab pour", "duration_days": 12, "calendar": "6day"},
+        {"id": "b60", "name": "Fireproofing to steel", "duration_days": 18, "calendar": "6day"}
+      ],
+      "logic": [
+        {"from": "b10", "to": "b20", "type": "FS", "lag": 0},
+        {"from": "b20", "to": "b30", "type": "SS", "lag": 10},
+        {"from": "b30", "to": "b40", "type": "SS", "lag": 5},
+        {"from": "b40", "to": "b50", "type": "FS", "lag": 0},
+        {"from": "b50", "to": "b60", "type": "FS", "lag": 7}
+      ],
+      "hold_points": [{"after": "b20", "name": "Weld and bolt torque inspection", "role": "qaqc"}],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Stage/dept/materials/gates from docs/DOMAIN_KNOWLEDGE.md#3. ACTIVITY LIST, DURATIONS, LOGIC AND LAGS ALL INVENTED.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "frag.mep.power_train",
+      "name": "MEP - power train (transformer to UPS)",
+      "stage": "mep_power",
+      "dept": "mep",
+      "materials": ["transformers", "switchgear", "UPS", "busway"],
+      "gates": ["CEA regs", "CEIG energisation"],
+      "activities": [
+        {"id": "c10", "name": "Transformer plinth and pad preparation", "duration_days": 10, "calendar": "6day"},
+        {"id": "c20", "name": "Transformer placement and alignment", "duration_days": 6, "calendar": "6day"},
+        {"id": "c30", "name": "HV/MV switchgear installation", "duration_days": 20, "calendar": "6day"},
+        {"id": "c40", "name": "LV panel and UPS installation", "duration_days": 25, "calendar": "6day"},
+        {"id": "c50", "name": "Busway installation and megger testing", "duration_days": 18, "calendar": "6day"},
+        {"id": "c60", "name": "Cable termination and continuity test", "duration_days": 15, "calendar": "6day"}
+      ],
+      "logic": [
+        {"from": "c10", "to": "c20", "type": "FS", "lag": 0},
+        {"from": "c20", "to": "c30", "type": "SS", "lag": 5},
+        {"from": "c30", "to": "c40", "type": "SS", "lag": 10},
+        {"from": "c40", "to": "c50", "type": "SS", "lag": 8},
+        {"from": "c50", "to": "c60", "type": "FS", "lag": 0}
+      ],
+      "hold_points": [{"after": "c30", "name": "Pre-energisation inspection", "role": "qaqc"}],
+      "material_links": [
+        {"activity": "c20", "requires_delivery_of": "lead.transformer_hv"},
+        {"activity": "c30", "requires_delivery_of": "lead.hv_switchgear"},
+        {"activity": "c40", "requires_delivery_of": "lead.ups"},
+        {"activity": "c50", "requires_delivery_of": "lead.busway"}
+      ],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Stage/dept/materials/gates from docs/DOMAIN_KNOWLEDGE.md#3. ACTIVITY LIST, DURATIONS, LOGIC AND LAGS ALL INVENTED. Material links tie construction to delivery per docs/DOMAIN_KNOWLEDGE.md#4 but the tie points themselves are invented.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "frag.mep.cooling",
+      "name": "MEP - cooling plant",
+      "stage": "mep_cooling",
+      "dept": "mep",
+      "materials": ["chillers", "CRAH", "piping"],
+      "gates": ["pressure testing"],
+      "activities": [
+        {"id": "d10", "name": "Chiller plinth preparation", "duration_days": 8, "calendar": "6day"},
+        {"id": "d20", "name": "Chiller placement and alignment", "duration_days": 8, "calendar": "6day"},
+        {"id": "d30", "name": "Chilled water piping installation", "duration_days": 30, "calendar": "6day"},
+        {"id": "d40", "name": "Pressure testing and flushing", "duration_days": 12, "calendar": "6day"},
+        {"id": "d50", "name": "CRAH unit installation", "duration_days": 20, "calendar": "6day"}
+      ],
+      "logic": [
+        {"from": "d10", "to": "d20", "type": "FS", "lag": 0},
+        {"from": "d20", "to": "d30", "type": "SS", "lag": 5},
+        {"from": "d30", "to": "d40", "type": "FS", "lag": 0},
+        {"from": "d40", "to": "d50", "type": "SS", "lag": 5}
+      ],
+      "hold_points": [{"after": "d40", "name": "Pressure test witness", "role": "qaqc"}],
+      "material_links": [
+        {"activity": "d20", "requires_delivery_of": "lead.chiller"},
+        {"activity": "d50", "requires_delivery_of": "lead.crah"}
+      ],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Stage/dept/materials/gates from docs/DOMAIN_KNOWLEDGE.md#3. ACTIVITY LIST, DURATIONS, LOGIC AND LAGS ALL INVENTED.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "frag.commissioning.ladder",
+      "name": "Commissioning - L1 to L5 ladder",
+      "stage": "commissioning",
+      "dept": "commissioning",
+      "materials": ["consumables", "load banks"],
+      "gates": ["CTO", "CEIG", "final fire NOC"],
+      "activities": [
+        {"id": "e10", "name": "L1 factory acceptance testing", "duration_days": 20, "calendar": "5day"},
+        {"id": "e20", "name": "L2 site verification / delivery inspection", "duration_days": 15, "calendar": "6day"},
+        {"id": "e30", "name": "L3 pre-functional checks", "duration_days": 25, "calendar": "6day"},
+        {"id": "e40", "name": "L4 functional performance testing", "duration_days": 30, "calendar": "6day"},
+        {"id": "e50", "name": "L5 integrated systems test (IST)", "duration_days": 21, "calendar": "7day", "safety_flag": true, "hitl_tier": "tier_1"},
+        {"id": "e60", "name": "Black-building and failure-mode testing", "duration_days": 10, "calendar": "7day", "safety_flag": true, "hitl_tier": "tier_1"}
+      ],
+      "logic": [
+        {"from": "e10", "to": "e20", "type": "FS", "lag": 0},
+        {"from": "e20", "to": "e30", "type": "FS", "lag": 0},
+        {"from": "e30", "to": "e40", "type": "FS", "lag": 0},
+        {"from": "e40", "to": "e50", "type": "FS", "lag": 0},
+        {"from": "e50", "to": "e60", "type": "FS", "lag": 0}
+      ],
+      "hold_points": [{"after": "e50", "name": "IST results acceptance - RFS gate", "role": "reviewer"}],
+      "safety_refs": ["safety.ist_under_load", "safety.genset_fuel_commissioning"],
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "The L1-L5 ladder and 'RFS ties to a passed IST' are transcribed from docs/DOMAIN_KNOWLEDGE.md#4. ALL DURATIONS AND LOGIC INVENTED. Commissioning depth here is a placeholder - full ladder depth is Task 19.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#4",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "library": "safety_register",
+  "library_version": "v1",
+  "description": "Tier-1 safety-critical activities. Each requires a named human sign-off and BLOCKS P6 export until signed (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md section 7). Tier-1 rules are HSE-owned; changing them requires an HSE-role sign-off in admin (ADMIN_SPEC.md section 5).",
+  "provenance_summary": "The five Tier-1 activities and their stated reasons are transcribed from DOMAIN_KNOWLEDGE.md section 7. The permit_predecessors and hold_point wording are the model's elaboration and are NOT from that table - an HSE lead must review them before they gate a real plan.",
+  "entries": [
+    {
+      "id": "safety.hv_energisation",
+      "activity_pattern": "HV/MV energisation & live electrical testing",
+      "why": "Arc flash and electrocution risk; requires lock-out/tag-out discipline.",
+      "hitl_tier": "tier_1",
+      "blocks_export": true,
+      "requires_signoff_role": "hse",
+      "permit_predecessors": ["Permit to work - HV electrical", "LOTO isolation certificate"],
+      "hold_points": ["Pre-energisation safety briefing", "Electrical inspector clearance"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 1. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#7"
+      }
+    },
+    {
+      "id": "safety.ist_under_load",
+      "activity_pattern": "Integrated systems test under load / on generator",
+      "why": "Live power plus rotating plant; fire and burn risk.",
+      "hitl_tier": "tier_1",
+      "blocks_export": true,
+      "requires_signoff_role": "hse",
+      "permit_predecessors": ["Permit to work - load bank testing", "Fuel system readiness certificate"],
+      "hold_points": ["Load bank setup inspection", "Emergency stop verification"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 2. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#7"
+      }
+    },
+    {
+      "id": "safety.gas_suppression_discharge",
+      "activity_pattern": "Gas fire-suppression discharge test",
+      "why": "Asphyxiation risk in sealed rooms.",
+      "hitl_tier": "tier_1",
+      "blocks_export": true,
+      "requires_signoff_role": "hse",
+      "permit_predecessors": ["Permit to work - confined/sealed space", "Room evacuation confirmation"],
+      "hold_points": ["Occupancy sweep and lock-off", "Post-discharge ventilation clearance"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 3. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#7"
+      }
+    },
+    {
+      "id": "safety.genset_fuel_commissioning",
+      "activity_pattern": "Generator & fuel-system commissioning",
+      "why": "Fire and explosion risk.",
+      "hitl_tier": "tier_1",
+      "blocks_export": true,
+      "requires_signoff_role": "hse",
+      "permit_predecessors": ["Permit to work - hot work / fuel", "PESO storage compliance confirmation"],
+      "hold_points": ["Fuel line pressure test witness", "First-fire safety standby"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 4. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#7"
+      }
+    },
+    {
+      "id": "safety.live_hall_works",
+      "activity_pattern": "Work in or next to live data halls (brownfield)",
+      "why": "Concurrent operations beside energised IT load.",
+      "hitl_tier": "tier_1",
+      "blocks_export": true,
+      "requires_signoff_role": "hse",
+      "permit_predecessors": ["Permit to work - concurrent operations", "Client operations authorisation"],
+      "hold_points": ["Change-freeze window confirmation", "Barrier and containment inspection"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 5. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#7"
+      }
+    }
+  ]
+}

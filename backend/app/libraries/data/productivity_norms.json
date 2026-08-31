@@ -1,0 +1,56 @@
+{
+  "library": "productivity_norms",
+  "library_version": "v1",
+  "description": "Productivity norms used by the engine to derive activity durations from quantities. Managed in admin alongside the fragnet library (ADMIN_SPEC.md section 2).",
+  "provenance_summary": "!!! EVERY NORM IN THIS FILE IS INVENTED BY THE MODEL. !!! None is drawn from a rate analysis, a real project's actuals, or any published schedule of rates. Durations computed from these norms will look precise and be baseless. Replace with the client's own productivity data - DOMAIN_KNOWLEDGE.md section 1 is explicit that real execution records and actuals are what make the output expert.",
+  "entries": [
+    {
+      "id": "norm.rcc_raft",
+      "activity": "RCC raft foundation pour",
+      "unit": "cum",
+      "output_per_crew_day": 45,
+      "crew": "1 gang + pump",
+      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+    },
+    {
+      "id": "norm.structural_steel_erect",
+      "activity": "Structural steel erection",
+      "unit": "MT",
+      "output_per_crew_day": 6,
+      "crew": "1 erection gang + crane",
+      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+    },
+    {
+      "id": "norm.blockwork",
+      "activity": "Blockwork / partition walls",
+      "unit": "sqm",
+      "output_per_crew_day": 25,
+      "crew": "1 mason gang",
+      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+    },
+    {
+      "id": "norm.containment_install",
+      "activity": "Cable containment installation",
+      "unit": "rm",
+      "output_per_crew_day": 60,
+      "crew": "1 electrical gang",
+      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+    },
+    {
+      "id": "norm.structured_cabling",
+      "activity": "Structured cabling termination and test",
+      "unit": "port",
+      "output_per_crew_day": 40,
+      "crew": "1 cabling technician pair",
+      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+    },
+    {
+      "id": "norm.chilled_water_piping",
+      "activity": "Chilled water piping install and pressure test",
+      "unit": "rm",
+      "output_per_crew_day": 18,
+      "crew": "1 mechanical gang",
+      "provenance": {"origin": "model_generated", "verification_status": "unverified", "verified_by": null, "verified_on": null, "note": "INVENTED.", "source_ref": "", "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."}
+    }
+  ]
+}

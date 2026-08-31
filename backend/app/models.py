@@ -160,6 +160,14 @@ class TrailEntry(Base):
 
 
 class CorpusDoc(Base):
+    """A document in the retrieval corpus.
+
+    `kind` matters for grounding. DOMAIN_KNOWLEDGE.md §1 requires the simulation to prefer
+    REAL project precedent over generic norms and to cite which precedent it used, so a
+    document that is not a real execution must never be cited as though it were. See
+    `backend.app.rag.CorpusKind`.
+    """
+
     __tablename__ = 'corpus_docs'
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
@@ -170,6 +178,37 @@ class CorpusDoc(Base):
     embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536), nullable=True)
     embed_status: Mapped[str] = mapped_column(String(50), nullable=False)
     tags: Mapped[List[str]] = mapped_column(JSON, nullable=False)
+
+    # --- added in Task 4 (corpus ingestion + retrieval) ---
+    title: Mapped[str] = mapped_column(String(500), nullable=False, default='')
+    content: Mapped[str] = mapped_column(Text, nullable=False, default='')
+    # 'real_execution' | 'standard' | 'project_documentation' | 'synthetic_placeholder'
+    kind: Mapped[str] = mapped_column(String(50), nullable=False, default='real_execution')
+    # Human-verified in admin (ADMIN_SPEC.md §1). Never set true by an ingestion run.
+    verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    corpus_version: Mapped[str] = mapped_column(String(50), nullable=False, default='v1')
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+    chunks: Mapped[List['CorpusChunk']] = relationship(
+        back_populates='doc', cascade='all, delete-orphan'
+    )
+
+
+class CorpusChunk(Base):
+    """An embedded slice of a CorpusDoc. Retrieval happens over these, not whole documents."""
+
+    __tablename__ = 'corpus_chunks'
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    doc_id: Mapped[int] = mapped_column(ForeignKey('corpus_docs.id'), nullable=False, index=True)
+    chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    embedding: Mapped[Optional[List[float]]] = mapped_column(Vector(1536), nullable=True)
+    embed_status: Mapped[str] = mapped_column(String(50), nullable=False, default='pending')
+    embed_model: Mapped[str] = mapped_column(String(100), nullable=False, default='')
+    corpus_version: Mapped[str] = mapped_column(String(50), nullable=False, default='v1')
+
+    doc: Mapped['CorpusDoc'] = relationship(back_populates='chunks')
 
 
 class ComplianceRegister(Base):

@@ -1,0 +1,152 @@
+{
+  "library": "decision_points",
+  "library_version": "v1",
+  "description": "The forks where the flow of thought genuinely breaks and the simulator must stop and ask. Curated set, transcribed from DOMAIN_KNOWLEDGE.md section 6. Dynamic detection (missing input, conflicting precedent, confidence below CONF_THRESHOLD) is handled in the simulator, not here.",
+  "provenance_summary": "All eight entries are transcribed from this repo's own DOMAIN_KNOWLEDGE.md section 6 table. The question text, why_stuck wording and option lists are the model's phrasing of that table and have NOT been reviewed by a delivery planner.",
+  "entries": [
+    {
+      "id": "dp.delivery_mode",
+      "title": "Self-perform vs subcontract (per discipline)",
+      "question": "For each discipline, is the work self-performed or subcontracted?",
+      "why_stuck": "It changes the activity structure entirely: a self-performed discipline expands into a full fragnet of trade activities, a subcontracted one collapses to an interface package with award, mobilisation and milestone-driven logic. The simulation cannot expand the stage without knowing which.",
+      "options": ["Self-perform", "Subcontract", "Mixed - specify per discipline"],
+      "impact": "Full fragnet vs interface package",
+      "blocking": true,
+      "applies_to_stages": ["procurement", "civil", "mep", "fit_out"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Row 1 of the DOMAIN_KNOWLEDGE.md section 6 decision-point table.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#6"
+      }
+    },
+    {
+      "id": "dp.ofe",
+      "title": "Owner-furnished equipment (OFE) or contractor-supplied",
+      "question": "Which equipment packages are owner-furnished, and which are contractor-supplied?",
+      "why_stuck": "It changes who controls the delivery dates. Owner-furnished gear enters the plan as a delivery milestone constraint outside the contractor's control; contractor-supplied gear expands into a procurement fragnet the contractor owns. Getting this wrong misplaces the critical path.",
+      "options": ["Owner-furnished (OFE)", "Contractor-supplied", "Split - specify per package"],
+      "impact": "Delivery milestone as constraint vs procurement fragnet",
+      "blocking": true,
+      "applies_to_stages": ["procurement", "mep"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Row 2 of the DOMAIN_KNOWLEDGE.md section 6 decision-point table.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#6"
+      }
+    },
+    {
+      "id": "dp.grid_position",
+      "title": "Grid / power position",
+      "question": "What is the grid position: is a dedicated substation being built, or is the site feeder-ready?",
+      "why_stuck": "Building a substation adds a long statutory and construction path ahead of energisation; a feeder-ready site does not. This shifts the critical path and the entire long-lead strategy, so the electrical sequence cannot be laid out until it is known.",
+      "options": ["Build dedicated substation", "Feeder-ready / existing capacity", "Utility-built substation on client land"],
+      "impact": "Energisation sequence and long-lead placement",
+      "blocking": true,
+      "applies_to_stages": ["statutory", "procurement", "mep"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Row 3 of the DOMAIN_KNOWLEDGE.md section 6 decision-point table.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#6"
+      }
+    },
+    {
+      "id": "dp.tier_topology",
+      "title": "Tier / redundancy topology ambiguity",
+      "question": "What is the confirmed redundancy topology (N+1, 2N, 2N+1) for the power and cooling trains?",
+      "why_stuck": "Redundancy drives equipment counts and the sequencing logic. N+1 and 2N produce materially different plant counts and different concurrent-maintainability constraints, so the equipment schedule and the commissioning structure cannot be derived until it is fixed.",
+      "options": ["N+1", "2N", "2N+1", "Mixed - specify per system"],
+      "impact": "Equipment counts and concurrent-maintainability logic",
+      "blocking": true,
+      "applies_to_stages": ["design", "procurement", "mep", "commissioning"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Row 4 of the DOMAIN_KNOWLEDGE.md section 6 decision-point table.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#6"
+      }
+    },
+    {
+      "id": "dp.greenfield_brownfield",
+      "title": "Greenfield vs brownfield (live facility)",
+      "question": "Is this a greenfield build, or construction in or beside a live, energised facility?",
+      "why_stuck": "Working next to live data halls imposes concurrent-operations constraints, additional permits and safety holds that change the sequence, not just the risk profile. The safety and permit logic cannot be attached without knowing.",
+      "options": ["Greenfield", "Brownfield - adjacent to live halls", "Brownfield - inside a live hall"],
+      "impact": "Safety holds, permits, concurrent-ops sequencing",
+      "blocking": true,
+      "applies_to_stages": ["enabling", "civil", "mep", "commissioning"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Row 5 of the DOMAIN_KNOWLEDGE.md section 6 decision-point table.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#6"
+      }
+    },
+    {
+      "id": "dp.phasing",
+      "title": "Phasing (single handover vs hall-by-hall)",
+      "question": "Is the facility handed over in one go, or phased hall by hall?",
+      "why_stuck": "Phasing changes the handover and commissioning structure: phased delivery produces repeated, partial commissioning ladders and multiple RFS milestones rather than one. The milestone structure of the whole plan depends on it.",
+      "options": ["Single handover", "Phased hall-by-hall", "Phased by block / building"],
+      "impact": "RFS milestones and phased commissioning structure",
+      "blocking": true,
+      "applies_to_stages": ["planning", "commissioning", "handover"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Row 6 of the DOMAIN_KNOWLEDGE.md section 6 decision-point table.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#6"
+      }
+    },
+    {
+      "id": "dp.long_lead_unconfirmed",
+      "title": "Long-lead assumption unconfirmed",
+      "question": "Is the assumed lead time for this long-lead package confirmed by a vendor quotation or purchase order?",
+      "why_stuck": "Lead time on the long-lead gear usually drives RFS. Guessing it is dangerous because the whole programme is built on it, and an unconfirmed guess looks identical to a confirmed date once it is in the plan.",
+      "options": ["Confirmed by PO", "Confirmed by vendor quotation", "Not confirmed - use library estimate and flag", "Not confirmed - stop and obtain"],
+      "impact": "Procurement placement and the critical path",
+      "blocking": true,
+      "applies_to_stages": ["procurement"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Row 7 of the DOMAIN_KNOWLEDGE.md section 6 decision-point table.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#6"
+      }
+    },
+    {
+      "id": "dp.city_pathway_unconfirmed",
+      "title": "City statutory pathway unconfirmed",
+      "question": "Has the compliance team confirmed the statutory pathway for this city and parcel?",
+      "why_stuck": "The wrong gate produces the wrong plan. The statutory set varies by city, parcel and project, and gating milestones sit on the critical path into energisation and occupancy, so an unconfirmed pathway invalidates the dates downstream of it.",
+      "options": ["Confirmed by compliance team", "Not confirmed - stop and obtain"],
+      "impact": "Compliance milestones and their finish-to-start constraints",
+      "blocking": true,
+      "applies_to_stages": ["statutory"],
+      "provenance": {
+        "origin": "spec_transcribed",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "Row 8 of the DOMAIN_KNOWLEDGE.md section 6 decision-point table.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#6"
+      }
+    }
+  ]
+}

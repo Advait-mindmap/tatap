@@ -1,0 +1,145 @@
+{
+  "library": "equipment_lead_times",
+  "library_version": "v1",
+  "description": "Lead times for long-lead data centre equipment in the Indian market. Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md section 4), so these numbers land directly on the critical path.",
+  "provenance_summary": "!!! EVERY NUMBER IN THIS FILE IS INVENTED BY THE MODEL. !!! No vendor quotation, no purchase order, no historical project informed any of it. They are plausible-looking placeholders that exist so the engine has a shape to instance, and they must be replaced with real procurement data before any plan built on them is shown to a client. Because lead time drives RFS, a wrong number here silently produces a wrong completion date that looks fully researched. Decision point dp.long_lead_unconfirmed exists precisely to stop the simulator from using these unchallenged.",
+  "units": "calendar weeks, ex-works to site delivery",
+  "entries": [
+    {
+      "id": "lead.transformer_hv",
+      "equipment": "HV/MV power transformer",
+      "typical_weeks": 48,
+      "range_weeks": [40, 64],
+      "notes": "Commonly cited as the single most frequent RFS driver. CRGO steel and copper supply, type testing and utility spec approval all extend it.",
+      "drives_rfs": true,
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED. No vendor or project source.",
+        "source_ref": "",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "lead.hv_switchgear",
+      "equipment": "HV/MV switchgear (GIS/AIS panels)",
+      "typical_weeks": 44,
+      "range_weeks": [36, 60],
+      "notes": "Often paired with the transformer on the critical path into energisation.",
+      "drives_rfs": true,
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED. No vendor or project source.",
+        "source_ref": "",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "lead.generator",
+      "equipment": "Diesel generator set (2-3 MW class)",
+      "typical_weeks": 36,
+      "range_weeks": [28, 52],
+      "notes": "Frequently owner-furnished, which moves control of the date to the client - see decision point dp.ofe.",
+      "drives_rfs": true,
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED. No vendor or project source.",
+        "source_ref": "",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "lead.ups",
+      "equipment": "UPS modules and static switches",
+      "typical_weeks": 30,
+      "range_weeks": [24, 44],
+      "notes": "Count depends on the redundancy topology - see decision point dp.tier_topology.",
+      "drives_rfs": true,
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED. No vendor or project source.",
+        "source_ref": "",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "lead.chiller",
+      "equipment": "Chillers (air/water cooled)",
+      "typical_weeks": 32,
+      "range_weeks": [24, 48],
+      "notes": "Cooling plant sizing follows IT load and topology.",
+      "drives_rfs": true,
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED. No vendor or project source.",
+        "source_ref": "",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "lead.busway",
+      "equipment": "Busway / busduct distribution",
+      "typical_weeks": 26,
+      "range_weeks": [18, 36],
+      "notes": "Ties to hall fit-out sequence.",
+      "drives_rfs": false,
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED. No vendor or project source.",
+        "source_ref": "",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "lead.crah",
+      "equipment": "CRAH / in-row cooling units",
+      "typical_weeks": 22,
+      "range_weeks": [16, 32],
+      "notes": "Unit count scales with hall count and topology.",
+      "drives_rfs": false,
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED. No vendor or project source.",
+        "source_ref": "",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    },
+    {
+      "id": "lead.gas_suppression",
+      "equipment": "Gas fire-suppression system",
+      "typical_weeks": 20,
+      "range_weeks": [14, 30],
+      "notes": "Discharge testing is a Tier-1 safety activity - see safety.gas_suppression_discharge.",
+      "drives_rfs": false,
+      "provenance": {
+        "origin": "model_generated",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED. No vendor or project source.",
+        "source_ref": "",
+        "warning": "INVENTED BY THE MODEL. Not researched, not from any real project. Must be verified by the domain team in admin before use in a live plan."
+      }
+    }
+  ]
+}
