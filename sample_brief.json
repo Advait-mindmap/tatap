@@ -1,0 +1,44 @@
+{
+  "_comment": "Structured brief = the confirmed output of the intake/extraction stage (from sample_raw_brief.md or uploaded docs). Enums drive deterministic routing; free-text fields carry site-specific nuance the enums cannot. The human confirms this at the question gate before generation.",
+
+  "intake": {
+    "raw_brief_ref": "sample_raw_brief.md",
+    "attachments": ["rfp.pdf", "basis_of_design.pdf"],
+    "extraction_confidence_overall": 0.9,
+    "unresolved_fields": [],
+    "flagged_conflicts": []
+  },
+
+  "project_name": "POC DC — Navi Mumbai",
+  "city": "Navi Mumbai",
+  "site_context": "greenfield",
+  "in_dc_park_or_sez": true,
+  "tier": "III",
+  "redundancy_topology": "N+1",
+  "it_load_mw": 20,
+  "scope": "turnkey",
+  "delivery_mode_by_discipline": {
+    "civil": "self-perform",
+    "structure": "self-perform",
+    "electrical": "turnkey",
+    "mechanical": "turnkey",
+    "gensets": "owner-furnished",
+    "fire": "subcontract",
+    "bms": "subcontract"
+  },
+  "power_position": "existing 33kV feeder on east boundary; HT substation on our scope",
+  "target_rfs_date": "2027-03-31",
+  "phasing": "phased-by-hall",
+
+  "special_conditions": "Notified IT park plot. Gensets owner-furnished under client's Cummins framework (install + integrate only). Approach road floods in monsoon: heavy deliveries and genset lifts must land before June. Client wants first hall live earliest. Grid energisation flagged by client as the critical concern.",
+
+  "assumptions": "MVP models civil/structure and electrical power train in detail; other disciplines represented as interface packages per delivery mode.",
+
+  "field_provenance": {
+    "_comment": "Each extracted field cites where in the raw input it came from, for the reasoning trail.",
+    "it_load_mw": "raw_brief: 'Target IT load is 20 MW'",
+    "tier": "raw_brief: 'Uptime Tier III, N+1'",
+    "gensets": "raw_brief: 'Gensets owner-furnished under client Cummins framework'",
+    "power_position": "raw_brief: 'existing 33 kV feeder east boundary, HT substation on our scope'"
+  }
+}
