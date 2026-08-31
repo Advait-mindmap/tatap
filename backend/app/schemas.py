@@ -15,6 +15,98 @@ class Brief(BaseModel):
     raw_text: Optional[str] = None
 
 
+# --------------------------------------------------------------------------------------------
+# Intake (Task 5). PRODUCT_SPEC.md §3.1: extract a structured brief with a citation per field
+# and list what it still needs. SIMULATION_AND_REASONING.md §6: the extraction prompt's only
+# job is to read the raw brief into the Brief schema with a provenance citation per field and
+# questions[] for anything missing.
+# --------------------------------------------------------------------------------------------
+
+
+class RawBrief(BaseModel):
+    """Free text pasted at intake, plus any uploaded document text."""
+
+    text: str
+    source_ref: str = 'raw_brief'
+    attachments: List[str] = Field(default_factory=list)
+
+
+class FieldProvenance(BaseModel):
+    """Where one extracted field came from.
+
+    `quote` must appear verbatim in the source. `grounded` records whether we checked that
+    ourselves rather than taking the model's word for it — an ungrounded quote means the model
+    fabricated the citation, and the field is discarded rather than trusted.
+    """
+
+    field: str
+    quote: str
+    confidence: float
+    source_ref: str = 'raw_brief'
+    grounded: bool = False
+
+
+class IntakeQuestion(BaseModel):
+    """Something intake could not extract confidently, so it asks instead of guessing."""
+
+    field: str
+    question: str
+    why_needed: str
+    blocking: bool = True
+
+
+class ExtractedBrief(BaseModel):
+    """The structured brief. Every field is optional: absent means 'ask', never 'assume'."""
+
+    project_name: Optional[str] = None
+    client: Optional[str] = None
+    city: Optional[str] = None
+    site_context: Optional[str] = None
+    in_dc_park_or_sez: Optional[bool] = None
+    tier: Optional[str] = None
+    redundancy_topology: Optional[str] = None
+    it_load_mw: Optional[float] = None
+    scope: Optional[str] = None
+    delivery_mode_by_discipline: Dict[str, str] = Field(default_factory=dict)
+    power_position: Optional[str] = None
+    target_rfs_date: Optional[str] = None
+    phasing: Optional[str] = None
+    special_conditions: Optional[str] = None
+
+
+class IntakeResult(BaseModel):
+    """What the intake stage returns: the brief, its citations, and what it still needs."""
+
+    brief: ExtractedBrief
+    field_provenance: Dict[str, FieldProvenance] = Field(default_factory=dict)
+    questions: List[IntakeQuestion] = Field(default_factory=list)
+    unresolved_fields: List[str] = Field(default_factory=list)
+    flagged_conflicts: List[str] = Field(default_factory=list)
+    extraction_confidence_overall: float = 0.0
+    warnings: List[str] = Field(default_factory=list)
+    raw_brief_ref: str = 'raw_brief'
+    attachments: List[str] = Field(default_factory=list)
+
+    @property
+    def is_complete(self) -> bool:
+        """True when NOTHING is outstanding — every field was extracted and nothing was asked.
+
+        Distinct from `can_proceed`: a brief can be complete enough to simulate while still
+        missing details a human should fill in (a client name does not change the build, a
+        tier does). Collapsing the two would let outstanding questions disappear from view.
+        """
+        return not self.questions
+
+    @property
+    def can_proceed(self) -> bool:
+        """True when nothing BLOCKING is outstanding, i.e. the simulation can start."""
+        return not any(q.blocking for q in self.questions)
+
+    @property
+    def blocking_questions(self) -> List[IntakeQuestion]:
+        return [q for q in self.questions if q.blocking]
+
+
 class Decision(BaseModel):
     id: str
     question: str
