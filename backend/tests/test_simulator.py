@@ -1,0 +1,493 @@
+"""The simulator: graph walk, event stream, stop-and-ask (Task 8).
+
+The behaviour these tests exist to hold:
+
+1. The walk runs stages in execution order and emits the event vocabulary the spec names.
+2. **Stop-and-ask actually stops.** A blocking fork halts the walk *before* anything downstream
+   is assembled, nothing is invented to get past it, and the answer resumes from where it
+   stopped rather than restarting.
+3. A halted run survives its socket, so an answer arriving later still resumes it.
+
+No live gateway: `reason_stage` is substituted so the walk can be driven deterministically.
+"""
+
+from __future__ import annotations
+
+from typing import Dict, List
+
+import pytest
+from fastapi.testclient import TestClient
+
+from backend.app.main import app
+from backend.app.reasoning.stages import STAGES
+from backend.app.schemas import (
+    GateSelection,
+    PackageSelection,
+    RaisedDecisionPoint,
+    StageReasoning,
+)
+from backend.app.simulator import (
+    ACTIVITY_ADDED,
+    DECISION_NEEDED,
+    DECISION_RESOLVED,
+    GATE_INSERTED,
+    PACKAGE_EXPANDED,
+    SIMULATION_COMPLETED,
+    SIMULATION_ERROR,
+    SIMULATION_HALTED,
+    SIMULATION_STARTED,
+    SPEC_EVENT_TYPES,
+    STAGE_COMPLETED,
+    STAGE_STARTED,
+    DecisionAnswer,
+    Simulator,
+    registry,
+    run_to_completion,
+)
+
+BRIEF = {
+    'project_name': 'POC DC', 'city': 'Navi Mumbai', 'tier': 'III', 'it_load_mw': 20.0,
+    'redundancy_topology': 'N+1',
+    'delivery_mode_by_discipline': {'civil': 'self-perform', 'electrical': 'turnkey'},
+}
+
+WALK = ['design', 'procurement', 'substructure', 'mep_power', 'commissioning']
+
+STAGE_FRAGNETS = {
+    'substructure': 'frag.substructure.raft',
+    'mep_power': 'frag.mep.power_train',
+    'commissioning': 'frag.commissioning.ladder',
+}
+
+
+def pkg(fragnet_id):
+    return PackageSelection(
+        fragnet_id=fragnet_id, why='applies', confidence=0.9, effective_confidence=0.5,
+        sources=['corpus:1#0'], unverified_dependencies=[fragnet_id],
+    )
+
+
+def fork(decision_id, blocking=True):
+    return RaisedDecisionPoint(
+        decision_point_id=decision_id,
+        question=f'Answer {decision_id}?',
+        why_stuck='The flow of thought cannot continue without this.',
+        options=['A', 'B'], impact='Changes the plan', blocking=blocking, detection='curated',
+    )
+
+
+class FakeReasoner:
+    """Stands in for reason_stage. Records what decisions it was told about."""
+
+    def __init__(self, forks_by_stage: Dict[str, List[RaisedDecisionPoint]] | None = None,
+                 gates_by_stage: Dict[str, List[str]] | None = None, raises_at: str = ''):
+        self.forks_by_stage = forks_by_stage or {}
+        self.gates_by_stage = gates_by_stage or {}
+        self.raises_at = raises_at
+        self.calls: List[tuple] = []
+
+    def __call__(self, stage, brief, *, session=None, decisions=None, adapter=None, **kw):
+        self.calls.append((stage, tuple(d['id'] for d in (decisions or []))))
+        if stage == self.raises_at:
+            raise RuntimeError('gateway exploded')
+        fragnet = STAGE_FRAGNETS.get(stage)
+        return StageReasoning(
+            stage=stage,
+            packages=[pkg(fragnet)] if fragnet else [],
+            gates=[
+                GateSelection(gate_id=g, why='gate', confidence=0.8, effective_confidence=0.5)
+                for g in self.gates_by_stage.get(stage, [])
+            ],
+            decision_points=self.forks_by_stage.get(stage, []),
+            library_version='v1', corpus_version='v1', prompt_version='v1',
+        )
+
+
+@pytest.fixture(autouse=True)
+def clean_registry():
+    registry.clear()
+    yield
+    registry.clear()
+
+
+def make(monkeypatch, reasoner, **kwargs):
+    monkeypatch.setattr('backend.app.simulator.runner.reason_stage', reasoner)
+    return Simulator(BRIEF, stages=WALK, **kwargs)
+
+
+def types_of(events):
+    return [e.type for e in events]
+
+
+# ------------------------------------------------------------------------- the walk
+
+
+def test_walk_runs_stages_in_execution_order(monkeypatch):
+    reasoner = FakeReasoner()
+    events = list(make(monkeypatch, reasoner).run())
+
+    started = [e.stage for e in events if e.type == STAGE_STARTED]
+    assert started == WALK
+    assert [c[0] for c in reasoner.calls] == WALK
+
+
+def test_walk_follows_the_canonical_stage_order_by_default(monkeypatch):
+    monkeypatch.setattr('backend.app.simulator.runner.reason_stage', FakeReasoner())
+    assert Simulator(BRIEF).stages == list(STAGES)
+    assert Simulator(BRIEF).stages[0] == 'design'
+
+
+def test_emits_every_event_type_the_spec_names(monkeypatch):
+    """SIMULATION_AND_REASONING.md §2 names eight; the 2D/3D views depend on each."""
+    reasoner = FakeReasoner(
+        forks_by_stage={'procurement': [fork('dp.long_lead_unconfirmed')]},
+        gates_by_stage={'mep_power': ['path.nm.peso_hsd']},
+    )
+    simulator = make(monkeypatch, reasoner)
+    events = run_to_completion(simulator, {'dp.long_lead_unconfirmed': 'Confirmed by PO'})
+
+    emitted = set(types_of(events))
+    assert set(SPEC_EVENT_TYPES) <= emitted, f'missing: {set(SPEC_EVENT_TYPES) - emitted}'
+
+
+def test_events_are_sequentially_numbered(monkeypatch):
+    events = list(make(monkeypatch, FakeReasoner()).run())
+    assert [e.seq for e in events] == list(range(1, len(events) + 1))
+
+
+def test_activity_added_carries_what_the_views_need(monkeypatch):
+    """The 2D flow draws from these payloads, so the governance must be on the wire."""
+    events = list(make(monkeypatch, FakeReasoner()).run())
+    added = [e for e in events if e.type == ACTIVITY_ADDED]
+    assert added
+
+    payload = added[0].payload
+    for key in ('id', 'name', 'wbs_id', 'duration_days', 'dept_code', 'predecessors',
+                'hitl_tier', 'safety_flag', 'confidence', 'unverified_dependencies',
+                'trail_ref'):
+        assert key in payload, f'activity_added payload missing {key}'
+
+
+def test_activities_are_emitted_once_each(monkeypatch):
+    """Re-assembly per stage must not re-emit activities already drawn."""
+    events = list(make(monkeypatch, FakeReasoner()).run())
+    ids = [e.payload['id'] for e in events if e.type == ACTIVITY_ADDED]
+    assert len(ids) == len(set(ids))
+
+
+def test_package_expanded_precedes_its_activities(monkeypatch):
+    events = list(make(monkeypatch, FakeReasoner()).run())
+    first_package = next(i for i, e in enumerate(events) if e.type == PACKAGE_EXPANDED)
+    first_activity = next(i for i, e in enumerate(events) if e.type == ACTIVITY_ADDED)
+    assert first_package < first_activity
+
+
+def test_completion_reports_governance_and_export_block(monkeypatch):
+    events = list(make(monkeypatch, FakeReasoner()).run())
+    done = next(e for e in events if e.type == SIMULATION_COMPLETED)
+
+    assert done.payload['stages_completed'] == WALK
+    assert done.payload['activity_count'] > 0
+    # The commissioning ladder carries Tier-1 IST, so export must be blocked.
+    assert done.payload['export_blocked'] is True
+    assert done.payload['governance']['tier_1_count'] > 0
+
+
+# ------------------------------------------------------------------- stop-and-ask
+
+
+def test_a_blocking_fork_halts_the_walk(monkeypatch):
+    reasoner = FakeReasoner(forks_by_stage={'procurement': [fork('dp.long_lead_unconfirmed')]})
+    simulator = make(monkeypatch, reasoner)
+    events = list(simulator.run())
+
+    assert types_of(events)[-1] == SIMULATION_HALTED
+    assert simulator.is_halted is True
+    assert simulator.state.halted_at == 'procurement'
+    # Stages after the fork were never reasoned about.
+    assert [c[0] for c in reasoner.calls] == ['design', 'procurement']
+
+
+def test_nothing_downstream_is_assembled_past_a_fork(monkeypatch):
+    """CLAUDE.md rule 3: it never guesses past a genuine fork."""
+    reasoner = FakeReasoner(forks_by_stage={'procurement': [fork('dp.ofe')]})
+    simulator = make(monkeypatch, reasoner)
+    events = list(simulator.run())
+
+    stages_with_activities = {e.stage for e in events if e.type == ACTIVITY_ADDED}
+    assert 'substructure' not in stages_with_activities
+    assert 'mep_power' not in stages_with_activities
+    assert simulator.state.completed_stages == ['design']
+
+
+def test_decision_needed_carries_the_spec_payload(monkeypatch):
+    """§4: {id, question, why_stuck, options[], impact, blocking}."""
+    reasoner = FakeReasoner(forks_by_stage={'procurement': [fork('dp.grid_position')]})
+    events = list(make(monkeypatch, reasoner).run())
+    needed = next(e for e in events if e.type == DECISION_NEEDED)
+
+    assert set(needed.payload) >= {'id', 'question', 'why_stuck', 'options', 'impact', 'blocking'}
+    assert needed.payload['id'] == 'dp.grid_position'
+    assert needed.payload['blocking'] is True
+    assert needed.payload['why_stuck']
+
+
+def test_answering_resumes_from_where_it_halted(monkeypatch):
+    reasoner = FakeReasoner(forks_by_stage={'procurement': [fork('dp.ofe')]})
+    simulator = make(monkeypatch, reasoner)
+    list(simulator.run())
+
+    simulator.answer(DecisionAnswer(decision_point_id='dp.ofe', answer='Owner-furnished'))
+    resumed = list(simulator.run())
+
+    assert types_of(resumed)[0] == DECISION_RESOLVED
+    assert types_of(resumed)[-1] == SIMULATION_COMPLETED
+    assert simulator.is_halted is False
+    # design was completed before the halt and is not walked again.
+    assert [c[0] for c in reasoner.calls] == [
+        'design', 'procurement', 'procurement', 'substructure', 'mep_power', 'commissioning'
+    ]
+
+
+def test_the_answer_reaches_the_reasoner_on_resume(monkeypatch):
+    """Downstream reasoning must see the decision it depends on (§4)."""
+    reasoner = FakeReasoner(forks_by_stage={'procurement': [fork('dp.ofe')]})
+    simulator = make(monkeypatch, reasoner)
+    list(simulator.run())
+    simulator.answer(DecisionAnswer(decision_point_id='dp.ofe', answer='Owner-furnished'))
+    list(simulator.run())
+
+    later = [decisions for stage, decisions in reasoner.calls if stage == 'mep_power']
+    assert later and 'dp.ofe' in later[0]
+
+
+def test_resolved_fork_is_not_raised_again(monkeypatch):
+    """The reasoner may re-raise a fork it was already told about; the simulator must not stop."""
+    reasoner = FakeReasoner(forks_by_stage={'procurement': [fork('dp.ofe')]})
+    simulator = make(monkeypatch, reasoner)
+    list(simulator.run())
+    simulator.answer(DecisionAnswer(decision_point_id='dp.ofe', answer='Contractor-supplied'))
+    events = list(simulator.run())
+
+    assert types_of(events)[-1] == SIMULATION_COMPLETED
+    assert not [e for e in events if e.type == DECISION_NEEDED]
+
+
+def test_several_forks_at_one_stage_are_all_surfaced(monkeypatch):
+    """Ask everything blocking at once rather than one round-trip per fork."""
+    reasoner = FakeReasoner(forks_by_stage={
+        'procurement': [fork('dp.ofe'), fork('dp.long_lead_unconfirmed')]
+    })
+    simulator = make(monkeypatch, reasoner)
+    events = list(simulator.run())
+
+    raised = {e.payload['id'] for e in events if e.type == DECISION_NEEDED}
+    assert raised == {'dp.ofe', 'dp.long_lead_unconfirmed'}
+    assert sorted(simulator.state.pending_decisions) == ['dp.long_lead_unconfirmed', 'dp.ofe']
+
+
+def test_answering_only_some_forks_keeps_the_run_halted(monkeypatch):
+    reasoner = FakeReasoner(forks_by_stage={
+        'procurement': [fork('dp.ofe'), fork('dp.long_lead_unconfirmed')]
+    })
+    simulator = make(monkeypatch, reasoner)
+    list(simulator.run())
+    simulator.answer(DecisionAnswer(decision_point_id='dp.ofe', answer='OFE'))
+    events = list(simulator.run())
+
+    assert simulator.is_halted is True
+    assert types_of(events)[-1] == SIMULATION_HALTED
+
+
+def test_non_blocking_fork_does_not_halt(monkeypatch):
+    """§4: only genuine forks halt; soft uncertainty is Tier-2 and flows on."""
+    reasoner = FakeReasoner(
+        forks_by_stage={'procurement': [fork('dp.soft', blocking=False)]}
+    )
+    simulator = make(monkeypatch, reasoner)
+    events = list(simulator.run())
+
+    assert types_of(events)[-1] == SIMULATION_COMPLETED
+    assert simulator.is_halted is False
+
+
+def test_answering_an_unknown_decision_is_rejected(monkeypatch):
+    simulator = make(monkeypatch, FakeReasoner())
+    with pytest.raises(KeyError, match='not an open decision'):
+        simulator.answer(DecisionAnswer(decision_point_id='dp.nope', answer='x'))
+
+
+def test_a_reasoning_failure_stops_the_walk_rather_than_leaving_a_gap(monkeypatch):
+    reasoner = FakeReasoner(raises_at='mep_power')
+    simulator = make(monkeypatch, reasoner)
+    events = list(simulator.run())
+
+    assert types_of(events)[-1] == SIMULATION_ERROR
+    assert 'gateway exploded' in events[-1].payload['error']
+    assert 'commissioning' not in {c[0] for c in reasoner.calls}
+
+
+# --------------------------------------------------------------- resumable state
+
+
+def test_halted_state_is_plain_data_so_a_run_survives_its_socket(monkeypatch):
+    """The reason stop-and-ask is a state machine and not a suspended coroutine."""
+    reasoner = FakeReasoner(forks_by_stage={'procurement': [fork('dp.ofe')]})
+    simulator = make(monkeypatch, reasoner)
+    list(simulator.run())
+
+    snapshot = simulator.state.model_dump_json()
+    assert 'dp.ofe' in snapshot
+    assert simulator.state.completed_stages == ['design']
+    assert simulator.state.halted_at == 'procurement'
+
+
+def test_registry_holds_runs_and_can_drop_them():
+    simulator = Simulator(BRIEF, run_id='run-x')
+    registry.add(simulator)
+    assert registry.get('run-x') is simulator
+    registry.drop('run-x')
+    assert registry.get('run-x') is None
+
+
+# ------------------------------------------------------------------- /ws endpoint
+
+
+def ws_reasoner(monkeypatch, **kwargs):
+    reasoner = FakeReasoner(**kwargs)
+    monkeypatch.setattr('backend.app.simulator.runner.reason_stage', reasoner)
+    monkeypatch.setattr(
+        'backend.app.main.build_simulator',
+        lambda brief, run_id: Simulator(brief, run_id=run_id, stages=WALK),
+    )
+    return reasoner
+
+
+def test_ws_streams_a_whole_simulation(monkeypatch):
+    ws_reasoner(monkeypatch)
+    with TestClient(app).websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'start', 'brief': BRIEF})
+        received = []
+        while True:
+            event = ws.receive_json()
+            received.append(event)
+            if event['type'] in (SIMULATION_COMPLETED, SIMULATION_HALTED, SIMULATION_ERROR):
+                break
+
+    assert received[0]['type'] == SIMULATION_STARTED
+    assert received[-1]['type'] == SIMULATION_COMPLETED
+    assert {e['type'] for e in received} >= {STAGE_STARTED, ACTIVITY_ADDED, STAGE_COMPLETED}
+
+
+def test_ws_halts_and_resumes_on_an_answer(monkeypatch):
+    """The full stop-and-ask round trip over the socket."""
+    ws_reasoner(monkeypatch, forks_by_stage={'procurement': [fork('dp.ofe')]})
+
+    with TestClient(app).websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'start', 'brief': BRIEF})
+        first = []
+        while True:
+            event = ws.receive_json()
+            first.append(event)
+            if event['type'] in (SIMULATION_HALTED, SIMULATION_COMPLETED):
+                break
+
+        assert first[-1]['type'] == SIMULATION_HALTED
+        needed = next(e for e in first if e['type'] == DECISION_NEEDED)
+        assert needed['payload']['id'] == 'dp.ofe'
+
+        ws.send_json({
+            'action': 'answer', 'decision_point_id': 'dp.ofe', 'answer': 'Owner-furnished',
+        })
+        second = []
+        while True:
+            event = ws.receive_json()
+            second.append(event)
+            if event['type'] in (SIMULATION_COMPLETED, SIMULATION_HALTED):
+                break
+
+    assert second[0]['type'] == DECISION_RESOLVED
+    assert second[0]['payload']['answer'] == 'Owner-furnished'
+    assert second[-1]['type'] == SIMULATION_COMPLETED
+
+
+def test_ws_rejects_an_answer_to_an_unraised_fork(monkeypatch):
+    ws_reasoner(monkeypatch, forks_by_stage={'procurement': [fork('dp.ofe')]})
+    with TestClient(app).websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'start', 'brief': BRIEF})
+        while ws.receive_json()['type'] != SIMULATION_HALTED:
+            pass
+        ws.send_json({'action': 'answer', 'decision_point_id': 'dp.wrong', 'answer': 'x'})
+        error = ws.receive_json()
+
+    assert error['type'] == SIMULATION_ERROR
+    assert 'not an open decision' in error['payload']['error']
+
+
+def test_ws_can_attach_to_a_halted_run_after_a_dropped_socket(monkeypatch):
+    """A planner may answer minutes later, from a reconnected client."""
+    ws_reasoner(monkeypatch, forks_by_stage={'procurement': [fork('dp.ofe')]})
+    client = TestClient(app)
+
+    with client.websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'start', 'brief': BRIEF})
+        while ws.receive_json()['type'] != SIMULATION_HALTED:
+            pass
+    # Socket closed with the fork still open.
+
+    run_id = 'run-1'
+    with client.websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'attach', 'run_id': run_id})
+        attached = ws.receive_json()
+        assert attached['type'] == SIMULATION_HALTED
+        assert attached['payload']['pending'] == ['dp.ofe']
+
+        ws.send_json({'action': 'answer', 'decision_point_id': 'dp.ofe', 'answer': 'OFE'})
+        final = []
+        while True:
+            event = ws.receive_json()
+            final.append(event)
+            if event['type'] in (SIMULATION_COMPLETED, SIMULATION_HALTED):
+                break
+
+    assert final[-1]['type'] == SIMULATION_COMPLETED
+
+
+def test_ws_attach_to_unknown_run_errors(monkeypatch):
+    ws_reasoner(monkeypatch)
+    with TestClient(app).websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'attach', 'run_id': 'run-does-not-exist'})
+        event = ws.receive_json()
+    assert event['type'] == SIMULATION_ERROR
+
+
+def test_ws_stop_closes_and_drops_the_run(monkeypatch):
+    ws_reasoner(monkeypatch)
+    with TestClient(app).websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'start', 'brief': BRIEF})
+        while ws.receive_json()['type'] != SIMULATION_COMPLETED:
+            pass
+        ws.send_json({'action': 'stop'})
+    assert len(registry) == 0
+
+
+def test_simulation_started_is_emitted_once_even_when_the_first_stage_halts(monkeypatch):
+    """Regression: a resumed run must not re-announce itself as started.
+
+    Inferring "has started" from completed_stages was wrong for the case that matters most - a
+    fork on the FIRST stage completes none, so a resume re-emitted simulation_started and a
+    client would reset its view mid-run.
+    """
+    reasoner = FakeReasoner(forks_by_stage={'design': [fork('dp.tier_topology')]})
+    simulator = make(monkeypatch, reasoner)
+
+    first = list(simulator.run())
+    assert simulator.state.completed_stages == [], 'the first stage itself halted'
+    assert types_of(first).count(SIMULATION_STARTED) == 1
+
+    simulator.answer(DecisionAnswer(decision_point_id='dp.tier_topology', answer='N+1'))
+    resumed = list(simulator.run())
+
+    assert SIMULATION_STARTED not in types_of(resumed)
+    assert types_of(resumed)[0] == DECISION_RESOLVED
+    assert types_of(resumed)[-1] == SIMULATION_COMPLETED
