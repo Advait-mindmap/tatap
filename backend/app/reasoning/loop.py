@@ -36,6 +36,7 @@ from backend.app.reasoning.prompt import (
     reasoning_schema,
 )
 from backend.app.reasoning.stages import (
+    PROCUREMENT_STAGE,
     STAGE_DEPARTMENT,
     decision_tags_for,
     is_valid_stage,
@@ -91,14 +92,23 @@ def gather_stage_libraries(stage: str, city: Optional[str] = None) -> Dict[str, 
                 if g.get('gates_stage') == stage
             ]
 
-    # Long-lead items this stage's fragnets actually consume, so the model is not handed the
-    # whole register at every stage and invited to attach things arbitrarily.
-    linked = {
-        link['requires_delivery_of']
-        for frag in fragnets
-        for link in frag.get('material_links', [])
-    }
-    long_lead = [e for e in load_library('equipment_lead_times')['entries'] if e['id'] in linked]
+    lead_entries = load_library('equipment_lead_times')['entries']
+    if stage == PROCUREMENT_STAGE:
+        # The procurement stage owns the whole long-lead register directly. Everywhere else the
+        # register is derived from what a stage's fragnets consume — but procurement has no
+        # fragnets of its own yet, so deriving would hand it an empty register, which is exactly
+        # the stage where long-lead exposure most needs to be reasoned about
+        # (DOMAIN_KNOWLEDGE.md §4: long-lead gear usually drives RFS; front-load it).
+        long_lead = list(lead_entries)
+    else:
+        # Elsewhere: only the items this stage's fragnets actually consume, so the model is not
+        # handed the whole register at every stage and invited to attach things arbitrarily.
+        linked = {
+            link['requires_delivery_of']
+            for frag in fragnets
+            for link in frag.get('material_links', [])
+        }
+        long_lead = [e for e in lead_entries if e['id'] in linked]
 
     tags = decision_tags_for(stage)
     decision_points = [

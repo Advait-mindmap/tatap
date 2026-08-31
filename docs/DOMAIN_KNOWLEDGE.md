@@ -40,9 +40,19 @@ in `SIMULATION_AND_REASONING.md`).
 For every stage the simulation attaches: owning department, materials consumed, statutory and
 quality gates, and the P6 representation.
 
+> **Reconciliation note.** This table originally had no procurement row, while §2 above lists
+> Procurement/SCM as department 4 (between Statutory 3 and Civil 6) and
+> `SIMULATION_AND_REASONING.md` §2 walks "engineering → procurement → construction →
+> commissioning". The three disagreed, and the build followed this table, so procurement forks —
+> including the long-lead one that sets RFS — were not raised until the MEP stages. A
+> **Procurement & long-lead** row has been added so all three agree. Its activities span the
+> programme; its position here reflects when it is planned and reasoned about, not when the work
+> finishes. See `docs/ASSUMPTIONS_AWAITING_VERIFICATION.md` §1.1.
+
 | Stage | Owning dept | Key materials | Key gates |
 |-------|-------------|---------------|-----------|
 | Approvals & clearances | Liaison | — | EC (SEIAA), SPCB CTE, building sanction, commencement |
+| Procurement & long-lead | Procurement/SCM | (orders the long-lead plant consumed below) | vendor award, L1 factory acceptance test, delivery milestones |
 | Enabling & site setup | Construction, HSE | temp works, fuel | BOCW, CLRA, PESO (HSD) |
 | Substructure | Civil, QA/QC | cement, aggregates, rebar, formwork | IS 456, IS 2911, geotech |
 | Superstructure | Civil/Struct, QA/QC | RMC, rebar, structural steel | IS 456, IS 800, cube test |

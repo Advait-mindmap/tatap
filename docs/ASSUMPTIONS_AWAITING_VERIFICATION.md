@@ -21,8 +21,8 @@ Two libraries describe stages in two different vocabularies, and nothing reconci
   `statutory`, `design`, `planning`, `procurement`, `civil`, `mep`, `fit_out`, `commissioning`,
   `handover`, `enabling`.
 - The **fragnet library** and the simulator walk **construction stages** — `approvals`,
-  `enabling`, `substructure`, `superstructure`, `envelope`, `mep_power`, `mep_cooling`,
-  `fire_bms`, `fit_out`, `commissioning`, `handover`.
+  `procurement`, `enabling`, `substructure`, `superstructure`, `envelope`, `mep_power`,
+  `mep_cooling`, `fire_bms`, `fit_out`, `commissioning`, `handover`.
 
 The simulator walks stage by stage and must decide, at each one, which forks to raise. I wrote a
 mapping to bridge the two. **I chose it by reading the tables; nobody with delivery experience
@@ -46,12 +46,12 @@ mapping produces one of two failures, neither of which looks like an error in th
 | Decision-point tag | Mapped to stage(s) | My reasoning — please check |
 |---|---|---|
 | `statutory` | `approvals` | Statutory pathway questions gate the approvals stage, which is where consents are obtained. |
-| `design` | `approvals` | There is no design stage (see §1.1). Approvals is the first stage that runs, so design-basis forks are raised as early as possible. |
+| `design` | `approvals` | **There is still no design stage** — approvals is the first stage that runs, so design-basis forks are raised as early as possible. Same shape as the procurement gap was (§1.1); flag it if design needs its own stage. |
 | `planning` | `approvals` | Same reasoning — planning/WBS forks need answering before anything is sequenced. |
 | `enabling` | `enabling` | Direct match. |
 | `civil` | `substructure`, `superstructure`, `envelope` | The three stages civil/structure owns per the `DOMAIN_KNOWLEDGE.md` §3 table. |
 | `mep` | `mep_power`, `mep_cooling`, `fire_bms` | The three MEP-owned stages. Fire/BMS included because §3 lists it under services. |
-| `procurement` | `mep_power`, `mep_cooling` | **Weakest assumption — see §1.1.** There is no procurement stage, so procurement forks are attached to the stages that consume long-lead plant. |
+| `procurement` | `procurement` | Resolved — see §1.1. A procurement stage now exists and owns these forks, so they are raised before construction is sequenced. |
 | `fit_out` | `fire_bms`, `fit_out` | Fit-out plus fire/BMS, which are typically subcontracted fit-out-adjacent packages. |
 | `commissioning` | `commissioning` | Direct match. |
 | `handover` | `handover` | Direct match. |
@@ -66,32 +66,58 @@ The resulting behaviour — the eight curated forks and the stages each will be 
 
 | Decision point | Raised at these stages |
 |---|---|
-| `dp.delivery_mode` | substructure, superstructure, envelope, mep_power, mep_cooling, fire_bms, fit_out |
-| `dp.ofe` | mep_power, mep_cooling, fire_bms |
-| `dp.grid_position` | approvals, mep_power, mep_cooling, fire_bms |
-| `dp.tier_topology` | approvals, mep_power, mep_cooling, fire_bms, commissioning |
+| `dp.delivery_mode` | **procurement**, substructure, superstructure, envelope, mep_power, mep_cooling, fire_bms, fit_out |
+| `dp.ofe` | **procurement**, mep_power, mep_cooling, fire_bms |
+| `dp.grid_position` | approvals, **procurement**, mep_power, mep_cooling, fire_bms |
+| `dp.tier_topology` | approvals, **procurement**, mep_power, mep_cooling, fire_bms, commissioning |
 | `dp.greenfield_brownfield` | enabling, substructure, superstructure, envelope, mep_power, mep_cooling, fire_bms, commissioning |
 | `dp.phasing` | approvals, commissioning, handover |
-| `dp.long_lead_unconfirmed` | mep_power, mep_cooling |
+| `dp.long_lead_unconfirmed` | **procurement** |
 | `dp.city_pathway_unconfirmed` | approvals |
 
-### 1.1 Three specific things I want challenged
+### 1.1 Resolved: a procurement stage now exists
 
-**a) There is no `procurement` stage, and procurement drives the critical path.**
-`DOMAIN_KNOWLEDGE.md` §2 lists Procurement/SCM as its own department, and §4 says long-lead gear
-"usually drives RFS. Front-load it." But my stage list has no procurement stage, so every
-procurement fork — including `dp.long_lead_unconfirmed`, the one about the lead times that set
-RFS — is only raised once `mep_power` is reached. **That may be far too late.** If procurement
-should be its own early stage, this is a structural change, not a mapping tweak.
+**Originally flagged here:** there was no `procurement` stage, so every procurement fork — including
+`dp.long_lead_unconfirmed`, the one about the lead times that set RFS — was not raised until
+`mep_power`, by which point construction was already being sequenced.
 
-**b) `dp.long_lead_unconfirmed` fires only at `mep_power` and `mep_cooling`.**
-So long-lead items outside MEP — structural steel, for instance — would never trigger it. Is that
-correct, or does civil have long-lead exposure that should stop the flow too?
+**Resolved.** `procurement` is now a stage in the walk, positioned `approvals -> procurement ->
+enabling -> ...` per `DOMAIN_KNOWLEDGE.md` §2 (Statutory 3 -> Procurement/SCM 4 -> Civil 6) and
+`SIMULATION_AND_REASONING.md` §2 (engineering -> procurement -> construction -> commissioning).
 
-**c) `dp.delivery_mode` is raised at seven stages.**
-Self-perform vs subcontract is genuinely per-discipline, so repetition may be right. But a planner
-answering the same-sounding question seven times will start clicking through them, which defeats
-the purpose. Should it be asked once per discipline, up front, instead?
+Its **walk position** is early because that is when procurement strategy and long-lead exposure
+must be reasoned about. Its **activities** — RFQ, tender, award, manufacture, FAT, ship, deliver —
+span the programme and land as delivery milestones that gate construction. Walk position governs
+when it is *reasoned*, not when its work *happens*.
+
+The stage owns the long-lead register directly rather than deriving it from fragnets, because it
+has no fragnets yet (see 1.3).
+
+### 1.2 Still open: does `dp.long_lead_unconfirmed` belong outside MEP?
+
+It now fires at `procurement` only. Long-lead items outside MEP — structural steel, for instance —
+therefore still do not trigger it independently. Is the single early procurement firing enough, or
+does civil have long-lead exposure that should stop the flow on its own terms?
+
+### 1.3 Still open: `frag.procurement.*` is future library data
+
+The procurement stage has **no fragnets**, so the engine currently has nothing to instance for it.
+It is consistent with the six other stages that also have none (`approvals`, `enabling`,
+`envelope`, `fire_bms`, `fit_out`, `handover`), and full discipline depth is scheduled work — but
+until a procurement fragnet exists, a procurement chain (RFQ -> award -> manufacture -> FAT ->
+ship -> deliver) will not appear in the exported schedule, and long-lead plant will still appear
+to arrive without a visible procurement path.
+
+### 1.4 Decided: `dp.delivery_mode` still fires per discipline
+
+Adding the procurement stage gives this fork an early firing point where the overall delivery
+strategy is set. It was a deliberate decision **not** to remove the per-discipline firings:
+`DOMAIN_KNOWLEDGE.md` §6 defines it as "Self-perform vs subcontract (**per discipline**)", and
+collapsing it to one question would apply a single answer to every discipline.
+
+The cost is that a planner may be asked a similar-sounding question at eight stages. That is a
+decision-*resolution* problem — remember the answer per discipline and stop re-asking — not a
+reason to lose the granularity. Say if you disagree; it is one line.
 
 ### How to correct it
 

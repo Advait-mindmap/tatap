@@ -392,3 +392,71 @@ def test_empty_response_yields_no_selections_but_still_warns(libs, hits):
                   'decision_points': []}, libs, hits)
     assert result.packages == [] and result.trail == []
     assert any('Nothing here is auditable' in w for w in result.warnings)
+
+
+# ------------------------------------------------------------------- procurement stage
+
+
+def test_procurement_is_a_walk_stage_positioned_before_construction():
+    """DOMAIN_KNOWLEDGE.md §2 orders Statutory (3) -> Procurement (4) -> Civil (6);
+    SIMULATION_AND_REASONING.md §2 walks engineering -> procurement -> construction."""
+    from backend.app.reasoning import PROCUREMENT_STAGE, STAGES
+
+    assert PROCUREMENT_STAGE in STAGES
+    i = STAGES.index('procurement')
+    assert STAGES[i - 1] == 'approvals'
+    assert i < STAGES.index('enabling') < STAGES.index('substructure')
+    assert i < STAGES.index('mep_power')
+
+
+def test_procurement_stage_has_a_department():
+    from backend.app.reasoning import STAGE_DEPARTMENT
+    assert STAGE_DEPARTMENT['procurement'] == 'procurement'
+
+
+def test_procurement_owns_the_whole_long_lead_register():
+    """It has no fragnets, so deriving the register from fragnets would leave it empty - at the
+    one stage where long-lead exposure most needs reasoning about."""
+    from backend.app.libraries import load_library
+
+    libs = gather_stage_libraries('procurement', 'Navi Mumbai')
+    assert libs['fragnets'] == [], 'procurement fragnets are future library data (frag.procurement.*)'
+
+    all_leads = {e['id'] for e in load_library('equipment_lead_times')['entries']}
+    assert {e['id'] for e in libs['long_lead']} == all_leads
+
+
+def test_other_stages_still_derive_long_lead_from_their_fragnets():
+    """The procurement special case must not leak into every stage."""
+    libs = gather_stage_libraries('mep_power', 'Navi Mumbai')
+    ids = {e['id'] for e in libs['long_lead']}
+    assert 'lead.transformer_hv' in ids
+    assert 'lead.chiller' not in ids, 'mep_power must not receive the whole register'
+
+
+def test_the_long_lead_fork_now_fires_at_procurement_not_mep():
+    """dp.long_lead_unconfirmed drives RFS; before the procurement stage it was not raised until
+    mep_power, by which point construction was already being sequenced."""
+    from backend.app.reasoning import STAGES
+
+    fires_at = [
+        s for s in STAGES
+        if 'dp.long_lead_unconfirmed' in
+        {d['id'] for d in gather_stage_libraries(s, 'Navi Mumbai')['decision_points']}
+    ]
+    assert fires_at == ['procurement']
+
+
+def test_delivery_mode_still_fires_per_discipline():
+    """Deliberate: DOMAIN_KNOWLEDGE.md §6 defines it as per-discipline, so procurement is an
+    ADDITIONAL early firing point, not a replacement for the per-discipline ones."""
+    from backend.app.reasoning import STAGES
+
+    fires_at = [
+        s for s in STAGES
+        if 'dp.delivery_mode' in
+        {d['id'] for d in gather_stage_libraries(s, 'Navi Mumbai')['decision_points']}
+    ]
+    assert 'procurement' in fires_at
+    for discipline_stage in ('substructure', 'mep_power', 'fit_out'):
+        assert discipline_stage in fires_at, f'{discipline_stage} lost its delivery-mode fork'

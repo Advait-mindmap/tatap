@@ -23,6 +23,7 @@ from backend.app.reasoning.prompt import (
 )
 from backend.app.reasoning.stages import (
     DECISION_TAGS_BY_STAGE,
+    PROCUREMENT_STAGE,
     STAGE_DEPARTMENT,
     STAGES,
     decision_tags_for,
@@ -32,6 +33,7 @@ from backend.app.reasoning.stages import (
 
 __all__ = [
     'DECISION_TAGS_BY_STAGE',
+    'PROCUREMENT_STAGE',
     'PROMPT_VERSION',
     'STAGES',
     'STAGE_DEPARTMENT',
