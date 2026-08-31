@@ -266,3 +266,74 @@ class StageReasoning(BaseModel):
     @property
     def rests_on_unverified_data(self) -> bool:
         return any(t.unverified_dependencies for t in self.trail)
+
+
+# --------------------------------------------------------------------------------------------
+# Deterministic engine (Task 7). CLAUDE.md rule 2: the engine instances activities, logic,
+# durations and counts from the libraries. No LLM call happens in this layer.
+# --------------------------------------------------------------------------------------------
+
+
+class AssembledEdge(BaseModel):
+    """A dependency. `kind` distinguishes ordinary logic from the cross-stage constraints."""
+
+    from_id: str
+    to_id: str
+    type: str = 'FS'
+    lag: int = 0
+    #: 'fragnet' | 'cross_stage_gate' | 'delivery' | 'compliance' | 'hold_point'
+    kind: str = 'fragnet'
+    why: str = ''
+
+
+class AssembledActivity(BaseModel):
+    """One instanced activity, milestone, gate or hold point.
+
+    Everything the reasoning layer attached travels with it: department, safety tier, the
+    unverified dependencies it rests on and the capped confidence. Governance is not allowed to
+    be dropped in assembly.
+    """
+
+    id: str
+    wbs_id: str
+    name: str
+    #: 'task' | 'milestone' | 'gate' | 'hold_point'
+    type: str = 'task'
+    duration_days: int = 0
+    calendar: str = '6day'
+    dept_code: str = ''
+    delivery_mode: str = 'unknown'
+    stage: str = ''
+    zone_id: Optional[str] = None
+    predecessors: List[Dict[str, Any]] = Field(default_factory=list)
+    hold_points: List[str] = Field(default_factory=list)
+    safety_flag: bool = False
+    hitl_tier: str = 'tier_3'
+    blocks_export: bool = False
+    trail_ref: str = ''
+    #: Capped confidence carried from the reasoning selection (never the model's raw claim).
+    confidence: float = 0.0
+    unverified_dependencies: List[str] = Field(default_factory=list)
+    source_fragnet: Optional[str] = None
+    compliance_gates: List[str] = Field(default_factory=list)
+
+
+class AssemblyResult(BaseModel):
+    """What the engine produced. Pure function of (reasoning, brief, libraries)."""
+
+    activities: List[AssembledActivity] = Field(default_factory=list)
+    edges: List[AssembledEdge] = Field(default_factory=list)
+    zones: List[Dict[str, Any]] = Field(default_factory=list)
+    commissioning: List[Dict[str, Any]] = Field(default_factory=list)
+    trail: List[TrailEntry] = Field(default_factory=list)
+    flags: List[ReasoningFlag] = Field(default_factory=list)
+    governance: Dict[str, Any] = Field(default_factory=dict)
+    warnings: List[str] = Field(default_factory=list)
+    library_version: str = ''
+    corpus_version: str = ''
+    prompt_version: str = ''
+
+    @property
+    def export_blocked(self) -> bool:
+        """Tier-1 safety blocks export until a human signs off (CLAUDE.md rule 5)."""
+        return bool(self.governance.get('export_blocked'))
