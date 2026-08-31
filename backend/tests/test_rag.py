@@ -268,3 +268,18 @@ def test_city_filter_restricts_results(session, embedder):
     _seed_three(session, embedder)
     assert retrieve(session, 'transformer', k=5, city='Navi Mumbai', embedder=embedder).hits
     assert retrieve(session, 'transformer', k=5, city='Chennai', embedder=embedder).hits == []
+
+
+def test_citation_is_a_bare_stable_id(session, embedder):
+    """Reasoner citations are checked verbatim, so the id must be exactly copyable.
+
+    Regression guard: the citation once carried '(kind) title' too, which made every correct
+    live citation look fabricated and got the whole reasoning result discarded.
+    """
+    _seed_three(session, embedder)
+    hit = retrieve(session, 'CEIG energisation', k=1, embedder=embedder).hits[0]
+
+    assert hit.citation == f'corpus:{hit.doc_id}#{hit.chunk_index}'
+    assert ' ' not in hit.citation
+    assert hit.doc_title not in hit.citation
+    assert hit.kind not in hit.citation

@@ -42,7 +42,14 @@ class RetrievalHit:
 
     @property
     def citation(self) -> str:
-        return f'corpus:{self.doc_id}#{self.chunk_index} ({self.kind}) {self.doc_title}'
+        """A stable, copyable source id.
+
+        Deliberately just the id — no kind, no title. The reasoner is required to cite sources
+        verbatim and its citations are checked against what was supplied, so anything
+        decorative in here makes exact citation impractical and turns a correct citation into
+        an apparent fabrication. Kind and title travel as separate fields for display.
+        """
+        return f'corpus:{self.doc_id}#{self.chunk_index}'
 
     def to_source_ref(self) -> Dict[str, Any]:
         """The shape a TrailEntry.sources element takes."""
