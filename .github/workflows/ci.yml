@@ -137,10 +137,23 @@ jobs:
         # lacks; without it Chromium installs and then fails to launch.
         run: npx playwright install --with-deps chromium
 
-      - name: Browser tests
-        # playwright.config.ts starts Vite itself, and CI=true stops it reusing a server that
-        # is not there.
-        run: npx playwright test
+      # Split by spec on purpose. GitHub requires authentication to read job LOGS, but step
+      # names and their pass/fail are public — so running each suite as its own step means a
+      # failure says WHICH suite broke without anyone having to hold a token. Diagnosing a red
+      # CI run should not depend on privileged access.
+      #
+      # playwright.config.ts starts Vite itself, and CI=true stops it reusing a server that
+      # is not there.
+      - name: Browser tests - 2D flow view
+        run: npx playwright test flow.spec
+
+      - name: Browser tests - live path (intake, simulation, decisions)
+        if: always()
+        run: npx playwright test live.spec
+
+      - name: Browser tests - 3D build model
+        if: always()
+        run: npx playwright test view3d.spec
 
       - name: Upload rendered screenshots
         # Always, not just on failure: these are how the rendered flow gets reviewed without

@@ -16,7 +16,13 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: [['list']],
-  timeout: 45_000,
+  // A test drives a whole simulation: intake, thirteen stages, a stop at every genuine fork.
+  // The 45s this used to allow was shorter than the waits inside the tests themselves
+  // (support.ts waits up to 120s for extraction and 300s for a stage), so those waits could
+  // never be reached — the test timeout always fired first. On a CI runner with no GPU, where
+  // everything is slower than a developer machine, that gap is the difference between green
+  // and red. The internal waits are the intended limits; this just has to be larger than them.
+  timeout: 360_000,
   expect: { timeout: 10_000 },
 
   use: {
