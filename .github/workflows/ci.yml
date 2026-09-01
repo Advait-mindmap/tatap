@@ -101,6 +101,30 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Without a backend every browser test skips itself, and the job reports green having
+      # tested nothing. LLM_PROVIDER=stub answers the same schemas mechanically, so the full
+      # path - intake, simulation, decision prompts - runs offline and without spending credits.
+      - name: Set up Python for the API
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install API dependencies
+        working-directory: .
+        run: python -m pip install -r backend/requirements.txt
+
+      - name: Start the API with the stub provider
+        working-directory: .
+        env:
+          LLM_PROVIDER: stub
+        run: |
+          python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --log-level warning &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/health && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8000/health || (echo "API failed to start" && exit 1)
+
       - name: Install Chromium
         # Only the browser the suite uses. --with-deps pulls the system libraries the runner
         # lacks; without it Chromium installs and then fails to launch.

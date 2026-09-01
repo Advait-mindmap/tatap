@@ -1,6 +1,8 @@
+import os
 from typing import Any, Dict
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from backend.app.intake import extract_brief
@@ -9,6 +11,25 @@ from backend.app.schemas import IntakeResult, RawBrief
 from backend.app.simulator import DecisionAnswer, Simulator, registry
 
 app = FastAPI(title='DC Build Planner')
+
+# The planner UI is served from a different origin in development (Vite on :5173) and may be
+# served from a separate static host in deployment. Origins come from CORS_ORIGINS so a
+# deployment can narrow them; the default covers local development only.
+_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        'CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173'
+    ).split(',')
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 
 def build_simulator(brief: Dict[str, Any], run_id: str) -> Simulator:
@@ -118,7 +139,24 @@ async def ws_simulate(websocket: WebSocket) -> None:
                         'payload': {'error': str(exc)},
                     })
                     continue
-                # Resume immediately: the fork is answered, so the walk can continue.
+
+                # Resume only once EVERY open fork is answered. A stage can raise several at
+                # once, and resuming after each one makes the simulator re-reason the stage and
+                # halt again on the remainder - the planner answers the same stage repeatedly
+                # and pays a model call for each. Answering the last one continues the walk.
+                # `answer()` records into state.answers; pending_decisions is only cleared when
+                # run() emits decision_resolved, so is_halted is still True here. Compare the
+                # two sets instead.
+                unanswered = set(simulator.state.pending_decisions) - set(simulator.state.answers)
+                if unanswered:
+                    await websocket.send_json({
+                        'seq': simulator.state.seq, 'type': 'decision_recorded', 'stage': '',
+                        'payload': {
+                            'decision_point_id': message.get('decision_point_id'),
+                            'pending': sorted(unanswered),
+                        },
+                    })
+                    continue
                 await stream()
 
             elif action == 'resume':

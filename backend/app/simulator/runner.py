@@ -174,6 +174,10 @@ class Simulator:
                     pending=sorted(self.state.pending_decisions),
                     reason='The flow of thought cannot continue without a human decision. '
                            'Nothing downstream is assembled until it is answered.',
+                    # The authoritative partial output. A halted run is a legitimate thing to
+                    # render - the client should show what has been built so far rather than
+                    # holding a half-drawn graph assembled from events alone.
+                    output=self.output().model_dump(),
                 )
                 return
 
@@ -218,6 +222,10 @@ class Simulator:
             decisions=[
                 {'id': k, **v} for k, v in sorted(self.state.answers.items())
             ],
+            # The one SimulationOutput every view projects from. The event stream is what makes
+            # the draw progressive; this is what makes it CORRECT - a client reconstructing the
+            # graph from events alone would drift from the object the backend actually built.
+            output=self.output().model_dump(),
         )
 
     # ------------------------------------------------------------------ stop-and-ask

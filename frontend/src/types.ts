@@ -90,3 +90,91 @@ export interface SimulationOutput {
   quality: Record<string, unknown>
   flags: Record<string, unknown>[]
 }
+
+// ---------------------------------------------------------------------------------------------
+// Intake (backend/app/schemas.py). PRODUCT_SPEC.md section 3.1: the extracted brief carries a
+// citation per field and lists what it still needs.
+// ---------------------------------------------------------------------------------------------
+
+export interface FieldProvenance {
+  field: string
+  quote: string
+  confidence: number
+  source_ref: string
+  grounded: boolean
+}
+
+export interface IntakeQuestion {
+  field: string
+  question: string
+  why_needed: string
+  blocking: boolean
+}
+
+export interface ExtractedBrief {
+  project_name: string | null
+  client: string | null
+  city: string | null
+  site_context: string | null
+  in_dc_park_or_sez: boolean | null
+  tier: string | null
+  redundancy_topology: string | null
+  it_load_mw: number | null
+  scope: string | null
+  delivery_mode_by_discipline: Record<string, string>
+  power_position: string | null
+  target_rfs_date: string | null
+  phasing: string | null
+  special_conditions: string | null
+}
+
+export interface IntakeResult {
+  brief: ExtractedBrief
+  field_provenance: Record<string, FieldProvenance>
+  questions: IntakeQuestion[]
+  unresolved_fields: string[]
+  flagged_conflicts: string[]
+  extraction_confidence_overall: number
+  warnings: string[]
+  raw_brief_ref: string
+  attachments: string[]
+}
+
+// ---------------------------------------------------------------------------------------------
+// Simulation event stream (backend/app/simulator/events.py, SIMULATION_AND_REASONING.md §2).
+// ---------------------------------------------------------------------------------------------
+
+export type EventType =
+  | 'simulation_started'
+  | 'stage_started'
+  | 'package_expanded'
+  | 'activity_added'
+  | 'gate_inserted'
+  | 'decision_needed'
+  | 'decision_resolved'
+  | 'decision_recorded'
+  | 'stage_completed'
+  | 'simulation_halted'
+  | 'simulation_completed'
+  | 'simulation_error'
+
+export interface SimulationEvent {
+  seq: number
+  type: EventType
+  stage: string
+  payload: Record<string, any>
+}
+
+/** A fork the simulator stopped at, as it arrives on the wire. */
+export interface OpenDecision {
+  id: string
+  stage: string
+  question: string
+  why_stuck: string
+  options: string[]
+  impact: string
+  blocking: boolean
+  detection: string
+}
+
+export type RunStatus = 'idle' | 'running' | 'halted' | 'complete' | 'error'

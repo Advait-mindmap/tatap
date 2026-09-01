@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import warnings
 from typing import Any, Dict
 
 import httpx
@@ -184,8 +185,20 @@ class AnthropicAdapter:
         )
 
 
-def get_adapter(provider: str | None = None) -> Base44Adapter | OpenAIAdapter | AnthropicAdapter:
+def get_adapter(provider: str | None = None) -> Any:
     resolved = (provider or os.getenv('LLM_PROVIDER', 'base44')).lower()
+    if resolved == 'stub':
+        # Opt-in only, and it announces itself. The stub selects library entries mechanically
+        # so the product can be driven offline; it does not reason, and a plan built with it is
+        # not evidence of anything (see llm_stub.py).
+        from backend.app.llm_stub import StubAdapter
+
+        warnings.warn(
+            'LLM_PROVIDER=stub: reasoning is MECHANICAL, not reasoned. For demos and CI only.',
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return StubAdapter()
     if resolved == 'openai':
         return OpenAIAdapter()
     if resolved == 'anthropic':
