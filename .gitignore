@@ -21,3 +21,11 @@ frontend/dist/
 
 # CI
 .ci-clean/
+
+# Playwright
+frontend/e2e/.artifacts/
+frontend/playwright-report/
+frontend/test-results/
+# Screenshots are regenerated on every `npm run e2e`; the tests that produce them are the
+# artefact worth versioning, not the PNGs.
+frontend/e2e/screenshots/

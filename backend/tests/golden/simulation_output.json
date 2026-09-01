@@ -2282,11 +2282,15 @@
         "impact": "Energisation sequence and long-lead placement",
         "kind": "decision_point",
         "label": "What is the grid position: is a dedicated substation being built, or is the site feeder-ready?",
-        "options": [],
+        "options": [
+          "Build dedicated substation",
+          "Feeder-ready / existing capacity",
+          "Utility-built substation on client land"
+        ],
         "stage": "procurement",
         "status": "resolved",
         "trail_ref": "trail.decision.dp.grid_position",
-        "why_stuck": "",
+        "why_stuck": "Building a substation adds a long statutory and construction path ahead of energisation; a feeder-ready site does not. This shifts the critical path and the entire long-lead strategy, so the electrical sequence cannot be laid out until it is known.",
         "zone_id": null
       },
       {
@@ -2297,11 +2301,16 @@
         "impact": "Procurement placement and the critical path",
         "kind": "decision_point",
         "label": "Is the assumed lead time for this long-lead package confirmed by a vendor quotation or purchase order?",
-        "options": [],
+        "options": [
+          "Confirmed by PO",
+          "Confirmed by vendor quotation",
+          "Not confirmed - use library estimate and flag",
+          "Not confirmed - stop and obtain"
+        ],
         "stage": "procurement",
         "status": "resolved",
         "trail_ref": "trail.decision.dp.long_lead_unconfirmed",
-        "why_stuck": "",
+        "why_stuck": "Lead time on the long-lead gear usually drives RFS. Guessing it is dangerous because the whole programme is built on it, and an unconfirmed guess looks identical to a confirmed date once it is in the plan.",
         "zone_id": null
       },
       {
@@ -2312,11 +2321,15 @@
         "impact": "Delivery milestone as constraint vs procurement fragnet",
         "kind": "decision_point",
         "label": "Which equipment packages are owner-furnished, and which are contractor-supplied?",
-        "options": [],
+        "options": [
+          "Owner-furnished (OFE)",
+          "Contractor-supplied",
+          "Split - specify per package"
+        ],
         "stage": "procurement",
         "status": "resolved",
         "trail_ref": "trail.decision.dp.ofe",
-        "why_stuck": "",
+        "why_stuck": "It changes who controls the delivery dates. Owner-furnished gear enters the plan as a delivery milestone constraint outside the contractor's control; contractor-supplied gear expands into a procurement fragnet the contractor owns. Getting this wrong misplaces the critical path.",
         "zone_id": null
       },
       {
@@ -2327,11 +2340,16 @@
         "impact": "Equipment counts and concurrent-maintainability logic",
         "kind": "decision_point",
         "label": "What is the confirmed redundancy topology (N+1, 2N, 2N+1) for the power and cooling trains?",
-        "options": [],
+        "options": [
+          "N+1",
+          "2N",
+          "2N+1",
+          "Mixed - specify per system"
+        ],
         "stage": "design",
         "status": "resolved",
         "trail_ref": "trail.decision.dp.tier_topology",
-        "why_stuck": "",
+        "why_stuck": "Redundancy drives equipment counts and the sequencing logic. N+1 and 2N produce materially different plant counts and different concurrent-maintainability constraints, so the equipment schedule and the commissioning structure cannot be derived until it is fixed.",
         "zone_id": null
       }
     ]

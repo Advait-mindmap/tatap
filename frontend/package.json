@@ -5,15 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:report": "playwright show-report"
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "reactflow": "^11.11.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.6.3",
     "vite": "^5.4.8"
   }
 }

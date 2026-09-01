@@ -237,6 +237,12 @@ class Simulator:
             'stage': pending.get('stage', ''),
             'question': pending.get('question', ''),
             'impact': pending.get('impact', ''),
+            # why_stuck and options are kept AFTER the answer, not discarded with the prompt.
+            # VISUALIZATION_SPEC.md section 4 keeps resolved decisions visible so the reasoning
+            # stays auditable, and "why this was a fork at all" is the part worth auditing - an
+            # answer with no question behind it explains nothing six months later.
+            'why_stuck': pending.get('why_stuck', ''),
+            'options': list(pending.get('options', []) or []),
         }
 
     def _resolved_decisions(self) -> List[Dict[str, Any]]:

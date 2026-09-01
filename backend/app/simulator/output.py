@@ -64,8 +64,10 @@ def _decision_nodes(
             'zone_id': None,
             'status': 'resolved',
             'blocking': True,
-            'why_stuck': '',
-            'options': [],
+            # Preserved through resolution: the answer alone is not auditable without the
+            # reason the fork existed.
+            'why_stuck': payload.get('why_stuck', ''),
+            'options': list(payload.get('options', []) or []),
             'impact': payload.get('impact', ''),
             'answer': payload.get('answer'),
         })
