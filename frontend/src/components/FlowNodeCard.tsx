@@ -1,13 +1,15 @@
 import { Handle, Position, type NodeProps } from 'reactflow'
+import { useHighlight } from '../highlightContext'
 import { KIND_STYLES } from '../nodeKinds'
 import type { FlowNode } from '../types'
 
+/**
+ * `data` carries ONLY the node itself, and never changes for the life of the node. Hover and
+ * selection arrive through context — see highlightContext.ts for why putting them in `data`
+ * broke hovering outright.
+ */
 export interface CardData {
   node: FlowNode
-  dimmed: boolean
-  highlighted: boolean
-  direct: boolean
-  selected: boolean
 }
 
 /**
@@ -18,7 +20,14 @@ export interface CardData {
  * one click deep in the detail panel would mean it is never seen.
  */
 export function FlowNodeCard({ data }: NodeProps<CardData>) {
-  const { node, dimmed, highlighted, direct, selected } = data
+  const { node } = data
+  const state = useHighlight()
+
+  const highlighted = state.path.has(node.id)
+  const dimmed = state.hovered !== null && !highlighted
+  const direct = state.direct.has(node.id) || node.id === state.hovered
+  const selected = node.id === state.selected
+
   const style = KIND_STYLES[node.kind]
   const isOpenFork = node.kind === 'decision_point' && node.status === 'open'
   const restsOnEstimates = (node.unverified_dependencies?.length ?? 0) > 0
