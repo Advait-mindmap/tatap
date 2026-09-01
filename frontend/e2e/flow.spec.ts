@@ -298,7 +298,11 @@ test.describe('2D process flow', () => {
     await ready(page)
 
     await fitAll(page)
-    const fork = page.locator('[data-testid="node-card"][data-kind="decision_point"]').first()
+    // `:visible` — React Flow keeps unmeasured nodes hidden, so the first decision point in
+    // DOM order is not necessarily one that has a box. Pick one that is actually painted.
+    const fork = page
+      .locator('[data-testid="node-card"][data-kind="decision_point"]:visible')
+      .first()
     await expect(fork).toBeVisible()
     await fork.click()
 

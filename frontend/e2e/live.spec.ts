@@ -121,7 +121,12 @@ test('runs the simulation live, stops to ask, and draws the real plan', async ({
   expect(answered).toBeGreaterThan(0) // it really did stop and ask
 
   // The finished graph is the backend's output, and it is about THIS brief.
-  await expect(page.locator('[data-testid="node-card"]').first()).toBeVisible()
+  //
+  // `:visible` rather than `.first()`: React Flow leaves a node `visibility: hidden` until it
+  // has been measured, and a thirteen-column graph always has nodes that never get measured at
+  // this viewport. Which node DOM order puts first is therefore a lottery — one this test won
+  // on a developer machine and lost on CI. What matters is that the graph actually painted.
+  await expect(page.locator('[data-testid="node-card"]:visible').first()).toBeVisible()
   expect(await page.locator('[data-testid="node-card"]').count()).toBeGreaterThan(5)
   await expect(page.locator('.topbar')).toContainText('Chennai')
   await expect(page.locator('.topbar')).toContainText('Tier IV')
