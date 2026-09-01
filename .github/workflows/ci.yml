@@ -70,3 +70,64 @@ jobs:
         # The `live` tests hit the real Base44 gateway and spend credits; they are
         # deselected here and skip themselves anyway without BASE44_* secrets.
         run: python -m pytest -m "not live" -q
+
+  # Guards the 2D flow view the same way the two jobs above guard the backend. Worth its own
+  # job because the defects this catches are invisible to a typecheck: the two bugs found when
+  # the view was built (a hover race that wiped the highlight, and overlapping cards that stole
+  # each other's pointer events) both compiled fine and both broke the interaction.
+  frontend:
+    name: Frontend (typecheck, build, browser tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install from the lockfile
+        # `ci`, not `install`: it fails on a lockfile that disagrees with package.json rather
+        # than silently resolving something different from what was developed against.
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Chromium
+        # Only the browser the suite uses. --with-deps pulls the system libraries the runner
+        # lacks; without it Chromium installs and then fails to launch.
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser tests
+        # playwright.config.ts starts Vite itself, and CI=true stops it reusing a server that
+        # is not there.
+        run: npx playwright test
+
+      - name: Upload rendered screenshots
+        # Always, not just on failure: these are how the rendered flow gets reviewed without
+        # anyone opening a browser, which is the point of capturing them at all.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flow-screenshots
+          path: frontend/e2e/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            frontend/e2e/.artifacts/
+            frontend/playwright-report/
+          retention-days: 7
