@@ -12,7 +12,14 @@
 
 import { expect, type Page } from '@playwright/test'
 
-export const API = process.env.VITE_API_BASE ?? 'http://localhost:8000'
+/**
+ * Where the tests probe for a live API.
+ *
+ * Separate from the browser's own API base: the reachability check runs in Node, so it needs an
+ * absolute URL even when the app itself calls its own origin. Point E2E_BASE_URL and E2E_API at
+ * a deployment to run this suite against it.
+ */
+export const API = process.env.E2E_API ?? process.env.E2E_BASE_URL ?? 'http://localhost:8000'
 
 /** Deliberately unlike the seed: Chennai, Tier IV, 30 MW, 2N, brownfield, single handover. */
 export const CHENNAI_BRIEF = `We are bidding a 30 MW Tier IV hyperscale data centre in Chennai, on a

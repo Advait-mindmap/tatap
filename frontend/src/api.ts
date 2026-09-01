@@ -9,14 +9,25 @@
 
 import type { IntakeResult, SimulationEvent } from './types'
 
-/** Where the API lives. Same-origin in deployment; the Vite dev server proxies nothing. */
-export const API_BASE =
-  (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') ??
-  'http://localhost:8000'
+/**
+ * Where the API lives.
+ *
+ * Empty means SAME ORIGIN, which is the deployed shape: FastAPI serves the built frontend, so
+ * the UI and the API share a host and there is no cross-origin call to configure. In
+ * development the two are split across ports, so `.env.development` sets VITE_API_BASE.
+ *
+ * Defaulting to localhost here would have shipped a build that called the developer's machine
+ * from the user's browser.
+ */
+export const API_BASE = (
+  (import.meta.env.VITE_API_BASE as string | undefined) ?? ''
+).replace(/\/$/, '')
 
 export function wsUrl(path: string): string {
-  const base = API_BASE.replace(/^http/, 'ws')
-  return `${base}${path}`
+  if (API_BASE) return `${API_BASE.replace(/^http/, 'ws')}${path}`
+  // Same origin: derive the scheme so https pages open wss, not ws (which browsers block).
+  const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  return `${scheme}://${window.location.host}${path}`
 }
 
 export class ApiError extends Error {
@@ -44,7 +55,8 @@ export async function extractBrief(
     })
   } catch (cause) {
     throw new ApiError(
-      `Could not reach the planner API at ${API_BASE}. Is the backend running?`,
+      `Could not reach the planner API at ${API_BASE || window.location.origin}. ` +
+        'Is the backend running?',
       0,
       String(cause),
     )

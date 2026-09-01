@@ -20,7 +20,8 @@ export default defineConfig({
   expect: { timeout: 10_000 },
 
   use: {
-    baseURL: 'http://localhost:5173',
+    // E2E_BASE_URL points the whole suite at a deployment. Unset, it drives the Vite dev server.
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:5173',
     viewport: { width: 1680, height: 1000 },
     deviceScaleFactor: 2, // legible screenshots on a normal display
     trace: 'retain-on-failure',
@@ -29,7 +30,8 @@ export default defineConfig({
 
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 
-  webServer: {
+  // No dev server when testing a deployment - there is nothing local to start.
+  webServer: process.env.E2E_BASE_URL ? undefined : {
     command: 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,

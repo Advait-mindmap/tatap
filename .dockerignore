@@ -1,0 +1,24 @@
+# Build context hygiene. Without this, `COPY frontend .` overwrites the node_modules that
+# `npm ci` just installed inside the Alpine image with the host's — on Windows that means
+# platform-specific binaries that cannot run in the container.
+**/node_modules
+**/dist
+**/__pycache__
+**/*.pyc
+
+.venv/
+.ci-clean/
+.git/
+.github/
+.pytest_cache/
+
+# Secrets and local state never belong in an image layer.
+.env
+samples/
+*.xer
+
+# Test output
+frontend/e2e/.artifacts/
+frontend/e2e/screenshots/
+frontend/playwright-report/
+frontend/test-results/

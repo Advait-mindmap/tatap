@@ -15,7 +15,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 const SHOTS = 'e2e/screenshots'
-const API = process.env.VITE_API_BASE ?? 'http://localhost:8000'
+const API = process.env.E2E_API ?? process.env.E2E_BASE_URL ?? 'http://localhost:8000'
 
 /** Deliberately unlike the seed: Chennai, Tier IV, 30 MW, 2N, brownfield, single handover. */
 const CHENNAI_BRIEF = `We are bidding a 30 MW Tier IV hyperscale data centre in Chennai, on a

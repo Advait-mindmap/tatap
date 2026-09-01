@@ -1,8 +1,11 @@
 import os
 from typing import Any, Dict
 
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend.app.intake import extract_brief
@@ -172,3 +175,32 @@ async def ws_simulate(websocket: WebSocket) -> None:
     except WebSocketDisconnect:
         # The run stays in the registry so it can be attached to and answered later.
         return
+
+
+# ---------------------------------------------------------------------------------------------
+# Serve the built frontend.
+#
+# The Dockerfile already builds the UI and copies it here, but nothing served it - the image
+# contained a frontend no one could reach. Mounting it LAST matters: a mount at "/" swallows
+# every path, so it has to come after /health, /intake and /ws/simulate are registered.
+#
+# Serving both from one origin is also why the frontend defaults to a same-origin API base: there
+# is no cross-origin call to configure, and CORS only matters for local development.
+# ---------------------------------------------------------------------------------------------
+STATIC_DIR = Path(__file__).resolve().parent / 'static'
+
+if STATIC_DIR.is_dir():
+    # html=True serves index.html for "/" so the app loads at the bare domain.
+    app.mount('/', StaticFiles(directory=str(STATIC_DIR), html=True), name='ui')
+else:
+    @app.get('/')
+    def ui_not_built() -> dict:
+        """Running from source without a build. Say so rather than 404ing mysteriously."""
+        return {
+            'status': 'api-only',
+            'detail': (
+                'The frontend has not been built into this deployment. Run `npm run build` in '
+                '/frontend, or use the Vite dev server for local development.'
+            ),
+            'api': ['/health', '/intake', '/ws/simulate'],
+        }
