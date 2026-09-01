@@ -117,6 +117,13 @@ jobs:
         working-directory: .
         env:
           LLM_PROVIDER: stub
+          # The usage caps protect a deployment's credits; here they would only throttle the
+          # suite. The browser tests start more simulations than one client is allowed per day
+          # (RUNS_PER_CLIENT_DAILY defaults to 5), and every test arrives from the same
+          # 127.0.0.1 — so the sixth run would be refused and the job would fail on a guard
+          # doing exactly its job. The stub spends nothing, so there is nothing to protect.
+          LLM_DAILY_CALL_CAP: '0'
+          RUNS_PER_CLIENT_DAILY: '0'
         run: |
           python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --log-level warning &
           for i in $(seq 1 30); do
