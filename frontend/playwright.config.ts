@@ -15,7 +15,10 @@ export default defineConfig({
   outputDir: './e2e/.artifacts',
   fullyParallel: false,
   workers: 1,
-  reporter: [['list']],
+  // The `github` reporter emits ::error annotations, which GitHub attaches to the check run.
+  // Those are readable without authentication, unlike job logs — so a failure explains itself
+  // to anyone looking at the build, not just to whoever holds a token.
+  reporter: process.env.CI ? [['github'], ['list']] : [['list']],
   // A test drives a whole simulation: intake, thirteen stages, a stop at every genuine fork.
   // The 45s this used to allow was shorter than the waits inside the tests themselves
   // (support.ts waits up to 120s for extraction and 300s for a stage), so those waits could
