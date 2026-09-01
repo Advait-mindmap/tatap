@@ -429,18 +429,31 @@ def test_ws_can_attach_to_a_halted_run_after_a_dropped_socket(monkeypatch):
     ws_reasoner(monkeypatch, forks_by_stage={'procurement': [fork('dp.ofe')]})
     client = TestClient(app)
 
+    run_id = ''
     with client.websocket_connect('/ws/simulate') as ws:
         ws.send_json({'action': 'start', 'brief': BRIEF})
-        while ws.receive_json()['type'] != SIMULATION_HALTED:
-            pass
+        while True:
+            event = ws.receive_json()
+            # Take the id off the wire, as a real client does. Ids are random now (a counter
+            # would hand a post-restart run the id of a stored one), so guessing 'run-1' here
+            # was only ever testing the counter.
+            run_id = run_id or event['payload'].get('run_id', '')
+            if event['type'] == SIMULATION_HALTED:
+                break
+    assert run_id
     # Socket closed with the fork still open.
 
-    run_id = 'run-1'
     with client.websocket_connect('/ws/simulate') as ws:
         ws.send_json({'action': 'attach', 'run_id': run_id})
+        # Attach replays the open forks first, so the reconnected client knows what it is being
+        # asked, then reports the halt with the plan built so far.
+        replayed = ws.receive_json()
+        assert replayed['type'] == DECISION_NEEDED
+        assert replayed['payload']['id'] == 'dp.ofe'
         attached = ws.receive_json()
         assert attached['type'] == SIMULATION_HALTED
         assert attached['payload']['pending'] == ['dp.ofe']
+        assert attached['payload']['output']['project_meta']['run_id'] == run_id
 
         ws.send_json({'action': 'answer', 'decision_point_id': 'dp.ofe', 'answer': 'OFE'})
         final = []
@@ -451,6 +464,49 @@ def test_ws_can_attach_to_a_halted_run_after_a_dropped_socket(monkeypatch):
                 break
 
     assert final[-1]['type'] == SIMULATION_COMPLETED
+
+
+def test_ws_can_attach_to_a_halted_run_after_a_process_restart(monkeypatch):
+    """The deploy case: the container that started the run is gone before the fork is answered.
+
+    Identical to the dropped-socket test except for one line — `registry.clear()`, which empties
+    the in-memory cache and leaves storage alone, exactly as a restart does. Before runs were
+    persisted this failed with "No run ...", and a planner's half-finished plan went with it.
+    """
+    ws_reasoner(monkeypatch, forks_by_stage={'procurement': [fork('dp.ofe')]})
+    client = TestClient(app)
+
+    run_id = ''
+    with client.websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'start', 'brief': BRIEF})
+        while True:
+            event = ws.receive_json()
+            run_id = run_id or event['payload'].get('run_id', '')
+            if event['type'] == SIMULATION_HALTED:
+                break
+
+    registry.clear()  # <- the restart
+    assert len(registry) == 0
+
+    with client.websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'attach', 'run_id': run_id})
+        replayed = ws.receive_json()
+        assert replayed['type'] == DECISION_NEEDED, (
+            'the rebuilt run did not know what it was halted on'
+        )
+        assert ws.receive_json()['type'] == SIMULATION_HALTED
+
+        ws.send_json({'action': 'answer', 'decision_point_id': 'dp.ofe', 'answer': 'OFE'})
+        final = []
+        while True:
+            event = ws.receive_json()
+            final.append(event)
+            if event['type'] in (SIMULATION_COMPLETED, SIMULATION_HALTED):
+                break
+
+    assert final[-1]['type'] == SIMULATION_COMPLETED, (
+        'the run did not finish after being rebuilt from storage'
+    )
 
 
 def test_ws_attach_to_unknown_run_errors(monkeypatch):

@@ -26,6 +26,8 @@ import type {
 
 export interface RunState {
   status: RunStatus
+  /** The server's id for this run. Needed to re-attach after a dropped socket or a restart. */
+  runId: string
   /** Built from events while running; replaced by the authoritative output at each settle point. */
   nodes: FlowNode[]
   edges: FlowEdge[]
@@ -42,6 +44,7 @@ export interface RunState {
 
 export const INITIAL_RUN: RunState = {
   status: 'idle',
+  runId: '',
   nodes: [],
   edges: [],
   output: null,
@@ -65,7 +68,8 @@ export function reduceEvent(state: RunState, event: SimulationEvent): RunState {
 
   switch (event.type) {
     case 'simulation_started':
-      return { ...next, status: 'running', error: '' }
+      // Keep the id: it is the only handle on a run that outlives this socket.
+      return { ...next, status: 'running', error: '', runId: p.run_id ?? next.runId }
 
     case 'stage_started':
       return {
@@ -232,6 +236,7 @@ export function reduceEvent(state: RunState, event: SimulationEvent): RunState {
       return {
         ...next,
         status: event.type === 'simulation_halted' ? 'halted' : 'complete',
+        runId: p.run_id ?? output?.project_meta?.run_id ?? next.runId,
         output,
         nodes: output ? output.flow.nodes : next.nodes,
         edges: output ? output.flow.edges : next.edges,

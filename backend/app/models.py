@@ -4,7 +4,17 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -259,3 +269,60 @@ class CacheEntry(Base):
     cache_key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     payload: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+
+
+class PersistedRun(Base):
+    """An in-flight simulation run, stored so it survives a process restart.
+
+    The existing tables model a *finished* simulation projected into flow_nodes/activities/
+    trail_entries. None of them hold what a half-walked run needs — which stages are done, which
+    forks are open, the sequence number, and the per-stage reasoning already paid for. So this
+    table exists rather than being forced into `simulations`, which requires a project row and
+    describes a completed artefact.
+
+    `state` is a serialised `RunState`; `reasonings` maps stage -> serialised `StageReasoning`.
+    Both are plain data because the simulator was deliberately built as a data state machine
+    (simulator/runner.py) rather than a suspended coroutine.
+
+    Storing the reasoning matters as much as storing the state: without it, resuming would
+    re-reason every completed stage and spend the model budget a second time for a plan the
+    run already had.
+    """
+
+    __tablename__ = 'run_states'
+
+    run_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    #: running | halted | complete | error — for operators reading the table, not for the walk,
+    #: which derives its own status from `state`.
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default='running')
+    state: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False)
+    reasonings: Mapped[Dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    stages: Mapped[List[str]] = mapped_column(JSON, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+
+class UsageCounter(Base):
+    """A counted, capped resource for one UTC day.
+
+    In the database rather than in memory on purpose. An in-process counter resets on every
+    deploy and every container restart, so the cap it enforces is only ever as strong as the
+    uptime — which on a platform that restarts freely is no cap at all.
+
+    `scope` is the thing being counted: 'llm_calls' for the global provider budget, or
+    'runs:<client>' for one caller's simulations.
+    """
+
+    __tablename__ = 'usage_counters'
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    day: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+    scope: Mapped[str] = mapped_column(String(160), nullable=False, index=True)
+    count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    __table_args__ = (UniqueConstraint('day', 'scope', name='uq_usage_day_scope'),)

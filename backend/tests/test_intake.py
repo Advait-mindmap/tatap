@@ -296,7 +296,8 @@ def test_empty_brief_is_rejected():
 def test_intake_endpoint_returns_brief_questions_and_provenance(monkeypatch):
     monkeypatch.setattr(
         'backend.app.main.extract_brief',
-        lambda raw: build_result(good_response(), raw, 0.7),
+        # The endpoint now hands extract_brief a budget-guarded adapter, so accept it.
+        lambda raw, adapter=None: build_result(good_response(), raw, 0.7),
     )
     response = TestClient(app).post('/intake', json={'text': SAMPLE_BRIEF})
 
@@ -314,7 +315,7 @@ def test_intake_endpoint_rejects_empty_text():
 
 
 def test_intake_endpoint_reports_provider_failure_as_502(monkeypatch):
-    def boom(raw):
+    def boom(raw, adapter=None):
         raise LLMError('gateway down')
 
     monkeypatch.setattr('backend.app.main.extract_brief', boom)

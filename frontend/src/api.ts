@@ -99,11 +99,19 @@ export function runSimulation(
     onError: (message: string) => void
     onClose?: () => void
   },
+  options: { attachRunId?: string } = {},
 ): SimulationSocket {
   const socket = new WebSocket(wsUrl('/ws/simulate'))
 
   socket.addEventListener('open', () => {
-    socket.send(JSON.stringify({ action: 'start', brief }))
+    // Re-attach rather than restart when we already have a run. The backend stores runs, so an
+    // interrupted simulation is resumed from where it stopped — starting over would re-reason
+    // every completed stage and charge for it a second time.
+    socket.send(
+      options.attachRunId
+        ? JSON.stringify({ action: 'attach', run_id: options.attachRunId })
+        : JSON.stringify({ action: 'start', brief }),
+    )
   })
 
   socket.addEventListener('message', (message) => {

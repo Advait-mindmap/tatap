@@ -24,3 +24,36 @@ def _load_dotenv(path: Path) -> None:
 
 
 _load_dotenv(REPO_ROOT / '.env')
+
+
+# ---------------------------------------------------------------------------------------------
+# Usage caps and durable storage are DEPLOYMENT concerns, and both keep state that outlives a
+# single test. Left at their production defaults they would make the suite order-dependent and
+# then permanently red: the daily counters accumulate in a shared database, so the run that
+# crossed the cap would fail every test after it, on that day, forever.
+#
+# So the suite runs uncapped and on a throwaway database by default. The tests that exercise the
+# caps and the store supply their own limits and their own session factory, which is also the
+# honest way round — a cap test that depends on ambient configuration is not testing the cap.
+# ---------------------------------------------------------------------------------------------
+import tempfile
+
+os.environ.setdefault('LLM_DAILY_CALL_CAP', '0')
+os.environ.setdefault('RUNS_PER_CLIENT_DAILY', '0')
+os.environ.setdefault(
+    'DATABASE_URL',
+    'sqlite:///' + str(Path(tempfile.gettempdir()) / 'dc_planner_tests.db'),
+)
+
+
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _isolate_runs():
+    """Every test starts with no runs in memory or in storage."""
+    from backend.app.simulator import registry
+
+    registry.reset()
+    yield
+    registry.reset()

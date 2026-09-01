@@ -29,3 +29,6 @@ frontend/test-results/
 # Screenshots are regenerated on every `npm run e2e`; the tests that produce them are the
 # artefact worth versioning, not the PNGs.
 frontend/e2e/screenshots/
+
+# Local SQLite databases created by the default DATABASE_URL and by test runs.
+*.db

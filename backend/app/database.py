@@ -29,3 +29,30 @@ def init_db() -> None:
         with engine.begin() as conn:
             conn.exec_driver_sql('CREATE EXTENSION IF NOT EXISTS vector;')
     Base.metadata.create_all(bind=engine)
+
+
+_TABLES_READY = False
+
+
+def ensure_tables() -> None:
+    """Create any missing tables, once per process.
+
+    `init_db()` was exported but never called by the app, so a fresh deployment had a database
+    with no tables in it — which nothing noticed while every feature was in-memory. Durable runs
+    and the usage cap both read and write, so they call this lazily before their first query
+    rather than depending on someone having run a migration by hand.
+
+    Idempotent and cheap: `create_all` issues a CREATE TABLE IF NOT EXISTS per table, and the
+    flag keeps it to one round trip per process.
+    """
+    global _TABLES_READY
+    if _TABLES_READY:
+        return
+    Base.metadata.create_all(bind=engine)
+    _TABLES_READY = True
+
+
+def reset_tables_ready() -> None:
+    """Test hook: forget that tables were checked (used when the engine is swapped out)."""
+    global _TABLES_READY
+    _TABLES_READY = False
