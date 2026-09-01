@@ -28,7 +28,25 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
 
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // Headless Chromium has no GPU, so WebGL falls back to SwiftShader — which newer
+        // builds refuse to use unless asked. Without these the 3D canvas renders nothing and
+        // the test would be "proving" a black screen.
+        launchOptions: {
+          args: [
+            '--enable-unsafe-swiftshader',
+            '--use-gl=angle',
+            '--use-angle=swiftshader',
+            '--ignore-gpu-blocklist',
+          ],
+        },
+      },
+    },
+  ],
 
   // No dev server when testing a deployment - there is nothing local to start.
   webServer: process.env.E2E_BASE_URL ? undefined : {

@@ -6,6 +6,10 @@ interface Props {
   run: RunState
   onAnswer: (decisionPointId: string, answer: string) => void
   onRestart: () => void
+  isPlaying?: boolean
+  onPlayPause?: (playing: boolean) => void
+  onStep?: () => void
+  onReplay?: () => void
 }
 
 const STATUS_LABEL: Record<RunStatus, string> = {
@@ -23,7 +27,7 @@ const STATUS_LABEL: Record<RunStatus, string> = {
  * flow of thought cannot continue, it says WHY it is stuck, offers the options, states the
  * impact, and waits. It does not invent an answer, and it does not let the reader skip past it.
  */
-export function RunPanel({ run, onAnswer, onRestart }: Props) {
+export function RunPanel({ run, onAnswer, onRestart, isPlaying = true, onPlayPause, onStep, onReplay }: Props) {
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const decision: OpenDecision | undefined = run.openDecisions[0]
 
@@ -43,6 +47,40 @@ export function RunPanel({ run, onAnswer, onRestart }: Props) {
           <span className="chip">{run.currentStage.replace(/_/g, ' ')}</span>
         )}
       </div>
+
+      {/* Playback controls */}
+      {run.status !== 'idle' && (run.status === 'running' || run.status === 'halted') && (
+        <div className="playback-controls" data-testid="playback-controls">
+          <button
+            className="control-btn"
+            onClick={() => onPlayPause?.(!isPlaying)}
+            title={isPlaying ? 'Pause' : 'Play'}
+            data-testid={isPlaying ? 'pause-btn' : 'play-btn'}
+          >
+            {isPlaying ? '⏸' : '▶'}
+          </button>
+          <button
+            className="control-btn"
+            onClick={onStep}
+            title="Step one event"
+            disabled={isPlaying}
+            data-testid="step-btn"
+          >
+            ⏭
+          </button>
+          <button
+            className="control-btn"
+            onClick={onReplay}
+            title="Replay from start"
+            data-testid="replay-btn"
+          >
+            ⏮
+          </button>
+          <span className="event-counter" data-testid="event-counter">
+            {run.events.length} events
+          </span>
+        </div>
+      )}
 
       {run.status === 'error' && (
         <div className="notice notice-error small" data-testid="run-error">
