@@ -353,7 +353,12 @@ test.describe('2D process flow', () => {
     }
     await page.waitForTimeout(400)
 
-    await expect(page.locator('[data-testid="node-card"]').first()).toBeVisible()
+    // `:visible`, for the same reason as everywhere else in this file: after zooming in, the
+    // first card in DOM order is often one React Flow has not measured, and asserting on it
+    // tests DOM ordering rather than the view.
+    await expect(
+      page.locator('[data-testid="node-card"]:visible').first(),
+    ).toBeVisible()
     await page.getByTestId('canvas').screenshot({ path: `${SHOTS}/07-readable-detail.png` })
   })
 
