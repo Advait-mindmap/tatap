@@ -352,3 +352,21 @@ button.option:hover { background: rgba(251,113,133,0.2); border-color: var(--ala
   margin: 0 0 0.3rem; font-size: 13px; font-weight: 600; color: var(--text);
 }
 .view-3d-zone-count { margin: 0; font-size: 11px; color: var(--muted); }
+
+/* The decision stepper in the top bar. Looks like a badge because it belongs with the run's
+   status chips, but it is a control: it centres the next decision point on the canvas. */
+.badge-action {
+  cursor: pointer;
+  border: 1px solid #6366f1;
+  background: rgba(99, 102, 241, 0.16);
+  color: #c7d2fe;
+  font: inherit;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.badge-action:hover {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: #818cf8;
+}

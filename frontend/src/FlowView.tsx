@@ -4,9 +4,12 @@ import ReactFlow, {
   Controls,
   MiniMap,
   MarkerType,
+  ReactFlowProvider,
+  useNodesInitialized,
+  useReactFlow,
+  useStore,
   type Edge,
   type Node,
-  type ReactFlowInstance,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -52,7 +55,23 @@ export interface FlowViewProps {
   autoFit?: boolean
 }
 
-export function FlowView({
+/**
+ * The view, wrapped so React Flow's hooks are available to it.
+ *
+ * Driving the canvas through an imperative instance ref turned out to be the wrong tool: the
+ * ref was never assigned, and once it was, `fitView` still refused to run because React Flow
+ * had not measured the nodes and there was no way to ask it when it had. `useNodesInitialized`
+ * answers exactly that question, and needs a provider above the component that calls it.
+ */
+export function FlowView(props: FlowViewProps) {
+  return (
+    <ReactFlowProvider>
+      <FlowViewInner {...props} />
+    </ReactFlowProvider>
+  );
+}
+
+function FlowViewInner({
   nodes: flowNodes,
   edges: flowEdges,
   trail,
@@ -62,7 +81,17 @@ export function FlowView({
   aside,
   autoFit = false,
 }: FlowViewProps) {
-  const instance = useRef<ReactFlowInstance | null>(null);
+  const reactFlow = useReactFlow();
+  // True once React Flow has measured every node. Until then it marks them `visibility: hidden`
+  // and refuses to fit - which is why every fit attempted the instant a batch of nodes arrived
+  // returned false and did nothing.
+  const nodesInitialized = useNodesInitialized();
+  // React Flow can only fit once its zoom behaviour is attached and the pane has a size.
+  // Watching that in the store is what makes the fit reliable: it is false for the first
+  // frames, which is exactly when a finished graph lands.
+  const canFit = useStore(
+    (st) => Boolean(st.d3Zoom && st.d3Selection && st.width && st.height),
+  );
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [hiddenStages, setHiddenStages] = useState<Set<string>>(new Set());
@@ -172,15 +201,75 @@ export function FlowView({
     return byKind;
   }, [flow.nodes]);
 
+  /**
+   * A signature of what is on the canvas, not just how much.
+   *
+   * The fit used to key on `nodes.length`, which fails at the single most important moment: when
+   * a run completes, the authoritative SimulationOutput REPLACES the streamed graph with the
+   * same number of nodes, so the length never changes and the fit never fires. The reader was
+   * left parked wherever the last mid-run fit had put them - in practice, on an empty corner of
+   * a 3700px-wide programme.
+   */
+  const signature = useMemo(() => nodes.map((n) => n.id).join("|"), [nodes]);
+  const signatureRef = useRef("");
+  const fittedRef = useRef("");
+  signatureRef.current = signature;
+
+  /**
+   * Fit whenever the canvas changes, once React Flow is able to.
+   *
+   * Three separate faults conspired here, and each hid the next:
+   *
+   *  - the fit keyed on `nodes.length`, so the most important fit of all - the one after a
+   *    completed run replaces the streamed graph with the authoritative output, node for node -
+   *    never fired at all;
+   *  - it ran through an instance ref that was never assigned, so every call was a no-op;
+   *  - and when that was fixed it still recorded a FAILED fit as done. `fitView` returns false
+   *    until the nodes are measured and the zoom behaviour is attached, which is precisely the
+   *    state a moment after a batch of nodes arrives.
+   *
+   * The result a user saw: one card in the corner of an empty canvas, with the other 67 nodes
+   * of a 3700px programme off-screen. Only a successful fit counts as done, so the next render
+   * retries until it takes.
+   */
   useEffect(() => {
-    if (!autoFit || !instance.current || nodes.length === 0) return;
-    // A frame's delay lets React Flow measure the newly added nodes before fitting to them.
-    const timer = window.setTimeout(
-      () => instance.current?.fitView({ padding: 0.08, minZoom: 0.3, maxZoom: 1.0 }),
-      60,
-    );
-    return () => window.clearTimeout(timer);
-  }, [autoFit, nodes.length]);
+    if (!autoFit || !nodesInitialized || !canFit) return;
+    if (!signature || signature === fittedRef.current) return;
+    // Low enough to show a full thirteen-stage programme. Seeing all of it is not the same as
+    // reading it - that is what the decision stepper is for - but it beats seeing none of it.
+    if (reactFlow.fitView({ padding: 0.08, minZoom: 0.12, maxZoom: 1.0 })) {
+      fittedRef.current = signature;
+    }
+  }, [autoFit, nodesInitialized, canFit, signature, reactFlow]);
+
+  /**
+   * Bring the decision points within reach.
+   *
+   * Stop-and-ask is the product's differentiator, and at a whole-programme zoom every fork is a
+   * two-pixel smudge somewhere in 3700px of canvas. Measured on a real completed run: seven of
+   * eight decision points were off-screen and all twenty-nine activities were. Cycling centres
+   * them one at a time at a readable zoom, so the questions the plan stopped on are one click
+   * away instead of a hunt.
+   */
+  const forkNodes = useMemo(
+    () => nodes.filter((n) => (n.data as CardData).node.kind === "decision_point"),
+    [nodes],
+  );
+  const forkCursor = useRef(0);
+
+  const focusNextFork = useCallback(() => {
+    if (forkNodes.length === 0) return;
+    const target = forkNodes[forkCursor.current % forkNodes.length];
+    forkCursor.current += 1;
+    reactFlow.fitView({
+      nodes: [{ id: target.id }],
+      duration: 400,
+      padding: 3,
+      minZoom: 0.75,
+      maxZoom: 1.1,
+    });
+    setSelected(target.id);
+  }, [forkNodes, reactFlow]);
 
   const openForks = flow.nodes.filter(
     (n) => n.kind === "decision_point" && n.status === "open",
@@ -215,6 +304,18 @@ export function FlowView({
             <span className="badge badge-alarm">
               {openForks} open decision point(s)
             </span>
+          )}
+          {/* The differentiator, made reachable. At whole-programme zoom every fork is a
+              smudge somewhere in 3700px of canvas; this walks them one at a time. */}
+          {forkNodes.length > 0 && (
+            <button
+              className="badge badge-action"
+              onClick={focusNextFork}
+              data-testid="focus-decision-button"
+              title="Centre the next decision point"
+            >
+              ⌖ {forkNodes.length} decision{forkNodes.length === 1 ? "" : "s"}
+            </button>
           )}
           {!quality.governance_complete && (
             <span className="badge badge-warn">
