@@ -66,3 +66,61 @@ def test_schema_models_can_be_created():
     assert brief.project_name == 'Delta DC 1'
     assert decision.answer == 'Owner-furnished equipment'
     assert output.project_meta['project_name'] == 'Delta DC 1'
+
+
+def test_ensure_tables_creates_the_vector_extension_before_the_tables():
+    """A Postgres deployment without pgvector must not lose every table.
+
+    Two corpus tables declare Vector(1536). Postgres rejects that type when the extension is
+    missing, which fails the entire create_all — so `run_states` and `usage_counters` would be
+    missing too, and metering fails closed, so the API would 503 every request. The extension
+    has to be created first, in the same call.
+    """
+    import backend.app.database as db
+
+    issued = []
+
+    class FakeConn:
+        def exec_driver_sql(self, sql):
+            issued.append(sql)
+
+    class FakeCtx:
+        def __enter__(self): return FakeConn()
+        def __exit__(self, *a): return False
+
+    class FakeEngine:
+        def begin(self): return FakeCtx()
+
+    created = []
+    original_engine, original_url = db.engine, db.DATABASE_URL
+    original_create = db.Base.metadata.create_all
+    try:
+        db.DATABASE_URL = 'postgresql://user@host/db'
+        db.engine = FakeEngine()
+        db.Base.metadata.create_all = lambda bind=None: created.append(bind)
+        db.reset_tables_ready()
+        db.ensure_tables()
+    finally:
+        db.engine, db.DATABASE_URL = original_engine, original_url
+        db.Base.metadata.create_all = original_create
+        db.reset_tables_ready()
+
+    assert any('CREATE EXTENSION IF NOT EXISTS vector' in s for s in issued), (
+        'pgvector extension was not created, so create_all would fail on Postgres'
+    )
+    assert created, 'tables were never created'
+
+
+def test_init_db_and_ensure_tables_are_the_same_path():
+    """They diverged once: init_db created the extension and ensure_tables did not, and only
+    ensure_tables was ever called. Divergence survives when the correct path is the unused one."""
+    import backend.app.database as db
+
+    calls = []
+    original = db.ensure_tables
+    try:
+        db.ensure_tables = lambda: calls.append('called')
+        db.init_db()
+    finally:
+        db.ensure_tables = original
+    assert calls == ['called']

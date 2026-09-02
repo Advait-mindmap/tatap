@@ -24,11 +24,13 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
+def is_postgres() -> bool:
+    return DATABASE_URL.startswith('postgresql') or DATABASE_URL.startswith('postgres')
+
+
 def init_db() -> None:
-    if DATABASE_URL.startswith('postgresql') or DATABASE_URL.startswith('postgres'):
-        with engine.begin() as conn:
-            conn.exec_driver_sql('CREATE EXTENSION IF NOT EXISTS vector;')
-    Base.metadata.create_all(bind=engine)
+    """Historical entry point. Kept so existing callers and docs still work."""
+    ensure_tables()
 
 
 _TABLES_READY = False
@@ -42,12 +44,25 @@ def ensure_tables() -> None:
     and the usage cap both read and write, so they call this lazily before their first query
     rather than depending on someone having run a migration by hand.
 
-    Idempotent and cheap: `create_all` issues a CREATE TABLE IF NOT EXISTS per table, and the
-    flag keeps it to one round trip per process.
+    **The pgvector extension has to exist before `create_all`, not alongside it.** Two corpus
+    tables declare `Vector(1536)` columns, and Postgres rejects that type outright when the
+    extension is absent — which fails the whole `create_all`, not just those two tables. So a
+    deployment without the extension would end up with no `run_states` and no `usage_counters`
+    either, and because metering fails closed, every request would then be refused with a 503.
+    A missing extension would have taken the API down rather than degrading one feature.
+
+    `init_db()` already did this and `ensure_tables()` did not, which is exactly the kind of
+    divergence that survives because only the unused path was correct. They are one function now.
+
+    Idempotent and cheap: CREATE EXTENSION IF NOT EXISTS, CREATE TABLE per missing table, and
+    the flag keeps it to one round trip per process.
     """
     global _TABLES_READY
     if _TABLES_READY:
         return
+    if is_postgres():
+        with engine.begin() as conn:
+            conn.exec_driver_sql('CREATE EXTENSION IF NOT EXISTS vector;')
     Base.metadata.create_all(bind=engine)
     _TABLES_READY = True
 
