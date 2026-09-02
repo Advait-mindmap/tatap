@@ -155,6 +155,12 @@ jobs:
         if: always()
         run: npx playwright test view3d.spec
 
+      # Naming specs individually buys legible failures but costs this: a new spec file runs
+      # nowhere until it is listed. playback.spec was invisible to CI until this line existed.
+      - name: Browser tests - playback controls (play, pause, step, replay)
+        if: always()
+        run: npx playwright test playback.spec
+
       - name: Upload rendered screenshots
         # Always, not just on failure: these are how the rendered flow gets reviewed without
         # anyone opening a browser, which is the point of capturing them at all.
