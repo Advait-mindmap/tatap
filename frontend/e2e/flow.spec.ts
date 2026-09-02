@@ -303,7 +303,11 @@ test.describe('2D process flow', () => {
     const fork = page
       .locator('[data-testid="node-card"][data-kind="decision_point"]:visible')
       .first()
-    await expect(fork).toBeVisible()
+    // Generous, because "visible" here waits on React Flow measuring nodes after the final
+    // fit, not on anything the app is still computing. Events now reach the view through the
+    // playback queue, which shifts that measurement slightly later; on a CI runner with no GPU
+    // the default 10s was occasionally short of it.
+    await expect(fork).toBeVisible({ timeout: 30_000 })
     await fork.click()
 
     const panel = page.getByTestId('trail-panel')
