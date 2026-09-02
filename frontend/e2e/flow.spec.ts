@@ -155,8 +155,11 @@ test.describe('2D process flow', () => {
     expect(overlaps).toBe(0)
   })
 
-  // FIXME: assumed the 49-node fixture. A live walk is 13 columns wide, so the opening zoom
-  // is genuinely lower and the legibility floor needs rethinking for a graph of any size.
+  // fixme: this asserts zoom >= 0.6, which the view deliberately no longer does. A live walk is
+  // thirteen stages wide, and opening at a legible zoom means opening on a fraction of the plan -
+  // which is the bug that left a finished run showing one card on an empty canvas. The view now
+  // opens fitted to the whole programme (~0.17) and legibility comes from the decision stepper
+  // and zooming in. Restoring this test would mean re-introducing the fault it now contradicts.
   test.fixme('opens at a zoom where the node text is legible', async ({ page }) => {
     // Regression guard for the demo complaint: a plain fitView packed all 49 nodes in at ~0.31
     // and the labels became grey mush. The view now opens at a working zoom.
@@ -207,7 +210,7 @@ test.describe('2D process flow', () => {
 
   // FIXME: needs an on-screen activity card, which depends on how big a graph the run
   // produced. Worth restoring - this is the test that caught the hover-flicker bug.
-  test.fixme('hovering a node highlights its transitive path and dims the rest', async ({ page }) => {
+  test('hovering a node highlights its transitive path and dims the rest', async ({ page }) => {
     await ready(page)
 
     // Nothing is dimmed before the hover.
@@ -258,7 +261,7 @@ test.describe('2D process flow', () => {
 
   // FIXME: clicks a card that may be off-screen in a live graph; needs the same
   // narrow-then-click treatment as the others.
-  test.fixme('clicking a node opens its reasoning trail with the capped-confidence detail', async ({
+  test('clicking a node opens its reasoning trail with the capped-confidence detail', async ({
     page,
   }) => {
     await ready(page)
@@ -294,12 +297,14 @@ test.describe('2D process flow', () => {
 
   // fixme: no decision-point node is measured-and-visible at the fit zoom on a CI runner, so
   // there is nothing to click. Viewport-dependent, like the other fixmes in this file.
-  test.fixme('clicking a decision point shows why thought stopped and the answer given', async ({
+  test('clicking a decision point shows why thought stopped and the answer given', async ({
     page,
   }) => {
     await ready(page)
 
-    await fitAll(page)
+    // No fitAll() here. The view now fits the whole programme on its own, and the fit-view
+    // control zooms IN to the 0.62 legibility floor - which crops a thirteen-column graph and
+    // puts the forks back off-screen. Fitting twice was making this test fail.
     // `:visible` — React Flow keeps unmeasured nodes hidden, so the first decision point in
     // DOM order is not necessarily one that has a box. Pick one that is actually painted.
     const fork = page
@@ -333,7 +338,7 @@ test.describe('2D process flow', () => {
     expect(await page.locator('[data-stage="commissioning"]').count()).toBe(0)
   })
   // FIXME: screenshot framing was tuned to the fixture's 6 columns.
-  test.fixme('captures a readable close-up of the graph', async ({ page }) => {
+  test('captures a readable close-up of the graph', async ({ page }) => {
     // The fit-to-view shot proves the whole programme renders, but at that zoom the node text
     // is unreadable — and a screenshot nobody can read is not evidence of anything. This zooms
     // in so the cards, chips and governance badges are legible.
@@ -352,15 +357,25 @@ test.describe('2D process flow', () => {
     await page.getByTestId('canvas').screenshot({ path: `${SHOTS}/07-readable-detail.png` })
   })
 
-  // FIXME: screenshot framing was tuned to the fixture; the fork may be off-screen.
-  test.fixme('captures an open decision point close-up', async ({ page }) => {
+  test('captures an open decision point close-up', async ({ page }) => {
     await ready(page)
 
-    const withForks = await stagesContaining(page, 'decision_point')
-    await keepOnlyStages(page, withForks.slice(0, 1))
-    // Forks sit directly under their stage header, so they are reachable once narrowed.
-    await page.locator('[data-testid="node-card"][data-kind="decision_point"]').first().click()
-    await page.waitForTimeout(400)
+    // Uses the app's own decision stepper rather than narrowing to a stage and hunting. The
+    // old approach kept `withForks.slice(0, 1)` and clicked the first fork in it, which broke
+    // once runs were live: collapsing to a single stage can leave one node on the canvas and
+    // no decision card at all. The stepper is what a user would reach for, and it centres a
+    // fork at a readable zoom with its trail open.
+    // Wait for the control rather than assuming it has rendered. Under the load of a full
+    // suite run the run panel settles later than it does when this spec runs alone.
+    const stepper = page.getByTestId('focus-decision-button')
+    await expect(stepper).toBeVisible({ timeout: 30_000 })
+    await stepper.click()
+    await page.waitForTimeout(800)
+
+    await expect(page.getByTestId('trail-panel')).toBeVisible()
+    await expect(
+      page.locator('[data-testid="node-card"][data-kind="decision_point"]:visible').first(),
+    ).toBeVisible()
     await page.screenshot({ path: `${SHOTS}/08-decision-detail.png` })
   })
 })

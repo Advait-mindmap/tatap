@@ -136,9 +136,10 @@ export async function keepOnlyStages(page: Page, keep: string[]): Promise<void> 
     const stage = text.replace(/\d+$/, '').trim().replace(/ /g, '_')
     if (!keep.includes(stage)) await button.click()
   }
-  await page.waitForTimeout(500)
-  await page.locator('.react-flow__controls-fitview').click()
-  await page.waitForTimeout(400)
+  // No explicit fit here any more. The view auto-fits when the visible set changes, and it
+  // fits the WHOLE graph; the fit-view control instead zooms in to the 0.62 legibility floor,
+  // which crops a tall single-stage column and hides the decision points at the bottom of it.
+  await page.waitForTimeout(900)
 }
 
 /**

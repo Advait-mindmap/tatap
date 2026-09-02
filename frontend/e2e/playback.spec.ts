@@ -26,17 +26,18 @@ test.beforeAll(async () => {
 
 const nodeCount = (page: Page) => page.locator('[data-testid="node-card"]').count()
 
-/** Wait until the drawn node count stops changing, so a reading is a settled one. */
-async function settled(page: Page, timeout = 15_000): Promise<number> {
-  let last = -1
-  const deadline = Date.now() + timeout
-  while (Date.now() < deadline) {
-    const now = await nodeCount(page)
-    if (now === last) return now
-    last = now
-    await page.waitForTimeout(250)
-  }
-  return last
+/**
+ * Wait for the drain to finish, then read the count.
+ *
+ * Waiting for the node count to stop changing is not the same thing and was flaky: only some
+ * events add a node, so two consecutive equal readings happen readily in the middle of a
+ * replay, and under the load of a full suite run that window widens. The panel shows a
+ * "N queued" chip exactly while events are waiting, so its absence is the real signal.
+ */
+async function settled(page: Page, timeout = 30_000): Promise<number> {
+  await expect(page.getByTestId('queued-count')).toBeHidden({ timeout })
+  await page.waitForTimeout(200)
+  return nodeCount(page)
 }
 
 test('replay redraws the plan progressively rather than snapping to the end', async ({ page }) => {
