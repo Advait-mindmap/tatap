@@ -139,7 +139,16 @@ export async function keepOnlyStages(page: Page, keep: string[]): Promise<void> 
   // No explicit fit here any more. The view auto-fits when the visible set changes, and it
   // fits the WHOLE graph; the fit-view control instead zooms in to the 0.62 legibility floor,
   // which crops a tall single-stage column and hides the decision points at the bottom of it.
-  await page.waitForTimeout(900)
+  //
+  // Wait for the view to SETTLE rather than sleeping a fixed interval. React Flow marks a node
+  // `visibility: hidden` until it has measured it, and on a CI runner with no GPU that takes
+  // longer than any sleep worth writing - which is why tests that hover or click a card passed
+  // locally and timed out there.
+  await page.locator('[data-testid="node-card"]:visible').first().waitFor({
+    state: 'visible',
+    timeout: 30_000,
+  })
+  await page.waitForTimeout(400)
 }
 
 /**
