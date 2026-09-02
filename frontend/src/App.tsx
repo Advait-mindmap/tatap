@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { runSimulation, type SimulationSocket } from './api'
 import { FlowView } from './FlowView'
@@ -29,31 +29,67 @@ export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('2d')
   const socket = useRef<SimulationSocket | null>(null)
 
-  // Playback control state for Task 12: pause/step/replay
+  // ------------------------------------------------------------------ Task 12: playback
+  //
+  // Every event goes through one queue, and a timer drains it. That single path is what makes
+  // pause, step and replay the same mechanism seen from three angles: pause stops the drain,
+  // step drains exactly one, replay refills the queue from the recording and starts again.
+  //
+  // The flags live in refs as well as state. The socket's onEvent handler is registered once,
+  // when the run starts, so it closes over whatever `isPlaying` was at that moment — and the
+  // run always starts playing. Reading the boolean from state there meant the handler believed
+  // the run was playing forever: pause buffered nothing and step had nothing to step through.
+  // A ref is read at call time, so the handler sees the truth.
   const [isPlaying, setIsPlaying] = useState(true)
-  const [bufferedEvents, setBufferedEvents] = useState<SimulationEvent[]>([])
+  const [queued, setQueued] = useState(0)
+  const isPlayingRef = useRef(true)
+  const queueRef = useRef<SimulationEvent[]>([])
+  const replayingRef = useRef(false)
   const allEventsRef = useRef<SimulationEvent[]>([])
+
+  /** Apply the next `n` queued events to the graph. The only place events reach the view. */
+  const applyNext = useCallback((n: number) => {
+    const batch = queueRef.current.splice(0, n)
+    if (!batch.length) return
+    setRun((current) => batch.reduce((acc, event) => reduceEvent(acc, event), current))
+    setQueued(queueRef.current.length)
+    if (!queueRef.current.length) replayingRef.current = false
+  }, [])
+
+  // The drain. One event per tick while replaying, so the build is watchable; during a live run
+  // it catches up in proportion to the backlog, so streaming is not artificially slowed.
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      if (!isPlayingRef.current || !queueRef.current.length) return
+      const rate = replayingRef.current ? 1 : Math.max(1, Math.ceil(queueRef.current.length / 12))
+      applyNext(rate)
+    }, 40)
+    return () => window.clearInterval(timer)
+  }, [applyNext])
+
+  const setPlaying = useCallback((playing: boolean) => {
+    isPlayingRef.current = playing
+    setIsPlaying(playing)
+  }, [])
 
   const start = useCallback((confirmed: ExtractedBrief) => {
     setBrief(confirmed)
     setRun({ ...INITIAL_RUN, status: 'running' })
     setPhase('run')
-    setIsPlaying(true)
-    setBufferedEvents([])
+    setPlaying(true)
+    replayingRef.current = false
+    queueRef.current = []
+    setQueued(0)
     allEventsRef.current = []
 
     socket.current?.close()
     socket.current = runSimulation(confirmed as unknown as Record<string, unknown>, {
       onEvent: (event) => {
+        // Recorded for replay, queued for drawing. Both unconditionally: what the server sent
+        // is history, and whether it has been drawn yet is a separate question.
         allEventsRef.current.push(event)
-
-        // If paused, buffer the event instead of applying immediately
-        if (!isPlaying) {
-          setBufferedEvents((prev) => [...prev, event])
-        } else {
-          // Apply immediately when playing
-          setRun((current) => reduceEvent(current, event))
-        }
+        queueRef.current.push(event)
+        setQueued(queueRef.current.length)
       },
       onError: (message) =>
         setRun((current) =>
@@ -62,7 +98,7 @@ export default function App() {
             : { ...current, status: 'error', error: message },
         ),
     })
-  }, [isPlaying])
+  }, [setPlaying])
 
   const answer = useCallback((decisionPointId: string, value: string) => {
     setRun((current) => {
@@ -76,34 +112,26 @@ export default function App() {
     socket.current?.answer(decisionPointId, value)
   }, [])
 
-  // Task 12 playback controls
-  const handlePlayPause = useCallback((playing: boolean) => {
-    setIsPlaying(playing)
-    if (playing && bufferedEvents.length > 0) {
-      // Apply all buffered events
-      setRun((current) =>
-        bufferedEvents.reduce((acc, evt) => reduceEvent(acc, evt), current),
-      )
-      setBufferedEvents([])
-    }
-  }, [bufferedEvents])
+  const handlePlayPause = useCallback((playing: boolean) => setPlaying(playing), [setPlaying])
 
-  const handleStep = useCallback(() => {
-    if (bufferedEvents.length > 0) {
-      const nextEvent = bufferedEvents[0]
-      setRun((current) => reduceEvent(current, nextEvent))
-      setBufferedEvents((prev) => prev.slice(1))
-    }
-  }, [bufferedEvents])
+  /** One event, once. Enabled only while paused, so it never races the drain. */
+  const handleStep = useCallback(() => applyNext(1), [applyNext])
 
+  /**
+   * Rewind and rebuild.
+   *
+   * This used to reduce every recorded event in a single pass, which recomputed exactly the
+   * state already on screen — a replay that was, visibly, nothing at all. Clearing the graph
+   * and pushing the recording back through the same queue means the plan is drawn again the way
+   * it was drawn the first time, which is the whole point of the control.
+   */
   const handleReplay = useCallback(() => {
-    // Replay all events from the beginning
-    setRun(
-      allEventsRef.current.reduce((acc, evt) => reduceEvent(acc, evt), INITIAL_RUN),
-    )
-    setBufferedEvents([])
-    setIsPlaying(true)
-  }, [])
+    setRun({ ...INITIAL_RUN, status: 'running' })
+    queueRef.current = [...allEventsRef.current]
+    replayingRef.current = true
+    setQueued(queueRef.current.length)
+    setPlaying(true)
+  }, [setPlaying])
 
   const restart = useCallback(() => {
     socket.current?.stop()
@@ -113,10 +141,12 @@ export default function App() {
     setIntake(null)
     setBrief(null)
     setPhase('intake')
-    setIsPlaying(true)
-    setBufferedEvents([])
+    setPlaying(true)
+    replayingRef.current = false
+    queueRef.current = []
+    setQueued(0)
     allEventsRef.current = []
-  }, [])
+  }, [setPlaying])
 
   if (phase === 'intake') {
     return (
@@ -196,6 +226,7 @@ export default function App() {
               onPlayPause={handlePlayPause}
               onStep={handleStep}
               onReplay={handleReplay}
+              queued={queued}
             />
           }
           autoFit={run.status !== 'idle'}
@@ -212,6 +243,7 @@ export default function App() {
               onPlayPause={handlePlayPause}
               onStep={handleStep}
               onReplay={handleReplay}
+              queued={queued}
             />
             {zones3d.length > 0 && (
               <div className="zones-list" style={{ marginTop: '1.5rem' }}>

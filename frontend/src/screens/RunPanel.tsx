@@ -7,6 +7,8 @@ interface Props {
   onAnswer: (decisionPointId: string, answer: string) => void
   onRestart: () => void
   isPlaying?: boolean
+  /** Events received but not yet drawn. Non-zero while paused is the point of pausing. */
+  queued?: number
   onPlayPause?: (playing: boolean) => void
   onStep?: () => void
   onReplay?: () => void
@@ -27,7 +29,9 @@ const STATUS_LABEL: Record<RunStatus, string> = {
  * flow of thought cannot continue, it says WHY it is stuck, offers the options, states the
  * impact, and waits. It does not invent an answer, and it does not let the reader skip past it.
  */
-export function RunPanel({ run, onAnswer, onRestart, isPlaying = true, onPlayPause, onStep, onReplay }: Props) {
+export function RunPanel({
+  run, onAnswer, onRestart, isPlaying = true, queued = 0, onPlayPause, onStep, onReplay,
+}: Props) {
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const decision: OpenDecision | undefined = run.openDecisions[0]
 
@@ -49,7 +53,9 @@ export function RunPanel({ run, onAnswer, onRestart, isPlaying = true, onPlayPau
       </div>
 
       {/* Playback controls */}
-      {run.status !== 'idle' && (run.status === 'running' || run.status === 'halted') && (
+      {/* Shown for every state except idle. Restricting these to running/halted hid Replay
+          the moment a run finished - which is exactly when someone wants to re-watch it. */}
+      {run.status !== 'idle' && (
         <div className="playback-controls" data-testid="playback-controls">
           <button
             className="control-btn"
@@ -79,6 +85,11 @@ export function RunPanel({ run, onAnswer, onRestart, isPlaying = true, onPlayPau
           <span className="event-counter" data-testid="event-counter">
             {run.events.length} events
           </span>
+          {queued > 0 && (
+            <span className="event-counter" data-testid="queued-count">
+              {queued} queued
+            </span>
+          )}
         </div>
       )}
 
