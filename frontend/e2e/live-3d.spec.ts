@@ -110,6 +110,12 @@ test('the 3D model builds up as the live run streams', async ({ page }) => {
     throw new Error(`never reached "${label}" (last: ${JSON.stringify(last)})`)
   }
 
+  // Mid-run the timeline is computed from what has been assembled SO FAR, so RFS grows as the
+  // walk proceeds. It has to say so: unmarked, "Day 170 of 170" partway through a run that
+  // finishes at 629 reads as a completion date.
+  await expect(page.getByTestId('scrubber-provisional')).toBeVisible()
+  await expect(page.getByTestId('scrubber-day')).toContainText('so far')
+
   // 1. Ground broken: the first zone exists because the stage that builds it has started.
   const early = await advanceUntil('first zone under construction', (b) => b.present > 0)
   await page.waitForTimeout(400)
@@ -139,6 +145,10 @@ test('the 3D model builds up as the live run streams', async ({ page }) => {
   final = await built(page)
   await page.screenshot({ path: `${SHOTS}/16-03-live-complete.png` })
   console.log('end   :', JSON.stringify(final))
+
+  // And once the run is over the number is final, so the marker goes.
+  await expect(page.getByTestId('scrubber-provisional')).toHaveCount(0)
+  await expect(page.getByTestId('scrubber-day')).not.toContainText('so far')
 
   const samples = [early, mid, final]
 

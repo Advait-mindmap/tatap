@@ -301,7 +301,12 @@ export default function App() {
           <div className="view-split-3d">
             {model3d}
             {timeline.rfsDay > 0 && (
-              <TimeScrubber timeline={timeline} day={day} onChange={setScrubDay} />
+              <TimeScrubber
+                timeline={timeline}
+                day={day}
+                onChange={setScrubDay}
+                provisional={run.status !== 'complete'}
+              />
             )}
           </div>
         </div>
@@ -312,7 +317,12 @@ export default function App() {
           <div className="view-3d-stack">
             {model3d}
             {timeline.rfsDay > 0 && (
-              <TimeScrubber timeline={timeline} day={day} onChange={setScrubDay} />
+              <TimeScrubber
+                timeline={timeline}
+                day={day}
+                onChange={setScrubDay}
+                provisional={run.status !== 'complete'}
+              />
             )}
           </div>
           <div className="view-3d-sidebar">

@@ -126,6 +126,9 @@ test('the scrubber runs from project start to RFS', async ({ page }) => {
   const label = await page.getByTestId('scrubber-day').textContent()
   expect(label, 'the scrubber has no timeline to run along').toMatch(/Day \d+ of \d+/)
 
+  // A finished run's RFS is final, so nothing is marked provisional here.
+  await expect(page.getByTestId('scrubber-provisional')).toHaveCount(0)
+
   const rfs = Number(label!.match(/of (\d+)/)![1])
   expect(rfs, 'RFS is day zero, so there is no programme to scrub').toBeGreaterThan(10)
 
