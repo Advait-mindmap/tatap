@@ -14,6 +14,8 @@ from backend.app.intake.extractor import (
     normalise_mode,
     normalise_tier,
     quote_is_grounded,
+    quote_is_present,
+    quote_is_specific,
 )
 from backend.app.intake.prompt import (
     DELIVERY_MODES,
@@ -38,4 +40,6 @@ __all__ = [
     'normalise_mode',
     'normalise_tier',
     'quote_is_grounded',
+    'quote_is_present',
+    'quote_is_specific',
 ]

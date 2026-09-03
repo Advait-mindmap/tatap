@@ -79,16 +79,40 @@ def _normalise(text: str) -> str:
     return _WS.sub(' ', (text or '')).strip().lower()
 
 
-def quote_is_grounded(quote: str, source: str, min_chars: int = 8) -> bool:
-    """Is this citation really present in the source text?
+def quote_is_present(quote: str, source: str) -> bool:
+    """Does this exact span appear in the source? Whitespace- and case-insensitive.
 
-    Whitespace-insensitive, because the model may re-wrap lines. Very short quotes are rejected:
-    a two-word fragment matches by luck and proves nothing.
+    The model may re-wrap lines or change capitalisation; neither changes what was read.
     """
     q = _normalise(quote)
-    if len(q) < min_chars:
+    return bool(q) and q in _normalise(source)
+
+
+def quote_is_specific(quote: str) -> bool:
+    """Does this citation carry enough information to be evidence?
+
+    The guard being kept: a citation of "the" appears in every brief ever written, matches by
+    luck, and supports nothing. The guard being FIXED: this used to be a flat eight-character
+    floor, which threw away the best citations there are. A live brief reading "a 12 MW Tier III
+    data centre" had its IT load discarded because the model cited exactly the right span - "12
+    MW", five characters - and the extractor called a quote it had found in the source "not
+    present" in it.
+
+    Length was never the property that mattered. Information is. A quote containing a digit is
+    specific by construction: numbers are the values being cited. Otherwise it needs at least
+    two real words, which "the" is not and "Tier III" is.
+    """
+    q = _normalise(quote)
+    if not q:
         return False
-    return q in _normalise(source)
+    if any(ch.isdigit() for ch in q):
+        return True
+    return len([t for t in re.findall(r'[a-z]+', q) if len(t) >= 3]) >= 2
+
+
+def quote_is_grounded(quote: str, source: str) -> bool:
+    """Is this citation real evidence: present in the source, and specific enough to prove it?"""
+    return quote_is_specific(quote) and quote_is_present(quote, source)
 
 
 def normalise_tier(value: str) -> Optional[str]:
@@ -186,9 +210,14 @@ def build_result(
         grounded = quote_is_grounded(quote, source)
 
         if not grounded:
+            reason = (
+                'is not present in the source text'
+                if not quote_is_present(quote, source)
+                else 'is too vague to be evidence: it names no number and fewer than two words'
+            )
             warnings.append(
-                f'DISCARDED {name}: cited quote is not present in the source text '
-                f'({quote[:60]!r}). The citation was not grounded, so the value was not trusted.'
+                f'DISCARDED {name}: cited quote {reason} ({quote[:60]!r}). '
+                'The citation was not grounded, so the value was not trusted.'
             )
             unresolved.append(name)
             questions.append(IntakeQuestion(
@@ -250,9 +279,14 @@ def build_result(
             )
             continue
         if not quote_is_grounded(quote, source):
+            reason = (
+                'is not present in the source text'
+                if not quote_is_present(quote, source)
+                else 'is too vague to be evidence'
+            )
             warnings.append(
-                f'DISCARDED delivery mode for {discipline}: cited quote is not present in the '
-                f'source text ({quote[:60]!r}).'
+                f'DISCARDED delivery mode for {discipline}: cited quote {reason} '
+                f'({quote[:60]!r}).'
             )
             continue
         if confidence < threshold:
@@ -335,4 +369,6 @@ __all__ = [
     'normalise_mode',
     'normalise_tier',
     'quote_is_grounded',
+    'quote_is_present',
+    'quote_is_specific',
 ]

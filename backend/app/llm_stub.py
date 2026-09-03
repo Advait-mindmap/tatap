@@ -48,10 +48,10 @@ def _brief_body(prompt: str) -> str:
 def _window(body: str, match: re.Match, pad: int = 45) -> str:
     """The enclosing span of a match, verbatim.
 
-    A citation has to be long enough to be worth checking: `quote_is_grounded` rejects anything
-    under 8 characters, because a two-word fragment matches by luck and proves nothing. "Tier IV"
-    is 7. So the stub cites the surrounding text, exactly as it appears, rather than the bare
-    token it matched on.
+    The stub cites the surrounding text, exactly as it appears, rather than the bare token it
+    matched on. That is no longer required for the quote to pass grounding - the check now asks
+    whether a citation is SPECIFIC (a number, or two real words) rather than how long it is, so
+    "12 MW" stands on its own. A little context still makes the citation more useful to read.
     """
     start = max(0, match.start() - pad)
     end = min(len(body), match.end() + pad)

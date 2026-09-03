@@ -342,3 +342,82 @@ def test_a_missing_required_field_blocks_proceeding():
 
     assert result.can_proceed is False
     assert [q.field for q in result.blocking_questions] == ['tier']
+
+
+# ---------------------------------------------------------------- grounding false negative
+#
+# Found in manual testing against the live deployment: a brief reading "a 12 MW Tier III data
+# centre" had its IT load DISCARDED, with the extractor reporting that the cited quote was "not
+# present in the source text ('12 MW')" - about a quote that is plainly present in it.
+
+FALSE_NEGATIVE_BRIEF = (
+    'We are planning a 12 MW Tier III data centre in Navi Mumbai. '
+    'Topology is N+1 on the electrical and cooling trains.'
+)
+
+
+def test_a_short_but_exact_citation_is_grounded():
+    """The reported bug. "12 MW" is five characters and is exactly the right citation.
+
+    The check rejected it on an eight-character floor, so a value the model had read correctly
+    from the brief was thrown away. Length was never the property that mattered.
+    """
+    assert quote_is_grounded('12 MW', FALSE_NEGATIVE_BRIEF)
+
+
+def test_the_load_survives_extraction_from_that_brief():
+    """End to end on the brief that failed: the field must come through, not become a question."""
+    response = {
+        'fields': [
+            {'name': 'it_load_mw', 'value': '12', 'quote': '12 MW', 'confidence': 0.95},
+            {'name': 'city', 'value': 'Navi Mumbai', 'quote': 'in Navi Mumbai',
+             'confidence': 0.95},
+            {'name': 'tier', 'value': 'III', 'quote': 'Tier III', 'confidence': 0.95},
+        ],
+        'delivery_modes': [],
+        'questions': [],
+    }
+    result = build_result(response, RawBrief(text=FALSE_NEGATIVE_BRIEF), 0.7)
+
+    assert result.brief.it_load_mw == 12.0, (
+        f'IT load was discarded. Warnings: {result.warnings}'
+    )
+    assert result.brief.tier == 'III'
+    assert not any('it_load_mw' in w for w in result.warnings)
+    assert not any(q.field == 'it_load_mw' for q in result.questions)
+
+
+def test_a_vacuous_citation_is_still_rejected():
+    """The guard the length floor was there for, kept. "the" matches any brief and proves
+    nothing, so a value resting on it is not evidence of having read anything."""
+    assert not quote_is_grounded('the', FALSE_NEGATIVE_BRIEF)
+    assert not quote_is_grounded('of', FALSE_NEGATIVE_BRIEF)
+    assert not quote_is_grounded('a', FALSE_NEGATIVE_BRIEF)
+
+
+def test_a_number_that_is_not_in_the_brief_is_still_rejected():
+    """Being short and specific does not excuse being invented."""
+    assert not quote_is_grounded('45 MW', FALSE_NEGATIVE_BRIEF)
+    assert not quote_is_grounded('Tier IV', FALSE_NEGATIVE_BRIEF)
+
+
+def test_the_discard_warning_names_the_real_reason():
+    """The message said "not present in the source text" about a quote that WAS present, which
+    sent this investigation hunting a phrase-matching bug that did not exist. A wrong diagnosis
+    in a log costs more than no diagnosis."""
+    from backend.app.intake.extractor import quote_is_present, quote_is_specific
+
+    # Present but vacuous: the complaint must be about vagueness, not absence.
+    assert quote_is_present('the', FALSE_NEGATIVE_BRIEF)
+    assert not quote_is_specific('the')
+
+    response = {
+        'fields': [{'name': 'city', 'value': 'Navi Mumbai', 'quote': 'the', 'confidence': 0.9}],
+        'delivery_modes': [],
+        'questions': [],
+    }
+    result = build_result(response, RawBrief(text=FALSE_NEGATIVE_BRIEF), 0.7)
+    discarded = [w for w in result.warnings if 'DISCARDED city' in w]
+    assert discarded, result.warnings
+    assert 'too vague' in discarded[0]
+    assert 'not present in the source text' not in discarded[0]
