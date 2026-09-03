@@ -173,6 +173,10 @@ jobs:
         if: always()
         run: npx playwright test linked-hover.spec
 
+      - name: Browser tests - progressive 3D build during a live run
+        if: always()
+        run: npx playwright test live-3d.spec
+
       - name: Upload rendered screenshots
         # Always, not just on failure: these are how the rendered flow gets reviewed without
         # anyone opening a browser, which is the point of capturing them at all.

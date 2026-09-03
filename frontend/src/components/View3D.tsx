@@ -147,6 +147,15 @@ interface View3DProps {
   /** The 4D timeline, and the day being viewed. Absent means "show the finished model". */
   timeline?: Timeline
   day?: number
+  /**
+   * Live stage progress, while a run is streaming.
+   *
+   * Takes precedence over the timeline: during a run the model should follow the simulation,
+   * not a scrubber position. A zone is absent until its stage starts, under construction while
+   * that stage runs, and built when it completes - the 3D counterpart of the 2D flow drawing
+   * itself node by node.
+   */
+  liveStages?: { started: string[]; completed: string[] } | null
   /** The zone highlighted from the 2D view, or from a pick here. */
   linkedZone?: string | null
   onHoverZone?: (zoneId: string | null) => void
@@ -159,15 +168,30 @@ interface View3DProps {
  * the site and building shell.
  */
 export function View3D({
-  zones, timeline, day, linkedZone = null, onHoverZone, zonesWithWork,
+  zones, timeline, day, linkedZone = null, onHoverZone, zonesWithWork, liveStages = null,
 }: View3DProps) {
   const positioned = useMemo(() => layoutZones(zones), [zones])
   const bounds = useMemo(() => sceneBounds(positioned), [positioned])
 
-  // What each zone's state is on the selected day. With no timeline the model shows the
-  // finished facility, which is what a 3D-only view should do.
-  const stateOf = (zone: Zone3D): ZoneState =>
-    timeline && day !== undefined ? zoneStateAt(timeline.spans[zone.zone_id], day) : 'complete'
+  // What each zone's state is right now.
+  //
+  // While a run streams, that is decided by the simulation: the stage that brings a zone into
+  // existence has either not started, is running, or has completed. Once the run settles the
+  // timeline takes over and the scrubber decides. With neither, the model shows the finished
+  // facility, which is what a 3D-only view should do.
+  const liveStarted = new Set(liveStages?.started ?? [])
+  const liveCompleted = new Set(liveStages?.completed ?? [])
+
+  const stateOf = (zone: Zone3D): ZoneState => {
+    if (liveStages) {
+      if (liveCompleted.has(zone.stage)) return 'complete'
+      if (liveStarted.has(zone.stage)) return 'in_progress'
+      return 'not_started'
+    }
+    return timeline && day !== undefined
+      ? zoneStateAt(timeline.spans[zone.zone_id], day)
+      : 'complete'
+  }
 
   // Camera framing must not depend on the day: a zone appearing should not shove the view
   // around, or scrubbing looks like the camera is broken rather than the model changing.

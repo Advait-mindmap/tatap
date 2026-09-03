@@ -547,3 +547,36 @@ def test_simulation_started_is_emitted_once_even_when_the_first_stage_halts(monk
     assert SIMULATION_STARTED not in types_of(resumed)
     assert types_of(resumed)[0] == DECISION_RESOLVED
     assert types_of(resumed)[-1] == SIMULATION_COMPLETED
+
+
+def test_simulation_started_announces_the_site_plan(monkeypatch):
+    """The 3D model needs geometry before any stage runs (Task 16).
+
+    Zones are a deterministic function of load and topology, so they are known the moment the
+    brief is confirmed. They used to travel only with the authoritative SimulationOutput, which
+    arrives at a settle point - so the 3D view had nothing to draw for most of a run and then
+    appeared complete in one jump, the opposite of watching a plan get built.
+    """
+    ws_reasoner(monkeypatch)
+    simulator = Simulator(BRIEF, stages=['substructure'])
+    started = next(iter(simulator.run()))
+
+    assert started.type == SIMULATION_STARTED
+    zones = started.payload.get('zones')
+    assert zones, 'no site plan announced at the start of the run'
+    assert {'id', 'kind', 'stage'} <= set(zones[0])
+    # Every zone names the stage that brings it into existence: that mapping is what lets the
+    # model raise each one in step with the walk.
+    assert all(z.get('stage') for z in zones)
+
+
+def test_the_announced_site_plan_matches_what_assembly_produces(monkeypatch):
+    """Two sources for the same zones would drift. The streamed plan must BE the final plan."""
+    ws_reasoner(monkeypatch)
+    simulator = Simulator(BRIEF, stages=WALK)
+    announced = next(iter(simulator.run())).payload['zones']
+
+    run_to_completion(simulator, {})
+    assembled = simulator.result.zones
+
+    assert [z['id'] for z in announced] == [z['id'] for z in assembled]

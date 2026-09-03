@@ -86,6 +86,13 @@ class Simulator:
                 brief_summary={
                     k: self.brief.get(k) for k in ('project_name', 'city', 'tier', 'it_load_mw')
                 },
+                # The site plan, announced up front so the 3D model can build progressively
+                # (VISUALIZATION_SPEC.md section 2). Zones are a deterministic function of load
+                # and topology - known the moment the brief is confirmed - whereas the
+                # authoritative SimulationOutput only arrives at a settle point. Without this
+                # the 3D view sat empty for most of a run and then appeared complete in one
+                # jump, which is the opposite of watching a plan get built.
+                zones=self._zones(),
             )
 
         # Any answers received while halted are announced before the walk continues, so a client
@@ -227,6 +234,19 @@ class Simulator:
             # graph from events alone would drift from the object the backend actually built.
             output=self.output().model_dump(),
         )
+
+    def _zones(self) -> List[Dict[str, Any]]:
+        """The zone set this brief implies. Pure, and identical to the one assembly produces."""
+        from backend.app.engine.zones import generate_zones
+        from backend.app.libraries import load_library
+
+        try:
+            tier_lib = (self.libraries or {}).get('tier_rules') or load_library(
+                'tier_rules'
+            )['entries']
+            return generate_zones(self.brief, tier_lib)
+        except Exception:  # noqa: BLE001 - a missing site plan must not stop the walk
+            return []
 
     # ------------------------------------------------------------------ stop-and-ask
 

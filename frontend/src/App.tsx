@@ -175,8 +175,12 @@ export default function App() {
 
   const output = run.output
 
-  // Parse zones for 3D view
-  const zones3d: Zone3D[] = (output?.zones ?? [])
+  // Parse zones for 3D view.
+  //
+  // The streamed site plan first: it arrives with simulation_started, whereas the authoritative
+  // output only lands at a settle point. Preferring `output` here would leave the 3D model empty
+  // for most of a run and then complete in one jump.
+  const zones3d: Zone3D[] = ((output?.zones?.length ? output.zones : run.zones) ?? [])
     .map((raw) => parseZone(raw as Record<string, any>))
     .filter((z): z is Zone3D => z !== null)
 
@@ -184,6 +188,14 @@ export default function App() {
   // opens on the finished building; dragging back is what shows the build.
   const timeline = buildTimeline(output)
   const day = scrubDay ?? timeline.rfsDay
+
+  // While the run is still going, the 3D model follows the SIMULATION rather than the scrubber.
+  // Once it completes the timeline takes over and the scrubber is in charge. A run the reader
+  // has begun scrubbing is treated as finished with live mode, so dragging is never fought.
+  const live =
+    run.status !== 'idle' && run.status !== 'complete' && scrubDay === null
+      ? { started: run.stagesStarted, completed: run.stagesCompleted }
+      : null
 
   const runPanel = (
     <RunPanel
@@ -242,6 +254,7 @@ export default function App() {
     <View3D
       zones={zones3d}
       zonesWithWork={zonesWithWork}
+      liveStages={live}
       timeline={timeline}
       day={day}
       linkedZone={linkedZone}

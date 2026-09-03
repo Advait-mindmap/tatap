@@ -33,6 +33,14 @@ export interface RunState {
   edges: FlowEdge[]
   /** Present once the backend has sent it. This is what the finished view renders. */
   output: SimulationOutput | null
+  /**
+   * The site plan, announced with simulation_started.
+   *
+   * Zones are a deterministic function of the brief, so they are known before any stage runs -
+   * which is what lets the 3D model build progressively instead of appearing complete the
+   * moment the first authoritative output lands.
+   */
+  zones: Record<string, unknown>[]
   openDecisions: OpenDecision[]
   answered: { id: string; answer: string }[]
   stagesStarted: string[]
@@ -48,6 +56,7 @@ export const INITIAL_RUN: RunState = {
   nodes: [],
   edges: [],
   output: null,
+  zones: [],
   openDecisions: [],
   answered: [],
   stagesStarted: [],
@@ -69,7 +78,13 @@ export function reduceEvent(state: RunState, event: SimulationEvent): RunState {
   switch (event.type) {
     case 'simulation_started':
       // Keep the id: it is the only handle on a run that outlives this socket.
-      return { ...next, status: 'running', error: '', runId: p.run_id ?? next.runId }
+      return {
+        ...next,
+        status: 'running',
+        error: '',
+        runId: p.run_id ?? next.runId,
+        zones: (p.zones as Record<string, unknown>[] | undefined) ?? next.zones,
+      }
 
     case 'stage_started':
       return {
