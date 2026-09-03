@@ -121,6 +121,15 @@ test('the decision stepper centres a fork at a readable zoom', async ({ page }) 
   console.log('after focusing a decision:', JSON.stringify(forks, null, 2))
 
   expect(forks.onScreen, 'focusing brought no decision point on screen').toBeGreaterThan(0)
+
+  // Assert the ZOOM, which is what the control sets and is the same on every machine. The
+  // rendered font size follows from it; asserting that alone was a platform trap - the stepper
+  // used fitView, whose zoom is derived from bounds and pane size, and the same click gave 0.75
+  // locally and about 0.5 on a CI runner, i.e. 6.2px labels.
+  expect(
+    forks.zoom,
+    `the stepper left the view at zoom ${forks.zoom}, too far out to read`,
+  ).toBeGreaterThanOrEqual(0.75)
   expect(
     forks.labelFontPx,
     `the focused decision renders at ${forks.labelFontPx}px — still unreadable`,

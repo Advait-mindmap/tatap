@@ -261,13 +261,22 @@ function FlowViewInner({
     if (forkNodes.length === 0) return;
     const target = forkNodes[forkCursor.current % forkNodes.length];
     forkCursor.current += 1;
-    reactFlow.fitView({
-      nodes: [{ id: target.id }],
-      duration: 400,
-      padding: 3,
-      minZoom: 0.75,
-      maxZoom: 1.1,
-    });
+
+    // setCenter with an explicit zoom, not fitView with a large padding.
+    //
+    // fitView derives zoom from the node's bounds and the pane size, and its minZoom is a floor
+    // on that calculation - which did not survive the trip to a CI runner: the same click that
+    // gave 0.75 locally gave about 0.5 there, rendering the label at 6.2px instead of 9.4px.
+    // "Centre this fork at a readable zoom" is a statement about zoom, so say it directly and
+    // it holds on every machine.
+    const node = reactFlow.getNode(target.id);
+    const width = node?.width ?? 240;
+    const height = node?.height ?? 80;
+    reactFlow.setCenter(
+      (node?.position.x ?? 0) + width / 2,
+      (node?.position.y ?? 0) + height / 2,
+      { zoom: 0.9, duration: 400 },
+    );
     setSelected(target.id);
   }, [forkNodes, reactFlow]);
 
