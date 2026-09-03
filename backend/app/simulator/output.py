@@ -302,6 +302,11 @@ def build_simulation_output(
         activities=[a.model_dump() for a in assembly.activities],
         commissioning=list(assembly.commissioning),
         zones=list(assembly.zones),
+        # The 4D timeline travels with the plan it describes, so the scrubber and the 3D model
+        # read the same numbers the engine computed rather than deriving their own.
+        rfs_day=assembly.rfs_day,
+        zone_timeline=dict(assembly.zone_timeline),
+        stage_timeline=dict(assembly.stage_timeline),
         reasoning_trail=trail,
         quality={
             'dcma_summary': _dcma_summary(assembly),

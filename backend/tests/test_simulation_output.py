@@ -33,6 +33,10 @@ SPEC_KEYS = {
     'project_meta', 'questions', 'decisions', 'flow', 'statutory_pathway', 'equipment_counts',
     'long_lead_register', 'activities', 'commissioning', 'zones', 'reasoning_trail', 'quality',
     'flags',
+    # Task 14. The 4D scrubber needs a timeline, and until it existed "project start to RFS"
+    # had no meaning: activities carried durations and logic but nothing was ever scheduled.
+    # Day offsets from the engine's forward pass, not calendar dates - see engine/schedule.py.
+    'rfs_day', 'zone_timeline', 'stage_timeline',
 }
 
 #: The node kinds the 2D view must be able to tell apart (VISUALIZATION_SPEC.md §1).

@@ -86,6 +86,11 @@ export interface SimulationOutput {
   activities: Record<string, unknown>[]
   commissioning: Record<string, unknown>[]
   zones: Record<string, unknown>[]
+  /** 4D timeline from the engine's forward pass (backend/app/engine/schedule.py). Day offsets
+   *  from project start, not calendar dates — real dates arrive with the P6 export. */
+  rfs_day?: number
+  zone_timeline?: Record<string, unknown>
+  stage_timeline?: Record<string, unknown>
   reasoning_trail: TrailEntry[]
   quality: Record<string, unknown>
   flags: Record<string, unknown>[]

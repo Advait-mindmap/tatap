@@ -370,3 +370,35 @@ button.option:hover { background: rgba(251,113,133,0.2); border-color: var(--ala
   background: rgba(99, 102, 241, 0.3);
   border-color: #818cf8;
 }
+
+/* --- 4D time scrubber (Task 14) ------------------------------------------------------------
+   The 3D canvas and the scrubber stack vertically inside the wrapper, so the canvas keeps its
+   own height and the scrubber is always reachable without overlaying the model. */
+.view-3d-stack {
+  display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0;
+}
+.view-3d-stack > .view-3d-container { flex: 1; min-height: 0; }
+
+.scrubber {
+  flex: none; padding: 0.75rem 1rem 0.9rem;
+  border-top: 1px solid var(--line); background: var(--panel);
+}
+.scrubber-head {
+  display: flex; align-items: baseline; gap: 0.9rem; margin-bottom: 0.5rem;
+}
+.scrubber-day { font-size: 13px; font-weight: 600; color: var(--text); }
+.scrubber-pct { font-size: 11px; color: var(--muted); }
+.scrubber-stages {
+  font-size: 11px; color: #a5b4fc; margin-left: auto; text-transform: capitalize;
+}
+.scrubber-range {
+  width: 100%; accent-color: #6366f1; cursor: pointer;
+}
+.scrubber-ends {
+  display: flex; justify-content: space-between; margin-top: 0.35rem;
+}
+.scrubber-jump {
+  background: none; border: none; color: var(--muted); font: inherit; font-size: 11px;
+  cursor: pointer; padding: 0;
+}
+.scrubber-jump:hover { color: var(--text); text-decoration: underline; }

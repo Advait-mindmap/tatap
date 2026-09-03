@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { runSimulation, type SimulationSocket } from './api'
 import { FlowView } from './FlowView'
+import { TimeScrubber } from './components/TimeScrubber'
 import { View3D } from './components/View3D'
 import { INITIAL_RUN, reduceEvent, type RunState } from './runState'
 import { ConfirmScreen } from './screens/ConfirmScreen'
 import { IntakeScreen } from './screens/IntakeScreen'
 import { RunPanel } from './screens/RunPanel'
 import type { ExtractedBrief, IntakeResult, SimulationEvent } from './types'
+import { buildTimeline } from './timeline'
 import { parseZone, STAGE_COLORS, type Zone3D } from './viz3d'
 import './styles.css'
 
@@ -27,6 +29,9 @@ export default function App() {
   const [brief, setBrief] = useState<ExtractedBrief | null>(null)
   const [run, setRun] = useState<RunState>(INITIAL_RUN)
   const [viewMode, setViewMode] = useState<ViewMode>('2d')
+  //: Which day the 4D model is showing. Null means "the finished plan", which is where a
+  //: completed run should land: the scrubber is for looking back, not a state to be left in.
+  const [scrubDay, setScrubDay] = useState<number | null>(null)
   const socket = useRef<SimulationSocket | null>(null)
 
   // ------------------------------------------------------------------ Task 12: playback
@@ -170,6 +175,11 @@ export default function App() {
     .map((raw) => parseZone(raw as Record<string, any>))
     .filter((z): z is Zone3D => z !== null)
 
+  // The 4D timeline, straight from the engine's forward pass. Defaults to RFS so a finished run
+  // opens on the finished building; dragging back is what shows the build.
+  const timeline = buildTimeline(output)
+  const day = scrubDay ?? timeline.rfsDay
+
   return (
     <div className="app">
       {run.status !== 'idle' && (
@@ -233,7 +243,12 @@ export default function App() {
         />
       ) : (
         <div className="view-3d-wrapper">
-          <View3D zones={zones3d} />
+          <div className="view-3d-stack">
+            <View3D zones={zones3d} timeline={timeline} day={day} />
+            {timeline.rfsDay > 0 && (
+              <TimeScrubber timeline={timeline} day={day} onChange={setScrubDay} />
+            )}
+          </div>
           <div className="view-3d-sidebar">
             <RunPanel
               run={run}

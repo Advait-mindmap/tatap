@@ -24,6 +24,7 @@ from backend.app.engine.gates import (
     material_link_index,
 )
 from backend.app.engine.ids import activity_id, hold_point_id, trail_ref, wbs_id
+from backend.app.engine.schedule import apply_schedule, stage_timeline, zone_timeline
 from backend.app.engine.zones import generate_zones
 from backend.app.libraries import library_version, load_library
 from backend.app.reasoning.stages import STAGE_DEPARTMENT, STAGE_INDEX
@@ -270,11 +271,21 @@ def assemble(
             'library entries; their confidence is the capped value, not the reasoner\'s claim.'
         )
 
+    # Dates are the ENGINE's to produce (CLAUDE.md rule 2), so the forward pass runs here,
+    # after the logic is wired and before anything projects from the result. Doing it in a view
+    # would let two views disagree about when the same activity happens.
+    rfs_day = apply_schedule(activities)
+    timeline = zone_timeline(activities)
+    stages_by_day = stage_timeline(activities)
+
     reference = ordered[0] if ordered else None
     return AssemblyResult(
         activities=activities,
         edges=edges,
         zones=zones,
+        rfs_day=rfs_day,
+        zone_timeline=timeline,
+        stage_timeline=stages_by_day,
         commissioning=commissioning,
         trail=trail,
         flags=flags,

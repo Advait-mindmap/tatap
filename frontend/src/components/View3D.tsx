@@ -3,10 +3,13 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { Edges, OrbitControls } from '@react-three/drei'
 import type { Zone3D } from '../viz3d'
 import { STAGE_COLORS, ZONE_GEOMETRY, layoutZones, sceneBounds } from '../viz3d'
+import { zoneStateAt, type Timeline, type ZoneState } from '../timeline'
 import '../styles.css'
 
 interface ZoneMeshProps {
   zone: Zone3D
+  /** What the 4D timeline says is happening here on the selected day. */
+  state: ZoneState
 }
 
 /**
@@ -17,15 +20,22 @@ interface ZoneMeshProps {
  * brief — merge into one flat shape. Real shading plus an edge line is what makes them read as
  * separate boxes.
  */
-function ZoneMesh({ zone }: ZoneMeshProps) {
+function ZoneMesh({ zone, state }: ZoneMeshProps) {
   const color = STAGE_COLORS[zone.stage] ?? '#94a3b8'
   const geo = zone.size ?? ZONE_GEOMETRY[zone.kind]
   const x = zone.x ?? 0
   const z = zone.z ?? 0
 
+  // Work in progress is drawn as a low, translucent shell - the footprint exists but the thing
+  // is not built yet - and completed work is solid and full height. That difference is the
+  // whole point of a 4D view: the model at day N is what exists at day N, not a picture of the
+  // finished building shown early.
+  const building = state === 'complete'
+  const height = building ? geo.height : Math.max(geo.height * 0.18, 0.6)
+
   return (
     <mesh
-      position={[x, geo.height / 2, z]}
+      position={[x, height / 2, z]}
       castShadow
       receiveShadow
       onClick={(e) => {
@@ -33,18 +43,18 @@ function ZoneMesh({ zone }: ZoneMeshProps) {
         console.log(`Clicked zone: ${zone.name}`)
       }}
     >
-      <boxGeometry args={[geo.width, geo.height, geo.depth]} />
+      <boxGeometry args={[geo.width, height, geo.depth]} />
       <meshStandardMaterial
         color={color}
         emissive={color}
-        emissiveIntensity={0.12}
+        emissiveIntensity={building ? 0.12 : 0.35}
         roughness={0.55}
         metalness={0.05}
         // The site is the ground the plan stands on, not a building. At full strength its
         // stage colour is the largest, loudest surface on screen and the buildings read as
         // detail on top of it; held back, it reads as the parcel it represents.
-        transparent={zone.kind === 'site'}
-        opacity={zone.kind === 'site' ? 0.45 : 1}
+        transparent={zone.kind === 'site' || !building}
+        opacity={zone.kind === 'site' ? 0.45 : building ? 1 : 0.4}
       />
       <Edges scale={1.001} threshold={15} color="#0b1220" />
     </mesh>
@@ -104,6 +114,9 @@ function FitCamera({ centre, radius }: { centre: [number, number, number]; radiu
 
 interface View3DProps {
   zones: Zone3D[]
+  /** The 4D timeline, and the day being viewed. Absent means "show the finished model". */
+  timeline?: Timeline
+  day?: number
 }
 
 /**
@@ -112,9 +125,18 @@ interface View3DProps {
  * Zones are rendered as boxes, colour-coded by stage. The camera orbits around
  * the site and building shell.
  */
-export function View3D({ zones }: View3DProps) {
+export function View3D({ zones, timeline, day }: View3DProps) {
   const positioned = useMemo(() => layoutZones(zones), [zones])
   const bounds = useMemo(() => sceneBounds(positioned), [positioned])
+
+  // What each zone's state is on the selected day. With no timeline the model shows the
+  // finished facility, which is what a 3D-only view should do.
+  const stateOf = (zone: Zone3D): ZoneState =>
+    timeline && day !== undefined ? zoneStateAt(timeline.spans[zone.zone_id], day) : 'complete'
+
+  // Camera framing must not depend on the day: a zone appearing should not shove the view
+  // around, or scrubbing looks like the camera is broken rather than the model changing.
+  const built = positioned.filter((zone) => stateOf(zone) !== 'not_started')
 
   if (zones.length === 0) {
     return (
@@ -136,8 +158,8 @@ export function View3D({ zones }: View3DProps) {
         <FitCamera centre={bounds.centre} radius={bounds.radius} />
         <Lights />
         <Grid extent={bounds.radius} />
-        {positioned.map((zone) => (
-          <ZoneMesh key={zone.zone_id} zone={zone} />
+        {built.map((zone) => (
+          <ZoneMesh key={zone.zone_id} zone={zone} state={stateOf(zone)} />
         ))}
         <OrbitControls
           makeDefault
@@ -152,7 +174,17 @@ export function View3D({ zones }: View3DProps) {
 
       <div className="view-3d-info">
         <h3>3D Build Model</h3>
-        <p className="view-3d-zone-count">{zones.length} zones</p>
+        <p className="view-3d-zone-count" data-testid="zone-count">
+          {timeline && day !== undefined
+            ? `${built.length} of ${zones.length} zones · day ${day}`
+            : `${zones.length} zones`}
+        </p>
+        {timeline && day !== undefined && (
+          <p className="view-3d-zone-count" data-testid="built-count">
+            {built.filter((z) => stateOf(z) === 'complete').length} complete ·{' '}
+            {built.filter((z) => stateOf(z) === 'in_progress').length} in progress
+          </p>
+        )}
       </div>
     </div>
   )

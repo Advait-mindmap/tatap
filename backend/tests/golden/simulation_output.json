@@ -8,6 +8,7 @@
       "delivery_mode": "unknown",
       "dept_code": "design",
       "duration_days": 0,
+      "finish_day": 0,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.ifc-issued",
@@ -16,6 +17,7 @@
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "design",
+      "start_day": 0,
       "trail_ref": "trail.gate.ifc-issued",
       "type": "gate",
       "unverified_dependencies": [],
@@ -30,6 +32,7 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
+      "finish_day": 0,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-transformer-hv",
@@ -38,6 +41,7 @@
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
+      "start_day": 0,
       "trail_ref": "trail.gate.delivery-lead-transformer-hv",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -52,6 +56,7 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
+      "finish_day": 0,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-hv-switchgear",
@@ -60,6 +65,7 @@
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
+      "start_day": 0,
       "trail_ref": "trail.gate.delivery-lead-hv-switchgear",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -74,6 +80,7 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
+      "finish_day": 0,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-chiller",
@@ -82,6 +89,7 @@
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
+      "start_day": 0,
       "trail_ref": "trail.gate.delivery-lead-chiller",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -96,6 +104,7 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
+      "finish_day": 0,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-crah",
@@ -104,6 +113,7 @@
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
+      "start_day": 0,
       "trail_ref": "trail.gate.delivery-lead-crah",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -118,6 +128,7 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
+      "finish_day": 0,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-ups",
@@ -126,6 +137,7 @@
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
+      "start_day": 0,
       "trail_ref": "trail.gate.delivery-lead-ups",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -140,6 +152,7 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
+      "finish_day": 0,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-busway",
@@ -148,6 +161,7 @@
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
+      "start_day": 0,
       "trail_ref": "trail.gate.delivery-lead-busway",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -162,6 +176,7 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 18,
+      "finish_day": 18,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "substructure.frag.substructure.raft.a10",
@@ -170,6 +185,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
+      "start_day": 0,
       "trail_ref": "trail.substructure.frag.substructure.raft.a10",
       "type": "task",
       "unverified_dependencies": [
@@ -186,6 +202,7 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 6,
+      "finish_day": 24,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "substructure.frag.substructure.raft.a20",
@@ -201,6 +218,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
+      "start_day": 18,
       "trail_ref": "trail.substructure.frag.substructure.raft.a20",
       "type": "task",
       "unverified_dependencies": [
@@ -217,6 +235,7 @@
       "delivery_mode": "unknown",
       "dept_code": "qaqc",
       "duration_days": 0,
+      "finish_day": 49,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
@@ -232,6 +251,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
+      "start_day": 49,
       "trail_ref": "trail.hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -248,6 +268,7 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 25,
+      "finish_day": 49,
       "hitl_tier": "tier_2",
       "hold_points": [
         "Reinforcement inspection"
@@ -265,6 +286,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
+      "start_day": 24,
       "trail_ref": "trail.substructure.frag.substructure.raft.a30",
       "type": "task",
       "unverified_dependencies": [
@@ -281,6 +303,7 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 8,
+      "finish_day": 37,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "substructure.frag.substructure.raft.a40",
@@ -296,6 +319,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
+      "start_day": 29,
       "trail_ref": "trail.substructure.frag.substructure.raft.a40",
       "type": "task",
       "unverified_dependencies": [
@@ -312,6 +336,7 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 3,
+      "finish_day": 40,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "substructure.frag.substructure.raft.a50",
@@ -327,6 +352,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
+      "start_day": 37,
       "trail_ref": "trail.substructure.frag.substructure.raft.a50",
       "type": "task",
       "unverified_dependencies": [
@@ -343,6 +369,7 @@
       "delivery_mode": "unknown",
       "dept_code": "qaqc",
       "duration_days": 0,
+      "finish_day": 68,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
@@ -358,6 +385,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
+      "start_day": 68,
       "trail_ref": "trail.hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -374,6 +402,7 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 28,
+      "finish_day": 68,
       "hitl_tier": "tier_2",
       "hold_points": [
         "Cube test results acceptance"
@@ -391,6 +420,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
+      "start_day": 40,
       "trail_ref": "trail.substructure.frag.substructure.raft.a60",
       "type": "task",
       "unverified_dependencies": [
@@ -409,6 +439,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 12,
+      "finish_day": 12,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c10",
@@ -417,6 +448,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
+      "start_day": 0,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c10",
       "type": "task",
       "unverified_dependencies": [
@@ -435,6 +467,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 8,
+      "finish_day": 20,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c20",
@@ -456,6 +489,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
+      "start_day": 12,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c20",
       "type": "task",
       "unverified_dependencies": [
@@ -474,6 +508,7 @@
       "delivery_mode": "unknown",
       "dept_code": "qaqc",
       "duration_days": 0,
+      "finish_day": 47,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
@@ -489,6 +524,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
+      "start_day": 47,
       "trail_ref": "trail.hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -507,6 +543,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 30,
+      "finish_day": 47,
       "hitl_tier": "tier_2",
       "hold_points": [
         "Pre-energisation inspection"
@@ -530,6 +567,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
+      "start_day": 17,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c30",
       "type": "task",
       "unverified_dependencies": [
@@ -548,6 +586,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 35,
+      "finish_day": 62,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c40",
@@ -569,6 +608,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
+      "start_day": 27,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c40",
       "type": "task",
       "unverified_dependencies": [
@@ -587,6 +627,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 25,
+      "finish_day": 60,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50",
@@ -608,6 +649,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
+      "start_day": 35,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50",
       "type": "task",
       "unverified_dependencies": [
@@ -626,6 +668,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 25,
+      "finish_day": 85,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60",
@@ -641,6 +684,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
+      "start_day": 60,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60",
       "type": "task",
       "unverified_dependencies": [
@@ -657,6 +701,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 10,
+      "finish_day": 10,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_cooling.frag.mep.cooling.d10",
@@ -665,6 +710,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
+      "start_day": 0,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d10",
       "type": "task",
       "unverified_dependencies": [
@@ -681,6 +727,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 10,
+      "finish_day": 20,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_cooling.frag.mep.cooling.d20",
@@ -702,6 +749,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
+      "start_day": 10,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d20",
       "type": "task",
       "unverified_dependencies": [
@@ -718,6 +766,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 45,
+      "finish_day": 60,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_cooling.frag.mep.cooling.d30",
@@ -733,6 +782,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
+      "start_day": 15,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d30",
       "type": "task",
       "unverified_dependencies": [
@@ -749,6 +799,7 @@
       "delivery_mode": "unknown",
       "dept_code": "qaqc",
       "duration_days": 0,
+      "finish_day": 75,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
@@ -764,6 +815,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
+      "start_day": 75,
       "trail_ref": "trail.hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -780,6 +832,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 15,
+      "finish_day": 75,
       "hitl_tier": "tier_2",
       "hold_points": [
         "Pressure test witness"
@@ -797,6 +850,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
+      "start_day": 60,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d40",
       "type": "task",
       "unverified_dependencies": [
@@ -813,6 +867,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 25,
+      "finish_day": 90,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_cooling.frag.mep.cooling.d50",
@@ -834,6 +889,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
+      "start_day": 65,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d50",
       "type": "task",
       "unverified_dependencies": [
@@ -850,6 +906,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 25,
+      "finish_day": 25,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e10",
@@ -858,6 +915,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
+      "start_day": 0,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e10",
       "type": "task",
       "unverified_dependencies": [
@@ -874,6 +932,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 20,
+      "finish_day": 45,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e20",
@@ -889,6 +948,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
+      "start_day": 25,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e20",
       "type": "task",
       "unverified_dependencies": [
@@ -905,6 +965,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 35,
+      "finish_day": 80,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e30",
@@ -920,6 +981,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
+      "start_day": 45,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e30",
       "type": "task",
       "unverified_dependencies": [
@@ -936,6 +998,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 40,
+      "finish_day": 120,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e40",
@@ -951,6 +1014,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
+      "start_day": 80,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e40",
       "type": "task",
       "unverified_dependencies": [
@@ -967,6 +1031,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 28,
+      "finish_day": 148,
       "hitl_tier": "tier_1",
       "hold_points": [
         "IST results acceptance - RFS gate"
@@ -984,6 +1049,7 @@
       "safety_flag": true,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
+      "start_day": 120,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e50",
       "type": "task",
       "unverified_dependencies": [
@@ -1000,6 +1066,7 @@
       "delivery_mode": "unknown",
       "dept_code": "reviewer",
       "duration_days": 0,
+      "finish_day": 148,
       "hitl_tier": "tier_1",
       "hold_points": [],
       "id": "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
@@ -1015,6 +1082,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
+      "start_day": 148,
       "trail_ref": "trail.hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -1031,6 +1099,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 14,
+      "finish_day": 162,
       "hitl_tier": "tier_1",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e60",
@@ -1046,6 +1115,7 @@
       "safety_flag": true,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
+      "start_day": 148,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e60",
       "type": "task",
       "unverified_dependencies": [
@@ -2912,6 +2982,33 @@
       "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
     }
   ],
+  "rfs_day": 162,
+  "stage_timeline": {
+    "commissioning": {
+      "from_day": 0,
+      "to_day": 162
+    },
+    "design": {
+      "from_day": 0,
+      "to_day": 0
+    },
+    "mep_cooling": {
+      "from_day": 0,
+      "to_day": 90
+    },
+    "mep_power": {
+      "from_day": 0,
+      "to_day": 85
+    },
+    "procurement": {
+      "from_day": 0,
+      "to_day": 0
+    },
+    "substructure": {
+      "from_day": 0,
+      "to_day": 68
+    }
+  },
   "statutory_pathway": [
     {
       "approval": "PESO licence for HSD (diesel) storage",
@@ -2940,6 +3037,52 @@
       "why": "Bulk HSD storage for the generators"
     }
   ],
+  "zone_timeline": {
+    "zone.cooling-plant.01": {
+      "first_day": 0,
+      "last_day": 90,
+      "stages": [
+        {
+          "from_day": 0,
+          "stage": "mep_cooling",
+          "to_day": 90
+        }
+      ]
+    },
+    "zone.data-hall.01": {
+      "first_day": 0,
+      "last_day": 162,
+      "stages": [
+        {
+          "from_day": 0,
+          "stage": "commissioning",
+          "to_day": 162
+        }
+      ]
+    },
+    "zone.electrical-room.01": {
+      "first_day": 0,
+      "last_day": 85,
+      "stages": [
+        {
+          "from_day": 0,
+          "stage": "mep_power",
+          "to_day": 85
+        }
+      ]
+    },
+    "zone.shell.01": {
+      "first_day": 0,
+      "last_day": 68,
+      "stages": [
+        {
+          "from_day": 0,
+          "stage": "substructure",
+          "to_day": 68
+        }
+      ]
+    }
+  },
   "zones": [
     {
       "derived_from": {

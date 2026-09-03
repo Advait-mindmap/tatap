@@ -150,6 +150,12 @@ class SimulationOutput(BaseModel):
     activities: List[Dict[str, Any]] = Field(default_factory=list)
     commissioning: List[Dict[str, Any]] = Field(default_factory=list)
     zones: List[Dict[str, Any]] = Field(default_factory=list)
+    #: The 4D timeline. `rfs_day` is the last finish day across the plan - the far end of the
+    #: scrubber - and `zone_timeline` says when each zone comes into existence and which stage
+    #: it is in on any given day. Day offsets, not dates: see engine/schedule.py.
+    rfs_day: int = 0
+    zone_timeline: Dict[str, Any] = Field(default_factory=dict)
+    stage_timeline: Dict[str, Any] = Field(default_factory=dict)
     reasoning_trail: List[Dict[str, Any]] = Field(default_factory=list)
     quality: Dict[str, Any] = Field(default_factory=dict)
     #: Structured rather than bare strings: a flag carries its kind, refs and HITL tier so
@@ -323,6 +329,11 @@ class AssembledActivity(BaseModel):
     unverified_dependencies: List[str] = Field(default_factory=list)
     source_fragnet: Optional[str] = None
     compliance_gates: List[str] = Field(default_factory=list)
+    #: Earliest start/finish in whole days from day 0, from the engine's forward pass
+    #: (engine/schedule.py). Day offsets rather than dates: they are exactly as precise as
+    #: durations and logic allow, and real calendar dates arrive with the P6 export.
+    start_day: int = 0
+    finish_day: int = 0
 
 
 class AssemblyResult(BaseModel):
@@ -333,6 +344,14 @@ class AssemblyResult(BaseModel):
     zones: List[Dict[str, Any]] = Field(default_factory=list)
     commissioning: List[Dict[str, Any]] = Field(default_factory=list)
     trail: List[TrailEntry] = Field(default_factory=list)
+    #: Last finish day across the plan — "ready for service" on the 4D scrubber's timeline.
+    rfs_day: int = 0
+    #: Per zone: first_day, last_day and the ordered stage spans within it, so the 4D model can
+    #: answer "what exists on day N, and what stage is it in" without recomputing.
+    zone_timeline: Dict[str, Any] = Field(default_factory=dict)
+    #: Per stage: from_day/to_day. Most activities carry no zone, so this is what tells the 4D
+    #: model when a zone whose stage is known but whose work is not zone-tagged comes into being.
+    stage_timeline: Dict[str, Any] = Field(default_factory=dict)
     flags: List[ReasoningFlag] = Field(default_factory=list)
     governance: Dict[str, Any] = Field(default_factory=dict)
     warnings: List[str] = Field(default_factory=list)

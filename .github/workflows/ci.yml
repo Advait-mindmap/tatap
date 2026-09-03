@@ -165,6 +165,10 @@ jobs:
         if: always()
         run: npx playwright test decision-visibility.spec
 
+      - name: Browser tests - 4D time scrubber
+        if: always()
+        run: npx playwright test scrubber.spec
+
       - name: Upload rendered screenshots
         # Always, not just on failure: these are how the rendered flow gets reviewed without
         # anyone opening a browser, which is the point of capturing them at all.
