@@ -200,3 +200,85 @@ def test_the_golden_plan_gives_the_scrubber_something_to_scrub():
     starts = {a['start_day'] for a in data['activities']}
     assert len(starts) > 3, f'only {len(starts)} distinct start days in the whole plan'
     assert data['zone_timeline'], 'no zone has a timeline, so nothing can appear over time'
+
+
+# ------------------------------------------------------- the procurement-led critical path
+
+def _golden():
+    import io
+    import json
+    import pathlib
+
+    path = pathlib.Path(__file__).parent / 'golden' / 'simulation_output.json'
+    return json.load(io.open(path, encoding='utf-8'))
+
+
+def test_design_finishes_before_procurement_starts():
+    """"Engineering drives procurement" (DOMAIN_KNOWLEDGE.md §4). Before frag.design.* existed
+    the IFC gate was unanchored and both stages began on day 0 - the plan asserted a
+    dependency it did not enforce."""
+    stages = _golden()['stage_timeline']
+    assert stages['procurement']['from_day'] >= stages['design']['to_day'], (
+        f"procurement starts day {stages['procurement']['from_day']} but design runs to "
+        f"{stages['design']['to_day']}"
+    )
+
+
+def test_the_transformer_lead_time_actually_delays_its_delivery():
+    """The lead time has to be IN the schedule, not merely recorded in a library.
+
+    It is applied as the lag between placing the order and the plant arriving. With lag 0 the
+    delivery milestone sat on the day of the PO and a 32-week transformer constrained nothing.
+    """
+    data = _golden()
+    by_id = {a['id']: a for a in data['activities']}
+    delivery = by_id.get('gate.delivery-lead-transformer-hv')
+    assert delivery, 'no transformer delivery gate in the plan'
+
+    procurement_finish = data['stage_timeline']['procurement']['to_day']
+    # 32 weeks x 7 calendar days. Read from the library so the test tracks the data.
+    from backend.app.libraries import load_library
+
+    weeks = next(
+        e['typical_weeks'] for e in load_library('equipment_lead_times')['entries']
+        if e['id'] == 'lead.transformer_hv'
+    )
+    assert delivery['start_day'] >= round(weeks * 7), (
+        f"transformer delivered on day {delivery['start_day']}, sooner than its "
+        f'{weeks}-week lead time allows'
+    )
+    assert delivery['start_day'] <= procurement_finish
+
+
+def test_mep_installation_waits_for_the_plant_to_arrive():
+    """"Tie construction to delivery" (§4). The activity that installs a long-lead item must
+    not start before that item's delivery milestone."""
+    data = _golden()
+    by_id = {a['id']: a for a in data['activities']}
+
+    checked = 0
+    for activity in data['activities']:
+        for pred in activity.get('predecessors') or []:
+            if not str(pred.get('id', '')).startswith('gate.delivery-'):
+                continue
+            gate = by_id[pred['id']]
+            checked += 1
+            assert activity['start_day'] >= gate['finish_day'], (
+                f"{activity['id']} starts day {activity['start_day']} but {gate['id']} "
+                f"delivers on day {gate['finish_day']}"
+            )
+    assert checked > 0, 'no installation activity is gated by a delivery at all'
+
+
+def test_commissioning_does_not_precede_the_plant_it_commissions():
+    """The forward pass made this visible: commissioning used to finish three hundred days
+    before the power train was installed."""
+    stages = _golden()['stage_timeline']
+    assert stages['commissioning']['from_day'] >= stages['mep_power']['to_day']
+
+
+def test_the_programme_is_a_sequence_rather_than_one_big_parallel_block():
+    """Every stage starting on day 0 is the symptom this whole change addresses."""
+    stages = _golden()['stage_timeline']
+    starts = {name: span['from_day'] for name, span in stages.items()}
+    assert len(set(starts.values())) >= 3, f'stages start on only {set(starts.values())}'

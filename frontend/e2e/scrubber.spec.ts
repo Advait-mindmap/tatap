@@ -36,8 +36,20 @@ interface Frame {
   /** Fraction of the canvas that is coloured geometry. */
   lit: number
   meanLuminance: number
-  /** Coarse signature of the image, for comparing two frames. */
-  signature: string
+  /** Mean brightness per cell of an 8x8 grid, for measuring how far two frames differ. */
+  cells: number[]
+}
+
+/**
+ * How different two frames are: mean absolute difference per cell, in luminance units.
+ *
+ * A quantised string compared for equality was the first attempt and it was too blunt - day 0
+ * (one zone) and day 184 (thirty-three) hashed to the same bucket. Measuring the distance says
+ * how different, which is what the claim actually is.
+ */
+function distance(a: Frame, b: Frame): number {
+  const total = a.cells.reduce((sum, value, i) => sum + Math.abs(value - b.cells[i]), 0)
+  return total / a.cells.length
 }
 
 /**
@@ -88,9 +100,7 @@ async function frame(page: Page): Promise<Frame> {
     return {
       lit: lit / sampled,
       meanLuminance: luminance / sampled,
-      signature: cells
-        .map((total, i) => Math.round(total / Math.max(counts[i], 1) / 12))
-        .join(','),
+      cells: cells.map((total, i) => total / Math.max(counts[i], 1)),
     }
   })
 }
@@ -167,9 +177,12 @@ test('dragging the scrubber shows the model at three different points in the bui
   const rfsCount = await page.getByTestId('built-count').textContent()
   await page.screenshot({ path: `${SHOTS}/14-03-rfs.png` })
 
-  console.log('day 0 :', startDay, startCount, JSON.stringify({ lit: atStart.lit }))
-  console.log('midway:', midDay, midCount, JSON.stringify({ lit: atMid.lit }))
-  console.log('RFS   :', rfsDay, rfsCount, JSON.stringify({ lit: atRfs.lit }))
+  console.log('day 0 :', startDay, startCount)
+  console.log('midway:', midDay, midCount)
+  console.log('RFS   :', rfsDay, rfsCount)
+  console.log('frame distance  start->mid', distance(atStart, atMid).toFixed(2),
+    ' mid->rfs', distance(atMid, atRfs).toFixed(2),
+    ' start->rfs', distance(atStart, atRfs).toFixed(2))
 
   // The scrubber actually moved through the programme.
   expect(startDay).toBe(0)
@@ -177,10 +190,12 @@ test('dragging the scrubber shows the model at three different points in the bui
   expect(rfsDay).toBeGreaterThan(midDay)
 
   // And the MODEL changed with it — this is the assertion that matters. A scrubber whose label
-  // updates while the geometry stays put is not a 4D view.
-  expect(atStart.signature, 'the model at day 0 is identical to midway').not.toBe(atMid.signature)
-  expect(atMid.signature, 'the model midway is identical to RFS').not.toBe(atRfs.signature)
-  expect(atStart.signature, 'the model at day 0 is identical to RFS').not.toBe(atRfs.signature)
+  // updates while the geometry stays put is not a 4D view. The threshold is in luminance units
+  // per cell: comfortably above frame-to-frame noise, far below a real change.
+  const MOVED = 0.4
+  expect(distance(atStart, atMid), 'day 0 and midway render the same model').toBeGreaterThan(MOVED)
+  expect(distance(atMid, atRfs), 'midway and RFS render the same model').toBeGreaterThan(MOVED)
+  expect(distance(atStart, atRfs), 'day 0 and RFS render the same model').toBeGreaterThan(MOVED)
 
   // The build only ever grows: work completed by day N is still complete at day N+1.
   const completed = (text: string | null) => Number((text ?? '').match(/(\d+) complete/)?.[1] ?? 0)

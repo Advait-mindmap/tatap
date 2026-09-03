@@ -115,6 +115,10 @@ def assemble(
     fragnet_lib = libraries.get('fragnets') or load_library('fragnets')['entries']
     safety_lib = libraries.get('safety_register') or load_library('safety_register')['entries']
     tier_lib = libraries.get('tier_rules') or load_library('tier_rules')['entries']
+    lead_lib = (
+        libraries.get('equipment_lead_times')
+        or load_library('equipment_lead_times')['entries']
+    )
     fragnet_index = {f['id']: f for f in fragnet_lib}
 
     ordered = sorted(
@@ -243,7 +247,7 @@ def assemble(
 
     # ---------------------------------------------------------------- cross-stage gates
     gate_activities, gate_edges, gate_warnings = _build_cross_stage_gates(
-        ordered, stage_activity_ids, link_target, fragnet_lib
+        ordered, stage_activity_ids, link_target, fragnet_lib, lead_lib
     )
     activities.extend(gate_activities)
     edges.extend(gate_edges)
@@ -313,6 +317,7 @@ def _build_cross_stage_gates(
     stage_activity_ids: Dict[str, List[str]],
     link_target: Dict[Tuple[str, str], str],
     fragnet_lib: Sequence[Dict[str, Any]],
+    lead_lib: Sequence[Dict[str, Any]] = (),
 ) -> Tuple[List[AssembledActivity], List[AssembledEdge], List[str]]:
     """Emit gate milestones and their edges from the declarative rules.
 
@@ -363,6 +368,14 @@ def _build_cross_stage_gates(
                 ))
 
     # Delivery gates: one per long-lead item any instanced fragnet declares a link to.
+    #
+    # Lead times are quoted in WEEKS and applied as CALENDAR days (x7), not working days: a
+    # factory building a transformer does not observe the site's 6-day calendar.
+    lead_time_days = {
+        entry['id']: int(round(float(entry['typical_weeks']) * 7))
+        for entry in lead_lib
+        if entry.get('id') and entry.get('typical_weeks') is not None
+    }
     links = material_link_index(fragnet_lib)
     for lead_id, pairs in links.items():
         targets = sorted({
@@ -379,11 +392,22 @@ def _build_cross_stage_gates(
             dept_code='procurement', stage=DELIVERY_GATE.producer_stage,
             trail_ref=trail_ref(ident), hitl_tier='tier_3',
         ))
+        # THE LEAD TIME IS THE LAG. Ordering and arrival are separated by the manufacturing
+        # and shipping time the library records; without it the delivery milestone sat on the
+        # day the order was placed and a 32-week transformer constrained nothing at all. The
+        # gate takes the max over its predecessors, so hanging it off every procurement
+        # activity resolves to "PO placed, then wait the lead time".
+        lead_days = lead_time_days.get(lead_id)
         for producer_id in sorted(stage_activity_ids.get(DELIVERY_GATE.producer_stage, [])):
             edges.append(AssembledEdge(
-                from_id=producer_id, to_id=ident, type='FS', lag=0,
+                from_id=producer_id, to_id=ident, type='FS', lag=lead_days or 0,
                 kind='delivery', why=DELIVERY_GATE.why,
             ))
+        if lead_days is None:
+            warnings.append(
+                f'Delivery gate {ident} has no lead time in equipment_lead_times: it imposes no '
+                'delay, so the plan understates the date this plant is available.'
+            )
         for target in targets:
             edges.append(AssembledEdge(
                 from_id=ident, to_id=target, type='FS', lag=0,

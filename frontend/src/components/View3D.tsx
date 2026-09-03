@@ -31,7 +31,11 @@ function ZoneMesh({ zone, state }: ZoneMeshProps) {
   // whole point of a 4D view: the model at day N is what exists at day N, not a picture of the
   // finished building shown early.
   const building = state === 'complete'
-  const height = building ? geo.height : Math.max(geo.height * 0.18, 0.6)
+  // Under construction has to be VISIBLE, not merely different. At 18% height and 40% opacity
+  // thirty-three zones going up changed the rendered image by less than frame noise - the 4D
+  // view was technically correct and showed the viewer nothing. A third height at three
+  // quarters opacity reads clearly as "footprint out of the ground, not finished".
+  const height = building ? geo.height : Math.max(geo.height * 0.34, 1.2)
 
   return (
     <mesh
@@ -47,14 +51,14 @@ function ZoneMesh({ zone, state }: ZoneMeshProps) {
       <meshStandardMaterial
         color={color}
         emissive={color}
-        emissiveIntensity={building ? 0.12 : 0.35}
+        emissiveIntensity={building ? 0.12 : 0.5}
         roughness={0.55}
         metalness={0.05}
         // The site is the ground the plan stands on, not a building. At full strength its
         // stage colour is the largest, loudest surface on screen and the buildings read as
         // detail on top of it; held back, it reads as the parcel it represents.
         transparent={zone.kind === 'site' || !building}
-        opacity={zone.kind === 'site' ? 0.45 : building ? 1 : 0.4}
+        opacity={zone.kind === 'site' ? 0.45 : building ? 1 : 0.75}
       />
       <Edges scale={1.001} threshold={15} color="#0b1220" />
     </mesh>

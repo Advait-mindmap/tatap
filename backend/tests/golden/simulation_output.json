@@ -8,16 +8,102 @@
       "delivery_mode": "unknown",
       "dept_code": "design",
       "duration_days": 0,
-      "finish_day": 0,
+      "finish_day": 95,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.ifc-construction",
+      "name": "Design complete - IFC drawings issued (construction release)",
+      "predecessors": [
+        {
+          "id": "design.frag.design.engineering.e10",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "design.frag.design.engineering.e20",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "design.frag.design.engineering.e30",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "design.frag.design.engineering.e40",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "design.frag.design.engineering.e50",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "design",
+      "start_day": 95,
+      "trail_ref": "trail.gate.ifc-construction",
+      "type": "gate",
+      "unverified_dependencies": [],
+      "wbs_id": "00.de.ion",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 0,
+      "finish_day": 95,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.ifc-issued",
       "name": "Design complete - IFC drawings issued",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "design.frag.design.engineering.e10",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "design.frag.design.engineering.e20",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "design.frag.design.engineering.e30",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "design.frag.design.engineering.e40",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "design.frag.design.engineering.e50",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "design",
-      "start_day": 0,
+      "start_day": 95,
       "trail_ref": "trail.gate.ifc-issued",
       "type": "gate",
       "unverified_dependencies": [],
@@ -28,20 +114,273 @@
       "blocks_export": false,
       "calendar": "6day",
       "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 20,
+      "finish_day": 20,
+      "hitl_tier": "tier_2",
+      "hold_points": [
+        "Basis of design sign-off"
+      ],
+      "id": "design.frag.design.engineering.e10",
+      "name": "Basis of design freeze (load, tier, topology)",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": "frag.design.engineering",
+      "stage": "design",
+      "start_day": 0,
+      "trail_ref": "trail.design.frag.design.engineering.e10",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "wbs_id": "01.01.001",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 0,
+      "finish_day": 20,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "hold.design.frag.design.engineering.e10.basis-of-design-sign-off",
+      "name": "HOLD: Basis of design sign-off",
+      "predecessors": [
+        {
+          "id": "design.frag.design.engineering.e10",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.design.engineering",
+      "stage": "design",
+      "start_day": 20,
+      "trail_ref": "trail.hold.design.frag.design.engineering.e10.basis-of-design-sign-off",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "wbs_id": "01.01.001",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 25,
+      "finish_day": 45,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "design.frag.design.engineering.e20",
+      "name": "Concept design and capacity sizing",
+      "predecessors": [
+        {
+          "id": "design.frag.design.engineering.e10",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.design.engineering",
+      "stage": "design",
+      "start_day": 20,
+      "trail_ref": "trail.design.frag.design.engineering.e20",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "wbs_id": "01.01.002",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 15,
+      "finish_day": 60,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "design.frag.design.engineering.e30",
+      "name": "Equipment schedule issued for procurement",
+      "predecessors": [
+        {
+          "id": "design.frag.design.engineering.e20",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.design.engineering",
+      "stage": "design",
+      "start_day": 45,
+      "trail_ref": "trail.design.frag.design.engineering.e30",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "wbs_id": "01.01.003",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 45,
+      "finish_day": 75,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "design.frag.design.engineering.e40",
+      "name": "Detailed design - MEP, structural, architectural",
+      "predecessors": [
+        {
+          "id": "design.frag.design.engineering.e20",
+          "kind": "fragnet",
+          "lag": 10,
+          "type": "SS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.design.engineering",
+      "stage": "design",
+      "start_day": 30,
+      "trail_ref": "trail.design.frag.design.engineering.e40",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "wbs_id": "01.01.004",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 20,
+      "finish_day": 95,
+      "hitl_tier": "tier_2",
+      "hold_points": [
+        "IFC issue review"
+      ],
+      "id": "design.frag.design.engineering.e50",
+      "name": "IFC drawings issued",
+      "predecessors": [
+        {
+          "id": "design.frag.design.engineering.e40",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.design.engineering",
+      "stage": "design",
+      "start_day": 75,
+      "trail_ref": "trail.design.frag.design.engineering.e50",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "wbs_id": "01.01.005",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "design",
+      "duration_days": 0,
+      "finish_day": 95,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "hold.design.frag.design.engineering.e50.ifc-issue-review",
+      "name": "HOLD: IFC issue review",
+      "predecessors": [
+        {
+          "id": "design.frag.design.engineering.e50",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.design.engineering",
+      "stage": "design",
+      "start_day": 95,
+      "trail_ref": "trail.hold.design.frag.design.engineering.e50.ifc-issue-review",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "wbs_id": "01.01.005",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
       "confidence": 0.0,
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
-      "finish_day": 0,
+      "finish_day": 394,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-transformer-hv",
       "name": "Delivery to site: lead.transformer_hv",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "procurement.frag.procurement.long_lead.b10",
+          "kind": "delivery",
+          "lag": 224,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b20",
+          "kind": "delivery",
+          "lag": 224,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "delivery",
+          "lag": 224,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b40",
+          "kind": "delivery",
+          "lag": 224,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
-      "start_day": 0,
+      "start_day": 394,
       "trail_ref": "trail.gate.delivery-lead-transformer-hv",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -56,16 +395,41 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
-      "finish_day": 0,
+      "finish_day": 380,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-hv-switchgear",
       "name": "Delivery to site: lead.hv_switchgear",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "procurement.frag.procurement.long_lead.b10",
+          "kind": "delivery",
+          "lag": 210,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b20",
+          "kind": "delivery",
+          "lag": 210,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "delivery",
+          "lag": 210,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b40",
+          "kind": "delivery",
+          "lag": 210,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
-      "start_day": 0,
+      "start_day": 380,
       "trail_ref": "trail.gate.delivery-lead-hv-switchgear",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -80,16 +444,41 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
-      "finish_day": 0,
+      "finish_day": 338,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-chiller",
       "name": "Delivery to site: lead.chiller",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "procurement.frag.procurement.long_lead.b10",
+          "kind": "delivery",
+          "lag": 168,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b20",
+          "kind": "delivery",
+          "lag": 168,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "delivery",
+          "lag": 168,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b40",
+          "kind": "delivery",
+          "lag": 168,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
-      "start_day": 0,
+      "start_day": 338,
       "trail_ref": "trail.gate.delivery-lead-chiller",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -104,16 +493,41 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
-      "finish_day": 0,
+      "finish_day": 296,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-crah",
       "name": "Delivery to site: lead.crah",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "procurement.frag.procurement.long_lead.b10",
+          "kind": "delivery",
+          "lag": 126,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b20",
+          "kind": "delivery",
+          "lag": 126,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "delivery",
+          "lag": 126,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b40",
+          "kind": "delivery",
+          "lag": 126,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
-      "start_day": 0,
+      "start_day": 296,
       "trail_ref": "trail.gate.delivery-lead-crah",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -128,16 +542,41 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
-      "finish_day": 0,
+      "finish_day": 324,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-ups",
       "name": "Delivery to site: lead.ups",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "procurement.frag.procurement.long_lead.b10",
+          "kind": "delivery",
+          "lag": 154,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b20",
+          "kind": "delivery",
+          "lag": 154,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "delivery",
+          "lag": 154,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b40",
+          "kind": "delivery",
+          "lag": 154,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
-      "start_day": 0,
+      "start_day": 324,
       "trail_ref": "trail.gate.delivery-lead-ups",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -152,16 +591,41 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
-      "finish_day": 0,
+      "finish_day": 282,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.delivery-lead-busway",
       "name": "Delivery to site: lead.busway",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "procurement.frag.procurement.long_lead.b10",
+          "kind": "delivery",
+          "lag": 112,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b20",
+          "kind": "delivery",
+          "lag": 112,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "delivery",
+          "lag": 112,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b40",
+          "kind": "delivery",
+          "lag": 112,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "procurement",
-      "start_day": 0,
+      "start_day": 282,
       "trail_ref": "trail.gate.delivery-lead-busway",
       "type": "milestone",
       "unverified_dependencies": [],
@@ -173,19 +637,211 @@
       "calendar": "6day",
       "compliance_gates": [],
       "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 15,
+      "finish_day": 110,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "procurement.frag.procurement.long_lead.b10",
+      "name": "Tender packages and technical specifications",
+      "predecessors": [
+        {
+          "id": "gate.ifc-issued",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.procurement.long_lead",
+      "stage": "procurement",
+      "start_day": 95,
+      "trail_ref": "trail.procurement.frag.procurement.long_lead.b10",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "wbs_id": "03.01.001",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 30,
+      "finish_day": 140,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "procurement.frag.procurement.long_lead.b20",
+      "name": "RFQ issue and vendor bid period",
+      "predecessors": [
+        {
+          "id": "gate.ifc-issued",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b10",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.procurement.long_lead",
+      "stage": "procurement",
+      "start_day": 110,
+      "trail_ref": "trail.procurement.frag.procurement.long_lead.b20",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "wbs_id": "03.01.002",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "commercial",
+      "duration_days": 0,
+      "finish_day": 160,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "hold.procurement.frag.procurement.long_lead.b30.award-recommendation-approval",
+      "name": "HOLD: Award recommendation approval",
+      "predecessors": [
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.procurement.long_lead",
+      "stage": "procurement",
+      "start_day": 160,
+      "trail_ref": "trail.hold.procurement.frag.procurement.long_lead.b30.award-recommendation-approval",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "wbs_id": "03.01.003",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 20,
+      "finish_day": 160,
+      "hitl_tier": "tier_2",
+      "hold_points": [
+        "Award recommendation approval"
+      ],
+      "id": "procurement.frag.procurement.long_lead.b30",
+      "name": "Technical and commercial bid evaluation",
+      "predecessors": [
+        {
+          "id": "gate.ifc-issued",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b20",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.procurement.long_lead",
+      "stage": "procurement",
+      "start_day": 140,
+      "trail_ref": "trail.procurement.frag.procurement.long_lead.b30",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "wbs_id": "03.01.003",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 10,
+      "finish_day": 170,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "procurement.frag.procurement.long_lead.b40",
+      "name": "Vendor award and purchase orders placed",
+      "predecessors": [
+        {
+          "id": "gate.ifc-issued",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.procurement.long_lead",
+      "stage": "procurement",
+      "start_day": 160,
+      "trail_ref": "trail.procurement.frag.procurement.long_lead.b40",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "wbs_id": "03.01.004",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.5,
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 18,
-      "finish_day": 18,
+      "finish_day": 113,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "substructure.frag.substructure.raft.a10",
       "name": "Excavation to formation level",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
-      "start_day": 0,
+      "start_day": 95,
       "trail_ref": "trail.substructure.frag.substructure.raft.a10",
       "type": "task",
       "unverified_dependencies": [
@@ -202,12 +858,18 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 6,
-      "finish_day": 24,
+      "finish_day": 119,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "substructure.frag.substructure.raft.a20",
       "name": "PCC and blinding",
       "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
         {
           "id": "substructure.frag.substructure.raft.a10",
           "kind": "fragnet",
@@ -218,7 +880,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
-      "start_day": 18,
+      "start_day": 113,
       "trail_ref": "trail.substructure.frag.substructure.raft.a20",
       "type": "task",
       "unverified_dependencies": [
@@ -235,7 +897,7 @@
       "delivery_mode": "unknown",
       "dept_code": "qaqc",
       "duration_days": 0,
-      "finish_day": 49,
+      "finish_day": 144,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
@@ -251,7 +913,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
-      "start_day": 49,
+      "start_day": 144,
       "trail_ref": "trail.hold.substructure.frag.substructure.raft.a30.reinforcement-inspection",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -268,7 +930,7 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 25,
-      "finish_day": 49,
+      "finish_day": 144,
       "hitl_tier": "tier_2",
       "hold_points": [
         "Reinforcement inspection"
@@ -276,6 +938,12 @@
       "id": "substructure.frag.substructure.raft.a30",
       "name": "Raft reinforcement fixing",
       "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
         {
           "id": "substructure.frag.substructure.raft.a20",
           "kind": "fragnet",
@@ -286,7 +954,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
-      "start_day": 24,
+      "start_day": 119,
       "trail_ref": "trail.substructure.frag.substructure.raft.a30",
       "type": "task",
       "unverified_dependencies": [
@@ -303,12 +971,18 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 8,
-      "finish_day": 37,
+      "finish_day": 132,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "substructure.frag.substructure.raft.a40",
       "name": "Formwork and shuttering",
       "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
         {
           "id": "substructure.frag.substructure.raft.a30",
           "kind": "fragnet",
@@ -319,7 +993,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
-      "start_day": 29,
+      "start_day": 124,
       "trail_ref": "trail.substructure.frag.substructure.raft.a40",
       "type": "task",
       "unverified_dependencies": [
@@ -336,12 +1010,18 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 3,
-      "finish_day": 40,
+      "finish_day": 135,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "substructure.frag.substructure.raft.a50",
       "name": "Raft concrete pour",
       "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
         {
           "id": "substructure.frag.substructure.raft.a40",
           "kind": "fragnet",
@@ -352,7 +1032,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
-      "start_day": 37,
+      "start_day": 132,
       "trail_ref": "trail.substructure.frag.substructure.raft.a50",
       "type": "task",
       "unverified_dependencies": [
@@ -369,7 +1049,7 @@
       "delivery_mode": "unknown",
       "dept_code": "qaqc",
       "duration_days": 0,
-      "finish_day": 68,
+      "finish_day": 163,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
@@ -385,7 +1065,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
-      "start_day": 68,
+      "start_day": 163,
       "trail_ref": "trail.hold.substructure.frag.substructure.raft.a60.cube-test-results-acceptance",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -402,7 +1082,7 @@
       "delivery_mode": "self-perform",
       "dept_code": "civil",
       "duration_days": 28,
-      "finish_day": 68,
+      "finish_day": 163,
       "hitl_tier": "tier_2",
       "hold_points": [
         "Cube test results acceptance"
@@ -410,6 +1090,12 @@
       "id": "substructure.frag.substructure.raft.a60",
       "name": "Curing and cube testing",
       "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
         {
           "id": "substructure.frag.substructure.raft.a50",
           "kind": "fragnet",
@@ -420,7 +1106,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.substructure.raft",
       "stage": "substructure",
-      "start_day": 40,
+      "start_day": 135,
       "trail_ref": "trail.substructure.frag.substructure.raft.a60",
       "type": "task",
       "unverified_dependencies": [
@@ -432,6 +1118,67 @@
     {
       "blocks_export": false,
       "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "mep",
+      "duration_days": 0,
+      "finish_day": 467,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.power-installed",
+      "name": "Power train installed - ready for commissioning",
+      "predecessors": [
+        {
+          "id": "mep_power.frag.mep.power_train.c10",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c20",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c30",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c50",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c60",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "mep_power",
+      "start_day": 467,
+      "trail_ref": "trail.gate.power-installed",
+      "type": "gate",
+      "unverified_dependencies": [],
+      "wbs_id": "00.re.led",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
       "compliance_gates": [
         "path.nm.peso_hsd"
       ],
@@ -439,16 +1186,23 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 12,
-      "finish_day": 12,
+      "finish_day": 107,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c10",
       "name": "Transformer plinth and pad preparation",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 0,
+      "start_day": 95,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c10",
       "type": "task",
       "unverified_dependencies": [
@@ -467,7 +1221,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 8,
-      "finish_day": 20,
+      "finish_day": 402,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c20",
@@ -476,6 +1230,12 @@
         {
           "id": "gate.delivery-lead-transformer-hv",
           "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
         },
@@ -489,7 +1249,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 12,
+      "start_day": 394,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c20",
       "type": "task",
       "unverified_dependencies": [
@@ -508,7 +1268,7 @@
       "delivery_mode": "unknown",
       "dept_code": "qaqc",
       "duration_days": 0,
-      "finish_day": 47,
+      "finish_day": 429,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
@@ -524,7 +1284,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 47,
+      "start_day": 429,
       "trail_ref": "trail.hold.mep_power.frag.mep.power_train.c30.pre-energisation-inspection",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -543,7 +1303,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 30,
-      "finish_day": 47,
+      "finish_day": 429,
       "hitl_tier": "tier_2",
       "hold_points": [
         "Pre-energisation inspection"
@@ -558,6 +1318,12 @@
           "type": "FS"
         },
         {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
           "id": "mep_power.frag.mep.power_train.c20",
           "kind": "fragnet",
           "lag": 5,
@@ -567,7 +1333,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 17,
+      "start_day": 399,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c30",
       "type": "task",
       "unverified_dependencies": [
@@ -586,7 +1352,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 35,
-      "finish_day": 62,
+      "finish_day": 444,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c40",
@@ -595,6 +1361,12 @@
         {
           "id": "gate.delivery-lead-ups",
           "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
         },
@@ -608,7 +1380,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 27,
+      "start_day": 409,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c40",
       "type": "task",
       "unverified_dependencies": [
@@ -627,7 +1399,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 25,
-      "finish_day": 60,
+      "finish_day": 442,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50",
@@ -636,6 +1408,12 @@
         {
           "id": "gate.delivery-lead-busway",
           "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
         },
@@ -649,7 +1427,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 35,
+      "start_day": 417,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50",
       "type": "task",
       "unverified_dependencies": [
@@ -668,12 +1446,18 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 25,
-      "finish_day": 85,
+      "finish_day": 467,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60",
       "name": "Cable termination and continuity test",
       "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
         {
           "id": "mep_power.frag.mep.power_train.c50",
           "kind": "fragnet",
@@ -684,7 +1468,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 60,
+      "start_day": 442,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60",
       "type": "task",
       "unverified_dependencies": [
@@ -697,20 +1481,82 @@
       "blocks_export": false,
       "calendar": "6day",
       "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "mep",
+      "duration_days": 0,
+      "finish_day": 418,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.cooling-installed",
+      "name": "Cooling plant installed - ready for commissioning",
+      "predecessors": [
+        {
+          "id": "mep_cooling.frag.mep.cooling.d10",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_cooling.frag.mep.cooling.d20",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_cooling.frag.mep.cooling.d30",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_cooling.frag.mep.cooling.d40",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_cooling.frag.mep.cooling.d50",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "mep_cooling",
+      "start_day": 418,
+      "trail_ref": "trail.gate.cooling-installed",
+      "type": "gate",
+      "unverified_dependencies": [],
+      "wbs_id": "00.re.led",
+      "zone_id": "zone.cooling-plant.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
       "confidence": 0.5,
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 10,
-      "finish_day": 10,
+      "finish_day": 105,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_cooling.frag.mep.cooling.d10",
       "name": "Chiller plinth preparation",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
-      "start_day": 0,
+      "start_day": 95,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d10",
       "type": "task",
       "unverified_dependencies": [
@@ -727,7 +1573,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 10,
-      "finish_day": 20,
+      "finish_day": 348,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_cooling.frag.mep.cooling.d20",
@@ -736,6 +1582,12 @@
         {
           "id": "gate.delivery-lead-chiller",
           "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
         },
@@ -749,7 +1601,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
-      "start_day": 10,
+      "start_day": 338,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d20",
       "type": "task",
       "unverified_dependencies": [
@@ -766,12 +1618,18 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 45,
-      "finish_day": 60,
+      "finish_day": 388,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_cooling.frag.mep.cooling.d30",
       "name": "Chilled water piping installation",
       "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
         {
           "id": "mep_cooling.frag.mep.cooling.d20",
           "kind": "fragnet",
@@ -782,7 +1640,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
-      "start_day": 15,
+      "start_day": 343,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d30",
       "type": "task",
       "unverified_dependencies": [
@@ -799,7 +1657,7 @@
       "delivery_mode": "unknown",
       "dept_code": "qaqc",
       "duration_days": 0,
-      "finish_day": 75,
+      "finish_day": 403,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
@@ -815,7 +1673,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
-      "start_day": 75,
+      "start_day": 403,
       "trail_ref": "trail.hold.mep_cooling.frag.mep.cooling.d40.pressure-test-witness",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -832,7 +1690,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 15,
-      "finish_day": 75,
+      "finish_day": 403,
       "hitl_tier": "tier_2",
       "hold_points": [
         "Pressure test witness"
@@ -840,6 +1698,12 @@
       "id": "mep_cooling.frag.mep.cooling.d40",
       "name": "Pressure testing and flushing",
       "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
         {
           "id": "mep_cooling.frag.mep.cooling.d30",
           "kind": "fragnet",
@@ -850,7 +1714,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
-      "start_day": 60,
+      "start_day": 388,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d40",
       "type": "task",
       "unverified_dependencies": [
@@ -867,7 +1731,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "mep",
       "duration_days": 25,
-      "finish_day": 90,
+      "finish_day": 418,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_cooling.frag.mep.cooling.d50",
@@ -876,6 +1740,12 @@
         {
           "id": "gate.delivery-lead-crah",
           "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
         },
@@ -889,7 +1759,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.mep.cooling",
       "stage": "mep_cooling",
-      "start_day": 65,
+      "start_day": 393,
       "trail_ref": "trail.mep_cooling.frag.mep.cooling.d50",
       "type": "task",
       "unverified_dependencies": [
@@ -906,16 +1776,29 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 25,
-      "finish_day": 25,
+      "finish_day": 492,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e10",
       "name": "L1 factory acceptance testing",
-      "predecessors": [],
+      "predecessors": [
+        {
+          "id": "gate.cooling-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.power-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 0,
+      "start_day": 467,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e10",
       "type": "task",
       "unverified_dependencies": [
@@ -932,7 +1815,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 20,
-      "finish_day": 45,
+      "finish_day": 512,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e20",
@@ -943,12 +1826,24 @@
           "kind": "fragnet",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "gate.cooling-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.power-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 25,
+      "start_day": 492,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e20",
       "type": "task",
       "unverified_dependencies": [
@@ -965,7 +1860,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 35,
-      "finish_day": 80,
+      "finish_day": 547,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e30",
@@ -976,12 +1871,24 @@
           "kind": "fragnet",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "gate.cooling-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.power-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 45,
+      "start_day": 512,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e30",
       "type": "task",
       "unverified_dependencies": [
@@ -998,7 +1905,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 40,
-      "finish_day": 120,
+      "finish_day": 587,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e40",
@@ -1009,12 +1916,24 @@
           "kind": "fragnet",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "gate.cooling-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.power-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 80,
+      "start_day": 547,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e40",
       "type": "task",
       "unverified_dependencies": [
@@ -1031,7 +1950,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 28,
-      "finish_day": 148,
+      "finish_day": 615,
       "hitl_tier": "tier_1",
       "hold_points": [
         "IST results acceptance - RFS gate"
@@ -1044,12 +1963,24 @@
           "kind": "fragnet",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "gate.cooling-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.power-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": true,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 120,
+      "start_day": 587,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e50",
       "type": "task",
       "unverified_dependencies": [
@@ -1066,7 +1997,7 @@
       "delivery_mode": "unknown",
       "dept_code": "reviewer",
       "duration_days": 0,
-      "finish_day": 148,
+      "finish_day": 615,
       "hitl_tier": "tier_1",
       "hold_points": [],
       "id": "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
@@ -1082,7 +2013,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 148,
+      "start_day": 615,
       "trail_ref": "trail.hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -1099,7 +2030,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 14,
-      "finish_day": 162,
+      "finish_day": 629,
       "hitl_tier": "tier_1",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e60",
@@ -1110,12 +2041,24 @@
           "kind": "fragnet",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "gate.cooling-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.power-installed",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": true,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 148,
+      "start_day": 615,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e60",
       "type": "task",
       "unverified_dependencies": [
@@ -1253,13 +2196,7 @@
     {
       "hitl_tier": "tier_2",
       "kind": "engine_warning",
-      "message": "Gate gate.ifc-issued (Design complete - IFC drawings issued) has no producing activities: stage \"design\" instanced nothing, because frag.design.* does not exist yet. The gate still constrains its consumers, and will anchor automatically once that fragnet is added.",
-      "refs": []
-    },
-    {
-      "hitl_tier": "tier_2",
-      "kind": "engine_warning",
-      "message": "25 assembled activities rest on 4 unverified library entries; their confidence is the capped value, not the reasoner's claim.",
+      "message": "37 assembled activities rest on 6 unverified library entries; their confidence is the capped value, not the reasoner's claim.",
       "refs": []
     }
   ],
@@ -1314,6 +2251,182 @@
         "why": "Quality hold point owned by reviewer."
       },
       {
+        "from": "design.frag.design.engineering.e10",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "design.frag.design.engineering.e20",
+        "type": "FS",
+        "why": "Fragnet logic from frag.design.engineering."
+      },
+      {
+        "from": "design.frag.design.engineering.e10",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-construction",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "design.frag.design.engineering.e10",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-issued",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "design.frag.design.engineering.e10",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.design.frag.design.engineering.e10.basis-of-design-sign-off",
+        "type": "FS",
+        "why": "Quality hold point owned by design."
+      },
+      {
+        "from": "design.frag.design.engineering.e20",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "design.frag.design.engineering.e30",
+        "type": "FS",
+        "why": "Fragnet logic from frag.design.engineering."
+      },
+      {
+        "from": "design.frag.design.engineering.e20",
+        "kind": "fragnet",
+        "lag": 10,
+        "to": "design.frag.design.engineering.e40",
+        "type": "SS",
+        "why": "Fragnet logic from frag.design.engineering."
+      },
+      {
+        "from": "design.frag.design.engineering.e20",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-construction",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "design.frag.design.engineering.e20",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-issued",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "design.frag.design.engineering.e30",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-construction",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "design.frag.design.engineering.e30",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-issued",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "design.frag.design.engineering.e40",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "design.frag.design.engineering.e50",
+        "type": "FS",
+        "why": "Fragnet logic from frag.design.engineering."
+      },
+      {
+        "from": "design.frag.design.engineering.e40",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-construction",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "design.frag.design.engineering.e40",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-issued",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "design.frag.design.engineering.e50",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-construction",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "design.frag.design.engineering.e50",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.ifc-issued",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "design.frag.design.engineering.e50",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.design.frag.design.engineering.e50.ifc-issue-review",
+        "type": "FS",
+        "why": "Quality hold point owned by design."
+      },
+      {
+        "from": "gate.cooling-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e10",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
+        "from": "gate.cooling-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e20",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
+        "from": "gate.cooling-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e30",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
+        "from": "gate.cooling-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e40",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
+        "from": "gate.cooling-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e50",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
+        "from": "gate.cooling-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e60",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
         "from": "gate.delivery-lead-busway",
         "kind": "delivery",
         "lag": 0,
@@ -1362,12 +2475,244 @@
         "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
       },
       {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d10",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d20",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d30",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d40",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_cooling.frag.mep.cooling.d50",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c10",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c20",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c30",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c40",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c50",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c60",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a10",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a20",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a30",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a40",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a50",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "substructure.frag.substructure.raft.a60",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-issued",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "procurement.frag.procurement.long_lead.b10",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "gate.ifc-issued",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "procurement.frag.procurement.long_lead.b20",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "gate.ifc-issued",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "procurement.frag.procurement.long_lead.b30",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "gate.ifc-issued",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "procurement.frag.procurement.long_lead.b40",
+        "type": "FS",
+        "why": "Engineering drives procurement (DOMAIN_KNOWLEDGE.md §4). The equipment schedule is a design output, so ordering before the design is fixed risks buying to a specification that then changes."
+      },
+      {
+        "from": "gate.power-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e10",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "gate.power-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e20",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "gate.power-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e30",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "gate.power-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e40",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "gate.power-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e50",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "gate.power-installed",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e60",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d10",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.cooling-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
         "from": "mep_cooling.frag.mep.cooling.d10",
         "kind": "fragnet",
         "lag": 0,
         "to": "mep_cooling.frag.mep.cooling.d20",
         "type": "FS",
         "why": "Fragnet logic from frag.mep.cooling."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d20",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.cooling-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
       },
       {
         "from": "mep_cooling.frag.mep.cooling.d20",
@@ -1379,11 +2724,27 @@
       },
       {
         "from": "mep_cooling.frag.mep.cooling.d30",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.cooling-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d30",
         "kind": "fragnet",
         "lag": 0,
         "to": "mep_cooling.frag.mep.cooling.d40",
         "type": "FS",
         "why": "Fragnet logic from frag.mep.cooling."
+      },
+      {
+        "from": "mep_cooling.frag.mep.cooling.d40",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.cooling-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
       },
       {
         "from": "mep_cooling.frag.mep.cooling.d40",
@@ -1402,6 +2763,22 @@
         "why": "Fragnet logic from frag.mep.cooling."
       },
       {
+        "from": "mep_cooling.frag.mep.cooling.d50",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.cooling-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems testing exercises cooling under load, so the cooling plant must exist first."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c10",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
         "from": "mep_power.frag.mep.power_train.c10",
         "kind": "fragnet",
         "lag": 0,
@@ -1411,11 +2788,27 @@
       },
       {
         "from": "mep_power.frag.mep.power_train.c20",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c20",
         "kind": "fragnet",
         "lag": 5,
         "to": "mep_power.frag.mep.power_train.c30",
         "type": "SS",
         "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c30",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
       },
       {
         "from": "mep_power.frag.mep.power_train.c30",
@@ -1435,6 +2828,14 @@
       },
       {
         "from": "mep_power.frag.mep.power_train.c40",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c40",
         "kind": "fragnet",
         "lag": 8,
         "to": "mep_power.frag.mep.power_train.c50",
@@ -1443,11 +2844,251 @@
       },
       {
         "from": "mep_power.frag.mep.power_train.c50",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c50",
         "kind": "fragnet",
         "lag": 0,
         "to": "mep_power.frag.mep.power_train.c60",
         "type": "FS",
         "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c60",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b10",
+        "kind": "delivery",
+        "lag": 112,
+        "to": "gate.delivery-lead-busway",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b10",
+        "kind": "delivery",
+        "lag": 168,
+        "to": "gate.delivery-lead-chiller",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b10",
+        "kind": "delivery",
+        "lag": 126,
+        "to": "gate.delivery-lead-crah",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b10",
+        "kind": "delivery",
+        "lag": 210,
+        "to": "gate.delivery-lead-hv-switchgear",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b10",
+        "kind": "delivery",
+        "lag": 224,
+        "to": "gate.delivery-lead-transformer-hv",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b10",
+        "kind": "delivery",
+        "lag": 154,
+        "to": "gate.delivery-lead-ups",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b10",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "procurement.frag.procurement.long_lead.b20",
+        "type": "FS",
+        "why": "Fragnet logic from frag.procurement.long_lead."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b20",
+        "kind": "delivery",
+        "lag": 112,
+        "to": "gate.delivery-lead-busway",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b20",
+        "kind": "delivery",
+        "lag": 168,
+        "to": "gate.delivery-lead-chiller",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b20",
+        "kind": "delivery",
+        "lag": 126,
+        "to": "gate.delivery-lead-crah",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b20",
+        "kind": "delivery",
+        "lag": 210,
+        "to": "gate.delivery-lead-hv-switchgear",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b20",
+        "kind": "delivery",
+        "lag": 224,
+        "to": "gate.delivery-lead-transformer-hv",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b20",
+        "kind": "delivery",
+        "lag": 154,
+        "to": "gate.delivery-lead-ups",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b20",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "procurement.frag.procurement.long_lead.b30",
+        "type": "FS",
+        "why": "Fragnet logic from frag.procurement.long_lead."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "delivery",
+        "lag": 112,
+        "to": "gate.delivery-lead-busway",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "delivery",
+        "lag": 168,
+        "to": "gate.delivery-lead-chiller",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "delivery",
+        "lag": 126,
+        "to": "gate.delivery-lead-crah",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "delivery",
+        "lag": 210,
+        "to": "gate.delivery-lead-hv-switchgear",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "delivery",
+        "lag": 224,
+        "to": "gate.delivery-lead-transformer-hv",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "delivery",
+        "lag": 154,
+        "to": "gate.delivery-lead-ups",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.procurement.frag.procurement.long_lead.b30.award-recommendation-approval",
+        "type": "FS",
+        "why": "Quality hold point owned by commercial."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "procurement.frag.procurement.long_lead.b40",
+        "type": "FS",
+        "why": "Fragnet logic from frag.procurement.long_lead."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b40",
+        "kind": "delivery",
+        "lag": 112,
+        "to": "gate.delivery-lead-busway",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b40",
+        "kind": "delivery",
+        "lag": 168,
+        "to": "gate.delivery-lead-chiller",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b40",
+        "kind": "delivery",
+        "lag": 126,
+        "to": "gate.delivery-lead-crah",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b40",
+        "kind": "delivery",
+        "lag": 210,
+        "to": "gate.delivery-lead-hv-switchgear",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b40",
+        "kind": "delivery",
+        "lag": 224,
+        "to": "gate.delivery-lead-transformer-hv",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b40",
+        "kind": "delivery",
+        "lag": 154,
+        "to": "gate.delivery-lead-ups",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
       },
       {
         "from": "substructure.frag.substructure.raft.a10",
@@ -1518,6 +3159,20 @@
         "zone_id": null
       },
       {
+        "confidence": 0.5,
+        "dept": null,
+        "id": "package.design.frag.design.engineering",
+        "kind": "work_package",
+        "label": "frag.design.engineering",
+        "parent": "stage.design",
+        "stage": "design",
+        "trail_ref": null,
+        "unverified_dependencies": [
+          "frag.design.engineering"
+        ],
+        "zone_id": null
+      },
+      {
         "dept": null,
         "id": "stage.procurement",
         "kind": "stage",
@@ -1525,6 +3180,20 @@
         "parent": null,
         "stage": "procurement",
         "trail_ref": null,
+        "zone_id": null
+      },
+      {
+        "confidence": 0.5,
+        "dept": null,
+        "id": "package.procurement.frag.procurement.long_lead",
+        "kind": "work_package",
+        "label": "frag.procurement.long_lead",
+        "parent": "stage.procurement",
+        "stage": "procurement",
+        "trail_ref": null,
+        "unverified_dependencies": [
+          "frag.procurement.long_lead"
+        ],
         "zone_id": null
       },
       {
@@ -1630,6 +3299,25 @@
         "duration_days": 0,
         "finish": null,
         "hitl_tier": "tier_3",
+        "id": "gate.ifc-construction",
+        "kind": "compliance_gate",
+        "label": "Design complete - IFC drawings issued (construction release)",
+        "parent": "stage.design",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.gate.ifc-construction",
+        "unverified_dependencies": [],
+        "wbs_id": "00.de.ion",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "design",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
         "id": "gate.ifc-issued",
         "kind": "compliance_gate",
         "label": "Design complete - IFC drawings issued",
@@ -1640,6 +3328,153 @@
         "trail_ref": "trail.gate.ifc-issued",
         "unverified_dependencies": [],
         "wbs_id": "00.de.ued",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "design",
+        "duration_days": 20,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "design.frag.design.engineering.e10",
+        "kind": "activity",
+        "label": "Basis of design freeze (load, tier, topology)",
+        "parent": "package.design.frag.design.engineering",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.design.frag.design.engineering.e10",
+        "unverified_dependencies": [
+          "frag.design.engineering"
+        ],
+        "wbs_id": "01.01.001",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "design",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "hold.design.frag.design.engineering.e10.basis-of-design-sign-off",
+        "kind": "quality_hold",
+        "label": "HOLD: Basis of design sign-off",
+        "parent": "package.design.frag.design.engineering",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.hold.design.frag.design.engineering.e10.basis-of-design-sign-off",
+        "unverified_dependencies": [
+          "frag.design.engineering"
+        ],
+        "wbs_id": "01.01.001",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "design",
+        "duration_days": 25,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "design.frag.design.engineering.e20",
+        "kind": "activity",
+        "label": "Concept design and capacity sizing",
+        "parent": "package.design.frag.design.engineering",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.design.frag.design.engineering.e20",
+        "unverified_dependencies": [
+          "frag.design.engineering"
+        ],
+        "wbs_id": "01.01.002",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "design",
+        "duration_days": 15,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "design.frag.design.engineering.e30",
+        "kind": "activity",
+        "label": "Equipment schedule issued for procurement",
+        "parent": "package.design.frag.design.engineering",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.design.frag.design.engineering.e30",
+        "unverified_dependencies": [
+          "frag.design.engineering"
+        ],
+        "wbs_id": "01.01.003",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "design",
+        "duration_days": 45,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "design.frag.design.engineering.e40",
+        "kind": "activity",
+        "label": "Detailed design - MEP, structural, architectural",
+        "parent": "package.design.frag.design.engineering",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.design.frag.design.engineering.e40",
+        "unverified_dependencies": [
+          "frag.design.engineering"
+        ],
+        "wbs_id": "01.01.004",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "design",
+        "duration_days": 20,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "design.frag.design.engineering.e50",
+        "kind": "activity",
+        "label": "IFC drawings issued",
+        "parent": "package.design.frag.design.engineering",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.design.frag.design.engineering.e50",
+        "unverified_dependencies": [
+          "frag.design.engineering"
+        ],
+        "wbs_id": "01.01.005",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "design",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "hold.design.frag.design.engineering.e50.ifc-issue-review",
+        "kind": "quality_hold",
+        "label": "HOLD: IFC issue review",
+        "parent": "package.design.frag.design.engineering",
+        "safety_flag": false,
+        "stage": "design",
+        "start": null,
+        "trail_ref": "trail.hold.design.frag.design.engineering.e50.ifc-issue-review",
+        "unverified_dependencies": [
+          "frag.design.engineering"
+        ],
+        "wbs_id": "01.01.005",
         "zone_id": null
       },
       {
@@ -1754,6 +3589,111 @@
         "trail_ref": "trail.gate.delivery-lead-busway",
         "unverified_dependencies": [],
         "wbs_id": "00.dl.way",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "procurement",
+        "duration_days": 15,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "procurement.frag.procurement.long_lead.b10",
+        "kind": "activity",
+        "label": "Tender packages and technical specifications",
+        "parent": "package.procurement.frag.procurement.long_lead",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.procurement.frag.procurement.long_lead.b10",
+        "unverified_dependencies": [
+          "frag.procurement.long_lead"
+        ],
+        "wbs_id": "03.01.001",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "procurement",
+        "duration_days": 30,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "procurement.frag.procurement.long_lead.b20",
+        "kind": "activity",
+        "label": "RFQ issue and vendor bid period",
+        "parent": "package.procurement.frag.procurement.long_lead",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.procurement.frag.procurement.long_lead.b20",
+        "unverified_dependencies": [
+          "frag.procurement.long_lead"
+        ],
+        "wbs_id": "03.01.002",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "commercial",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "hold.procurement.frag.procurement.long_lead.b30.award-recommendation-approval",
+        "kind": "quality_hold",
+        "label": "HOLD: Award recommendation approval",
+        "parent": "package.procurement.frag.procurement.long_lead",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.hold.procurement.frag.procurement.long_lead.b30.award-recommendation-approval",
+        "unverified_dependencies": [
+          "frag.procurement.long_lead"
+        ],
+        "wbs_id": "03.01.003",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "procurement",
+        "duration_days": 20,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "procurement.frag.procurement.long_lead.b30",
+        "kind": "activity",
+        "label": "Technical and commercial bid evaluation",
+        "parent": "package.procurement.frag.procurement.long_lead",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.procurement.frag.procurement.long_lead.b30",
+        "unverified_dependencies": [
+          "frag.procurement.long_lead"
+        ],
+        "wbs_id": "03.01.003",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "procurement",
+        "duration_days": 10,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "procurement.frag.procurement.long_lead.b40",
+        "kind": "activity",
+        "label": "Vendor award and purchase orders placed",
+        "parent": "package.procurement.frag.procurement.long_lead",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.procurement.frag.procurement.long_lead.b40",
+        "unverified_dependencies": [
+          "frag.procurement.long_lead"
+        ],
+        "wbs_id": "03.01.004",
         "zone_id": null
       },
       {
@@ -1926,6 +3866,25 @@
       },
       {
         "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "mep",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.power-installed",
+        "kind": "compliance_gate",
+        "label": "Power train installed - ready for commissioning",
+        "parent": "stage.mep_power",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.gate.power-installed",
+        "unverified_dependencies": [],
+        "wbs_id": "00.re.led",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
         "confidence": 0.5,
         "dept": "mep",
         "duration_days": 12,
@@ -2070,6 +4029,25 @@
         ],
         "wbs_id": "08.01.006",
         "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "mep",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
+        "id": "gate.cooling-installed",
+        "kind": "compliance_gate",
+        "label": "Cooling plant installed - ready for commissioning",
+        "parent": "stage.mep_cooling",
+        "safety_flag": false,
+        "stage": "mep_cooling",
+        "start": null,
+        "trail_ref": "trail.gate.cooling-installed",
+        "unverified_dependencies": [],
+        "wbs_id": "00.re.led",
+        "zone_id": "zone.cooling-plant.01"
       },
       {
         "blocks_export": false,
@@ -2485,7 +4463,7 @@
   },
   "quality": {
     "dcma_summary": {
-      "activity_count": 23,
+      "activity_count": 32,
       "checks_not_run": [
         "float",
         "negative_float",
@@ -2494,23 +4472,18 @@
         "high_duration",
         "invalid_dates"
       ],
-      "dangling_count": 3,
+      "dangling_count": 1,
       "dangling_ids": [
-        "commissioning.frag.commissioning.ladder.e60",
-        "mep_cooling.frag.mep.cooling.d50",
-        "mep_power.frag.mep.power_train.c60"
+        "commissioning.frag.commissioning.ladder.e60"
       ],
-      "lag_count": 6,
+      "lag_count": 31,
       "lead_count": 0,
-      "missing_predecessor_count": 4,
+      "missing_predecessor_count": 1,
       "missing_predecessor_ids": [
-        "commissioning.frag.commissioning.ladder.e10",
-        "mep_cooling.frag.mep.cooling.d10",
-        "mep_power.frag.mep.power_train.c10",
-        "substructure.frag.substructure.raft.a10"
+        "design.frag.design.engineering.e10"
       ],
       "note": "Partial. The date-dependent DCMA checks are not run because scheduling (CPM dates) is not yet computed; they are listed in checks_not_run rather than reported as passing.",
-      "total_nodes": 35
+      "total_nodes": 50
     },
     "export_block_reason": "3 Tier-1 safety activities require a named sign-off before export (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md §7).",
     "export_blocked": true,
@@ -2522,11 +4495,13 @@
       "commissioning.frag.commissioning.ladder.e60",
       "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate"
     ],
-    "tier_2_count": 25,
+    "tier_2_count": 37,
     "unverified_dependencies": [
       "frag.commissioning.ladder",
+      "frag.design.engineering",
       "frag.mep.cooling",
       "frag.mep.power_train",
+      "frag.procurement.long_lead",
       "frag.substructure.raft"
     ]
   },
@@ -2691,6 +4666,91 @@
       "stated_confidence": null,
       "unverified_dependencies": [],
       "why": "Answered by planner: What is the confirmed redundancy topology (N+1, 2N, 2N+1) for the power and cooling trains?"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "design.frag.design.engineering.e10",
+      "sources": [
+        "corpus:1#0",
+        "frag.design.engineering"
+      ],
+      "stage": "design",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "why": "Instanced from frag.design.engineering (Design and engineering - basis of design to IFC), selected because: frag.design.engineering is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "design.frag.design.engineering.e20",
+      "sources": [
+        "corpus:1#0",
+        "frag.design.engineering"
+      ],
+      "stage": "design",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "why": "Instanced from frag.design.engineering (Design and engineering - basis of design to IFC), selected because: frag.design.engineering is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "design.frag.design.engineering.e30",
+      "sources": [
+        "corpus:1#0",
+        "frag.design.engineering"
+      ],
+      "stage": "design",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "why": "Instanced from frag.design.engineering (Design and engineering - basis of design to IFC), selected because: frag.design.engineering is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "design.frag.design.engineering.e40",
+      "sources": [
+        "corpus:1#0",
+        "frag.design.engineering"
+      ],
+      "stage": "design",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "why": "Instanced from frag.design.engineering (Design and engineering - basis of design to IFC), selected because: frag.design.engineering is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "design.frag.design.engineering.e50",
+      "sources": [
+        "corpus:1#0",
+        "frag.design.engineering"
+      ],
+      "stage": "design",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.design.engineering"
+      ],
+      "why": "Instanced from frag.design.engineering (Design and engineering - basis of design to IFC), selected because: frag.design.engineering is the applicable package for this stage"
     },
     {
       "confidence": 0.5,
@@ -2884,6 +4944,74 @@
       "decided_by": "engine",
       "decision": null,
       "hitl_tier": "tier_2",
+      "ref_id": "procurement.frag.procurement.long_lead.b10",
+      "sources": [
+        "corpus:1#0",
+        "frag.procurement.long_lead"
+      ],
+      "stage": "procurement",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "why": "Instanced from frag.procurement.long_lead (Procurement - tender to purchase order for long-lead plant), selected because: frag.procurement.long_lead is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "procurement.frag.procurement.long_lead.b20",
+      "sources": [
+        "corpus:1#0",
+        "frag.procurement.long_lead"
+      ],
+      "stage": "procurement",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "why": "Instanced from frag.procurement.long_lead (Procurement - tender to purchase order for long-lead plant), selected because: frag.procurement.long_lead is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "procurement.frag.procurement.long_lead.b30",
+      "sources": [
+        "corpus:1#0",
+        "frag.procurement.long_lead"
+      ],
+      "stage": "procurement",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "why": "Instanced from frag.procurement.long_lead (Procurement - tender to purchase order for long-lead plant), selected because: frag.procurement.long_lead is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "procurement.frag.procurement.long_lead.b40",
+      "sources": [
+        "corpus:1#0",
+        "frag.procurement.long_lead"
+      ],
+      "stage": "procurement",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.procurement.long_lead"
+      ],
+      "why": "Instanced from frag.procurement.long_lead (Procurement - tender to purchase order for long-lead plant), selected because: frag.procurement.long_lead is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
       "ref_id": "substructure.frag.substructure.raft.a10",
       "sources": [
         "corpus:1#0",
@@ -2982,31 +5110,31 @@
       "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
     }
   ],
-  "rfs_day": 162,
+  "rfs_day": 629,
   "stage_timeline": {
     "commissioning": {
-      "from_day": 0,
-      "to_day": 162
+      "from_day": 467,
+      "to_day": 629
     },
     "design": {
       "from_day": 0,
-      "to_day": 0
+      "to_day": 95
     },
     "mep_cooling": {
-      "from_day": 0,
-      "to_day": 90
+      "from_day": 95,
+      "to_day": 418
     },
     "mep_power": {
-      "from_day": 0,
-      "to_day": 85
+      "from_day": 95,
+      "to_day": 467
     },
     "procurement": {
-      "from_day": 0,
-      "to_day": 0
+      "from_day": 95,
+      "to_day": 394
     },
     "substructure": {
-      "from_day": 0,
-      "to_day": 68
+      "from_day": 95,
+      "to_day": 163
     }
   },
   "statutory_pathway": [
@@ -3039,46 +5167,46 @@
   ],
   "zone_timeline": {
     "zone.cooling-plant.01": {
-      "first_day": 0,
-      "last_day": 90,
+      "first_day": 95,
+      "last_day": 418,
       "stages": [
         {
-          "from_day": 0,
+          "from_day": 95,
           "stage": "mep_cooling",
-          "to_day": 90
+          "to_day": 418
         }
       ]
     },
     "zone.data-hall.01": {
-      "first_day": 0,
-      "last_day": 162,
+      "first_day": 467,
+      "last_day": 629,
       "stages": [
         {
-          "from_day": 0,
+          "from_day": 467,
           "stage": "commissioning",
-          "to_day": 162
+          "to_day": 629
         }
       ]
     },
     "zone.electrical-room.01": {
-      "first_day": 0,
-      "last_day": 85,
+      "first_day": 95,
+      "last_day": 467,
       "stages": [
         {
-          "from_day": 0,
+          "from_day": 95,
           "stage": "mep_power",
-          "to_day": 85
+          "to_day": 467
         }
       ]
     },
     "zone.shell.01": {
-      "first_day": 0,
-      "last_day": 68,
+      "first_day": 95,
+      "last_day": 163,
       "stages": [
         {
-          "from_day": 0,
+          "from_day": 95,
           "stage": "substructure",
-          "to_day": 68
+          "to_day": 163
         }
       ]
     }

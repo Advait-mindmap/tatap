@@ -211,6 +211,62 @@ without signing off the norms.
 
 ---
 
+## 2b. The design and procurement fragnets, and the gates they anchor (Task 14 follow-up)
+
+Everything in this section is **invented and awaiting your review**. It is flagged in the
+libraries' own `provenance` blocks and in each gate rule's `why`, but collected here because it
+changed the shape of every schedule the product produces.
+
+### The two new fragnets
+
+Structure (stage, owning department, gate names) is transcribed from DOMAIN_KNOWLEDGE.md §3.
+**Every activity, duration and logic link is an industry estimate** — `origin:
+industry_estimate`, `verification_status: unverified`. No project ran to these numbers.
+
+| Fragnet | Activities | Longest path |
+|---|---|---|
+| `frag.design.engineering` | basis of design freeze 20d, concept + sizing 25d, equipment schedule 15d, detailed design 45d, IFC issue 20d | 95 days |
+| `frag.procurement.long_lead` | tender packages 15d, RFQ + bid 30d, evaluation 20d, award + PO 10d | 75 days |
+
+Judgement calls worth challenging:
+
+- **SS+10 between concept and detailed design.** How much concept must settle before detailed
+  design starts is a real planning argument; 10 days is a guess.
+- **A strictly sequential procurement chain.** Real programmes run packages in parallel and
+  award long-lead items early, ahead of the rest. This models one serial chain.
+- **L1 factory acceptance test is NOT modelled.** It is listed as a domain gate but has no
+  activity: FAT sits just before each item ships, and placing one FAT after award would put it
+  months before the plant exists. It needs a per-item delivery sub-network.
+
+### The lead time is now a lag, not a label
+
+`equipment_lead_times.typical_weeks` is applied as the lag between placing the order and the
+delivery milestone, in **calendar** days (x7) — a factory does not observe the site's 6-day
+calendar. Previously the delivery gate sat on the day of the PO, so a 32-week transformer
+constrained nothing at all.
+
+### Three gate rules I introduced
+
+`ifc_issued` (design gates procurement) was already there, from DOMAIN §4. These are mine:
+
+| Rule | Effect | Why it is arguable |
+|---|---|---|
+| `ifc_construction` | IFC release gates enabling, substructure, superstructure, envelope, MEP, fire/BMS, fit-out | Real programmes often release foundations for construction ahead of full IFC. A partial-release gate would model it better; this is stricter than reality. |
+| `power_installed` | commissioning waits for `mep_power` | Supported by DOMAIN §4's L1-L5 ladder, but the rule itself is not written in any doc. |
+| `cooling_installed` | commissioning waits for `mep_cooling` | Same. |
+
+The last two exist because the forward pass exposed an incoherence: commissioning was finishing
+**three hundred days before** the power train it commissions was installed.
+
+### What it does to the programme
+
+Seed brief, 30 MW Tier IV: **RFS moved from day 162 to day 629** (~20.7 months). Design 0-95,
+procurement 95-394, substructure 95-163, superstructure 95-187, MEP 95-467, commissioning
+467-629. The transformer is delivered on day 394 — PO on day 170 plus its 32-week lead.
+
+Whether 20.7 months is right for this brief is exactly the kind of question these numbers need
+answering against a real project.
+
 ## 3. Known gaps that are not assumptions
 
 Recorded here so they are not mistaken for verified behaviour:

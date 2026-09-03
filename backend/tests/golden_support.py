@@ -44,6 +44,12 @@ GOLDEN_WALK = ['design', 'procurement', 'substructure', 'mep_power', 'mep_coolin
                'commissioning']
 
 STAGE_FRAGNETS = {
+    # design and procurement instance real work now, which is what makes the golden plan a
+    # SEQUENCE: IFC release gates procurement and construction, and each long-lead item's
+    # delivery gates the activity that installs it. Before these two existed every stage in
+    # the golden output started on day 0.
+    'design': 'frag.design.engineering',
+    'procurement': 'frag.procurement.long_lead',
     'substructure': 'frag.substructure.raft',
     'mep_power': 'frag.mep.power_train',
     'mep_cooling': 'frag.mep.cooling',

@@ -5,6 +5,171 @@
   "provenance_summary": "MIXED. The stage / owning department / key materials / key gates structure is transcribed from the DOMAIN_KNOWLEDGE.md section 3 table. The ACTIVITY BREAKDOWNS, DURATIONS, LOGIC LINKS and LAGS are INDUSTRY ESTIMATES sized for a 20 MW-class Tier III build - typical sequences in the right range, not a record of how any project ran. A fragnet whose durations and logic are wrong produces a schedule that is internally consistent and completely wrong, which is harder to catch than an obvious error. This is a starter set establishing the shape; full discipline and commissioning depth is scheduled work, and the real depth should come from the client's historical schedules.",
   "entries": [
     {
+      "id": "frag.design.engineering",
+      "name": "Design and engineering - basis of design to IFC",
+      "stage": "design",
+      "dept": "design",
+      "materials": [],
+      "gates": [
+        "basis of design frozen",
+        "equipment schedule issued",
+        "IFC drawings issued"
+      ],
+      "activities": [
+        {
+          "id": "e10",
+          "name": "Basis of design freeze (load, tier, topology)",
+          "duration_days": 20,
+          "calendar": "6day"
+        },
+        {
+          "id": "e20",
+          "name": "Concept design and capacity sizing",
+          "duration_days": 25,
+          "calendar": "6day"
+        },
+        {
+          "id": "e30",
+          "name": "Equipment schedule issued for procurement",
+          "duration_days": 15,
+          "calendar": "6day"
+        },
+        {
+          "id": "e40",
+          "name": "Detailed design - MEP, structural, architectural",
+          "duration_days": 45,
+          "calendar": "6day"
+        },
+        {
+          "id": "e50",
+          "name": "IFC drawings issued",
+          "duration_days": 20,
+          "calendar": "6day"
+        }
+      ],
+      "logic": [
+        {
+          "from": "e10",
+          "to": "e20",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "e20",
+          "to": "e30",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "e20",
+          "to": "e40",
+          "type": "SS",
+          "lag": 10
+        },
+        {
+          "from": "e40",
+          "to": "e50",
+          "type": "FS",
+          "lag": 0
+        }
+      ],
+      "hold_points": [
+        {
+          "after": "e10",
+          "name": "Basis of design sign-off",
+          "role": "design"
+        },
+        {
+          "after": "e50",
+          "name": "IFC issue review",
+          "role": "design"
+        }
+      ],
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED FOR REVIEW. The stage, owning department and the three gates (basis of design frozen, equipment schedule, IFC drawings issued) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The FIVE ACTIVITIES, their FIVE DURATIONS and the FOUR LOGIC LINKS are estimates sized for a 20-30 MW-class build: roughly 95 days from brief freeze to IFC on the longest path. The SS+10 overlap between concept and detailed design is a judgement about how much concept must settle first. Every number here is a candidate for correction against a real project.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      }
+    },
+    {
+      "id": "frag.procurement.long_lead",
+      "name": "Procurement - tender to purchase order for long-lead plant",
+      "stage": "procurement",
+      "dept": "procurement",
+      "materials": [],
+      "gates": [
+        "vendor award",
+        "L1 factory acceptance test",
+        "delivery milestones"
+      ],
+      "activities": [
+        {
+          "id": "b10",
+          "name": "Tender packages and technical specifications",
+          "duration_days": 15,
+          "calendar": "6day"
+        },
+        {
+          "id": "b20",
+          "name": "RFQ issue and vendor bid period",
+          "duration_days": 30,
+          "calendar": "6day"
+        },
+        {
+          "id": "b30",
+          "name": "Technical and commercial bid evaluation",
+          "duration_days": 20,
+          "calendar": "6day"
+        },
+        {
+          "id": "b40",
+          "name": "Vendor award and purchase orders placed",
+          "duration_days": 10,
+          "calendar": "6day"
+        }
+      ],
+      "logic": [
+        {
+          "from": "b10",
+          "to": "b20",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "b20",
+          "to": "b30",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "b30",
+          "to": "b40",
+          "type": "FS",
+          "lag": 0
+        }
+      ],
+      "hold_points": [
+        {
+          "after": "b30",
+          "name": "Award recommendation approval",
+          "role": "commercial"
+        }
+      ],
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED FOR REVIEW. Stage, owning department and the three gates (vendor award, L1 FAT, delivery milestones) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The FOUR ACTIVITIES and their DURATIONS are estimates: 75 days from tender preparation to PO placement on a strictly sequential chain. NOT MODELLED: the L1 factory acceptance test is listed as a domain gate but has no activity, because FAT sits just before each item ships and placing one FAT after award would put it months before the plant exists. It belongs inside a per-item delivery sub-network, which does not exist yet.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      }
+    },
+    {
       "id": "frag.substructure.raft",
       "name": "Substructure - raft foundation",
       "stage": "substructure",

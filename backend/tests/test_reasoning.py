@@ -424,8 +424,11 @@ def test_procurement_owns_the_whole_long_lead_register():
     from backend.app.libraries import load_library
 
     libs = gather_stage_libraries('procurement', 'Navi Mumbai')
-    assert libs['fragnets'] == [], 'procurement fragnets are future library data (frag.procurement.*)'
+    assert {f['id'] for f in libs['fragnets']} == {'frag.procurement.long_lead'}
 
+    # The point of the test survives the fragnet arriving: procurement's exposure is the WHOLE
+    # register, not just the items its own fragnet happens to name. Deriving it from fragnets
+    # would now silently narrow it, which is worse than when the stage was empty.
     all_leads = {e['id'] for e in load_library('equipment_lead_times')['entries']}
     assert {e['id'] for e in libs['long_lead']} == all_leads
 
@@ -514,11 +517,19 @@ def test_tier_topology_now_fires_at_design_not_approvals():
     assert fires_at.index('design') < fires_at.index('procurement')
 
 
-def test_design_stage_has_no_fragnets_yet():
-    """frag.design.* is future library data; IFC-issued should eventually gate procurement."""
+def test_design_stage_now_has_a_fragnet_to_instance():
+    """This test used to assert the opposite, and said so: "frag.design.* is future library
+    data; IFC-issued should eventually gate procurement." That data now exists, so the
+    expectation flips - the gate is anchored rather than dangling."""
     libs = gather_stage_libraries('design', 'Navi Mumbai')
-    assert libs['fragnets'] == []
+    ids = {f['id'] for f in libs['fragnets']}
+    assert 'frag.design.engineering' in ids
     assert libs['long_lead'] == [], 'design consumes no long-lead directly'
+
+    # Still unverified data, and it must keep saying so.
+    design = next(f for f in libs['fragnets'] if f['id'] == 'frag.design.engineering')
+    assert design['provenance']['origin'] == 'industry_estimate'
+    assert design['provenance']['verification_status'] == 'unverified'
 
 
 def test_the_walk_order_is_design_then_procurement_then_construction():

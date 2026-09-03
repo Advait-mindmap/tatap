@@ -60,6 +60,53 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
             'specification that then changes.'
         ),
     ),
+    GateRule(
+        id='ifc_construction',
+        label='Design complete - IFC drawings issued (construction release)',
+        producer_stage='design',
+        consumer_stages=(
+            'enabling', 'substructure', 'superstructure', 'envelope',
+            # MEP too: rough-in is installed to issued drawings like anything else. Delivery
+            # gates then hold back only the activities that consume long-lead plant, which is
+            # the distinction DOMAIN_KNOWLEDGE.md §4 draws - containment can proceed while the
+            # transformer is still being built.
+            'mep_power', 'mep_cooling', 'fire_bms', 'fit_out',
+        ),
+        kind='design_release',
+        why=(
+            'INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings '
+            'that have not been issued, so IFC release gates physical construction the same '
+            'way it gates procurement. Without this rule every construction stage started on '
+            'day one, in parallel with the design that defines it. Real programmes often '
+            'release foundations for construction ahead of full IFC, so this is arguably too '
+            'strict - a partial-release gate would model it better.'
+        ),
+    ),
+    GateRule(
+        id='power_installed',
+        label='Power train installed - ready for commissioning',
+        producer_stage='mep_power',
+        consumer_stages=('commissioning',),
+        kind='readiness',
+        why=(
+            'INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 '
+            'ladder over installed plant, so it cannot precede installation. Without this rule '
+            'the schedule had commissioning finishing three hundred days BEFORE the power '
+            'train it commissions was installed - an incoherence the forward pass made visible '
+            'and nothing else would have caught.'
+        ),
+    ),
+    GateRule(
+        id='cooling_installed',
+        label='Cooling plant installed - ready for commissioning',
+        producer_stage='mep_cooling',
+        consumer_stages=('commissioning',),
+        kind='readiness',
+        why=(
+            'INTRODUCED FOR REVIEW. The counterpart to power_installed: integrated systems '
+            'testing exercises cooling under load, so the cooling plant must exist first.'
+        ),
+    ),
 )
 
 #: Delivery gates are not listed above because there is one per long-lead item actually selected;
