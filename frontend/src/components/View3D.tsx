@@ -10,6 +10,11 @@ interface ZoneMeshProps {
   zone: Zone3D
   /** What the 4D timeline says is happening here on the selected day. */
   state: ZoneState
+  /** True when this zone is the one linked from the 2D view (or hovered here). */
+  linked: boolean
+  /** True when some OTHER zone is linked, so this one should recede. */
+  muted: boolean
+  onHover: (zoneId: string | null) => void
 }
 
 /**
@@ -20,7 +25,7 @@ interface ZoneMeshProps {
  * brief — merge into one flat shape. Real shading plus an edge line is what makes them read as
  * separate boxes.
  */
-function ZoneMesh({ zone, state }: ZoneMeshProps) {
+function ZoneMesh({ zone, state, linked, muted, onHover }: ZoneMeshProps) {
   const color = STAGE_COLORS[zone.stage] ?? '#94a3b8'
   const geo = zone.size ?? ZONE_GEOMETRY[zone.kind]
   const x = zone.x ?? 0
@@ -42,25 +47,44 @@ function ZoneMesh({ zone, state }: ZoneMeshProps) {
       position={[x, height / 2, z]}
       castShadow
       receiveShadow
+      // The raycast pick VISUALIZATION_SPEC.md section 2 asks for. stopPropagation keeps the
+      // pick to the nearest zone; without it the ray reports every box behind it too and the
+      // site plane under everything wins.
+      onPointerOver={(e) => {
+        e.stopPropagation()
+        onHover(zone.zone_id)
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation()
+        onHover(null)
+      }}
       onClick={(e) => {
         e.stopPropagation()
-        console.log(`Clicked zone: ${zone.name}`)
+        onHover(zone.zone_id)
       }}
     >
       <boxGeometry args={[geo.width, height, geo.depth]} />
       <meshStandardMaterial
         color={color}
         emissive={color}
-        emissiveIntensity={building ? 0.12 : 0.5}
+        // Linked zones brighten; everything else recedes. Dimming rather than hiding, so the
+        // reader keeps the context of where in the site the highlighted zone sits.
+        emissiveIntensity={linked ? 0.95 : building ? 0.12 : 0.5}
         roughness={0.55}
         metalness={0.05}
         // The site is the ground the plan stands on, not a building. At full strength its
         // stage colour is the largest, loudest surface on screen and the buildings read as
         // detail on top of it; held back, it reads as the parcel it represents.
-        transparent={zone.kind === 'site' || !building}
-        opacity={zone.kind === 'site' ? 0.45 : building ? 1 : 0.75}
+        transparent={zone.kind === 'site' || !building || muted}
+        opacity={
+          muted ? 0.16 : zone.kind === 'site' ? 0.45 : building ? 1 : 0.75
+        }
       />
-      <Edges scale={1.001} threshold={15} color="#0b1220" />
+      <Edges
+        scale={linked ? 1.03 : 1.001}
+        threshold={15}
+        color={linked ? '#f8fafc' : '#0b1220'}
+      />
     </mesh>
   )
 }
@@ -118,9 +142,14 @@ function FitCamera({ centre, radius }: { centre: [number, number, number]; radiu
 
 interface View3DProps {
   zones: Zone3D[]
+  /** Zone ids that at least one activity builds. Zones outside this set light nothing in 2D. */
+  zonesWithWork?: Set<string>
   /** The 4D timeline, and the day being viewed. Absent means "show the finished model". */
   timeline?: Timeline
   day?: number
+  /** The zone highlighted from the 2D view, or from a pick here. */
+  linkedZone?: string | null
+  onHoverZone?: (zoneId: string | null) => void
 }
 
 /**
@@ -129,7 +158,9 @@ interface View3DProps {
  * Zones are rendered as boxes, colour-coded by stage. The camera orbits around
  * the site and building shell.
  */
-export function View3D({ zones, timeline, day }: View3DProps) {
+export function View3D({
+  zones, timeline, day, linkedZone = null, onHoverZone, zonesWithWork,
+}: View3DProps) {
   const positioned = useMemo(() => layoutZones(zones), [zones])
   const bounds = useMemo(() => sceneBounds(positioned), [positioned])
 
@@ -163,7 +194,14 @@ export function View3D({ zones, timeline, day }: View3DProps) {
         <Lights />
         <Grid extent={bounds.radius} />
         {built.map((zone) => (
-          <ZoneMesh key={zone.zone_id} zone={zone} state={stateOf(zone)} />
+          <ZoneMesh
+            key={zone.zone_id}
+            zone={zone}
+            state={stateOf(zone)}
+            linked={linkedZone === zone.zone_id}
+            muted={linkedZone !== null && linkedZone !== zone.zone_id}
+            onHover={(id) => onHoverZone?.(id)}
+          />
         ))}
         <OrbitControls
           makeDefault
@@ -178,6 +216,20 @@ export function View3D({ zones, timeline, day }: View3DProps) {
 
       <div className="view-3d-info">
         <h3>3D Build Model</h3>
+        {linkedZone && (
+          <p className="view-3d-linked" data-testid="linked-zone-label">
+            {zones.find((z) => z.zone_id === linkedZone)?.name ?? linkedZone}
+            {zonesWithWork && !zonesWithWork.has(linkedZone) && (
+              // Say so rather than leaving the reader wondering why the flow did not react.
+              // Most zones have no zone-tagged activities yet; that is a library gap, and
+              // silence would read as a broken link.
+              <span className="view-3d-linked-note" data-testid="linked-zone-no-work">
+                {' '}
+                — no activities reference this zone yet
+              </span>
+            )}
+          </p>
+        )}
         <p className="view-3d-zone-count" data-testid="zone-count">
           {timeline && day !== undefined
             ? `${built.length} of ${zones.length} zones · day ${day}`

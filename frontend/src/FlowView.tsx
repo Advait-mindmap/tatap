@@ -53,6 +53,18 @@ export interface FlowViewProps {
    * builds. Auto-fitting stops once the run settles, so it never fights a reader who has panned.
    */
   autoFit?: boolean
+  /** A zone highlighted from the 3D model. Lights the activities that build it. */
+  linkedZone?: string | null
+  /** Fired when the cursor rests on a node that belongs to a zone, to drive the 3D model. */
+  onHoverZone?: (zoneId: string | null) => void
+  /**
+   * Canvas only: no legend column, no trail panel.
+   *
+   * In the linked view this pane holds half the window, and the three-column layout squeezed
+   * the graph itself down to a sliver between two panels - the one thing the reader is there to
+   * watch. The panels are a click away in the full 2D view.
+   */
+  compact?: boolean
 }
 
 /**
@@ -80,6 +92,9 @@ function FlowViewInner({
   meta,
   aside,
   autoFit = false,
+  linkedZone = null,
+  onHoverZone,
+  compact = false,
 }: FlowViewProps) {
   const reactFlow = useReactFlow();
   // True once React Flow has measured every node. Until then it marks them `visibility: hidden`
@@ -133,14 +148,28 @@ function FlowViewInner({
     [visible],
   );
 
+  /**
+   * Does any activity here actually build the linked zone?
+   *
+   * Only a few activities carry a zone_id, so most zones have no work pointing at them. Passing
+   * such a zone through would dim EVERY card and light none - the reader gets a uniformly grey
+   * plan with no explanation, which is worse than no link at all. When nothing matches, the 2D
+   * view is left alone and the 3D panel says why.
+   */
+  const zoneHasWork = useMemo(
+    () => (linkedZone ? flow.nodes.some((n) => n.zone_id === linkedZone) : false),
+    [flow.nodes, linkedZone],
+  );
+
   const highlightState: HighlightState = useMemo(
     () => ({
       hovered,
       selected,
       path: highlight.nodes,
       direct: highlight.direct,
+      zone: zoneHasWork ? linkedZone : null,
     }),
-    [hovered, selected, highlight],
+    [hovered, selected, highlight, linkedZone, zoneHasWork],
   );
 
   const edges: Edge[] = useMemo(
@@ -339,7 +368,7 @@ function FlowViewInner({
       </header>
 
       <div className="body">
-        <nav className="sidebar">
+        {!compact && <nav className="sidebar">
           {aside}
           <section>
             <h3>Node kinds</h3>
@@ -414,7 +443,7 @@ function FlowViewInner({
               ))}
             </ul>
           </section>
-        </nav>
+        </nav>}
 
         <main className="canvas" data-testid="canvas">
           <HighlightContext.Provider value={highlightState}>
@@ -432,14 +461,20 @@ function FlowViewInner({
               minZoom={0.15}
               maxZoom={1.75}
               proOptions={{ hideAttribution: true }}
-              onNodeMouseEnter={(_, node) => setHovered(node.id)}
+              onNodeMouseEnter={(_, node) => {
+                setHovered(node.id);
+                // Drive the 3D model. Only nodes that build a zone have one to point at;
+                // approvals and procurement work is real but has no geometry.
+                onHoverZone?.((node.data as CardData).node.zone_id ?? null);
+              }}
               // Only clear if we are leaving the node we are actually tracking. Moving between
               // adjacent nodes can deliver leave(A) AFTER enter(B), and an unconditional null
               // there wipes the highlight while the cursor is sitting on B — the highlight
               // flickers out as you sweep across the graph.
-              onNodeMouseLeave={(_, node) =>
-                setHovered((current) => (current === node.id ? null : current))
-              }
+              onNodeMouseLeave={(_, node) => {
+                setHovered((current) => (current === node.id ? null : current));
+                onHoverZone?.(null);
+              }}
               onNodeClick={(_, node) => setSelected(node.id)}
               onPaneClick={() => setSelected(null)}
             >
@@ -465,12 +500,14 @@ function FlowViewInner({
           )}
         </main>
 
-        <TrailPanel
-          node={selectedNode}
-          trail={selectedTrail}
-          decision={selectedDecision}
-          onClose={() => setSelected(null)}
-        />
+        {!compact && (
+          <TrailPanel
+            node={selectedNode}
+            trail={selectedTrail}
+            decision={selectedDecision}
+            onClose={() => setSelected(null)}
+          />
+        )}
       </div>
     </div>
   );

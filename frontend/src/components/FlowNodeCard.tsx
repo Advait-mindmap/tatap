@@ -23,8 +23,13 @@ export function FlowNodeCard({ data }: NodeProps<CardData>) {
   const { node } = data
   const state = useHighlight()
 
-  const highlighted = state.path.has(node.id)
-  const dimmed = state.hovered !== null && !highlighted
+  // A zone highlighted from the 3D model lights this card if the card's work builds that zone.
+  // Checked BEFORE the hover path: when the cursor is in the other view there is no hovered
+  // node here, so the path is empty and everything would otherwise read as un-highlighted.
+  const linkedByZone = state.zone !== null && node.zone_id === state.zone
+  const highlighted = state.zone !== null ? linkedByZone : state.path.has(node.id)
+  const dimmed =
+    state.zone !== null ? !linkedByZone : state.hovered !== null && !highlighted
   const direct = state.direct.has(node.id) || node.id === state.hovered
   const selected = node.id === state.selected
 
@@ -35,8 +40,9 @@ export function FlowNodeCard({ data }: NodeProps<CardData>) {
   const classes = [
     'node-card',
     `kind-${node.kind}`,
-    dimmed ? 'is-dimmed' : '',
+    dimmed ? (state.zone !== null ? 'is-zone-dimmed' : 'is-dimmed') : '',
     highlighted ? 'is-highlighted' : '',
+    linkedByZone ? 'is-zone-linked' : '',
     direct ? 'is-direct' : '',
     selected ? 'is-selected' : '',
     isOpenFork ? 'is-open-fork' : '',
@@ -51,6 +57,7 @@ export function FlowNodeCard({ data }: NodeProps<CardData>) {
       data-node-id={node.id}
       data-kind={node.kind}
       data-stage={node.stage}
+      data-zone={node.zone_id ?? ''}
       data-dimmed={dimmed ? 'true' : 'false'}
       data-highlighted={highlighted ? 'true' : 'false'}
       data-selected={selected ? 'true' : 'false'}

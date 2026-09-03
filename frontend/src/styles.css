@@ -402,3 +402,30 @@ button.option:hover { background: rgba(251,113,133,0.2); border-color: var(--ala
   cursor: pointer; padding: 0;
 }
 .scrubber-jump:hover { color: var(--text); text-decoration: underline; }
+
+/* --- linked view (Task 15) -----------------------------------------------------------------
+   Both views side by side, because linked hover is unobservable through a tab switch: the
+   whole claim is that highlighting in one lights the other. */
+.view-split { display: flex; flex: 1; min-height: 0; min-width: 0; }
+.view-split-2d {
+  flex: 1 1 55%; min-width: 0; display: flex; flex-direction: column;
+  border-right: 1px solid var(--line);
+}
+.view-split-2d > .app { flex: 1; min-height: 0; }
+.view-split-3d {
+  flex: 1 1 45%; min-width: 0; display: flex; flex-direction: column; min-height: 0;
+}
+.view-split-3d > .view-3d-container { flex: 1; min-height: 0; }
+.view-3d-linked {
+  margin: 0.35rem 0 0; font-size: 11px; font-weight: 600; color: #f8fafc;
+  border-top: 1px solid var(--line); padding-top: 0.35rem;
+}
+.view-3d-linked-note { font-weight: 400; color: var(--muted); }
+
+/* A zone link is a much stronger statement than a hover: it answers "which work builds THIS
+   box", and at whole-programme zoom the ordinary 0.38 dim leaves lit and unlit cards nearly
+   indistinguishable. Harder dim, and a ring on the ones that matter. */
+.node-card.is-zone-dimmed { opacity: 0.12; }
+.node-card.is-zone-linked {
+  box-shadow: 0 0 0 2.5px #f8fafc, 0 0 18px rgba(248, 250, 252, 0.35);
+}

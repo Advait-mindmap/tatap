@@ -14,7 +14,9 @@ import { parseZone, STAGE_COLORS, type Zone3D } from './viz3d'
 import './styles.css'
 
 type Phase = 'intake' | 'confirm' | 'run'
-type ViewMode = '2d' | '3d'
+// 'split' exists because linked hover is unobservable otherwise: highlighting a zone in the 3D
+// model drives the 2D flow, and you cannot watch that happen through a tab switch.
+type ViewMode = '2d' | '3d' | 'split'
 
 /**
  * The planner app: brief -> cited extraction -> confirmation -> live simulation -> 2D flow.
@@ -32,6 +34,9 @@ export default function App() {
   //: Which day the 4D model is showing. Null means "the finished plan", which is where a
   //: completed run should land: the scrubber is for looking back, not a state to be left in.
   const [scrubDay, setScrubDay] = useState<number | null>(null)
+  //: The one shared highlight, VISUALIZATION_SPEC.md section 3's `highlight(ref)`. Either view
+  //: may set it; both read it. Held here rather than in either view so neither owns the other.
+  const [linkedZone, setLinkedZone] = useState<string | null>(null)
   const socket = useRef<SimulationSocket | null>(null)
 
   // ------------------------------------------------------------------ Task 12: playback
@@ -180,8 +185,74 @@ export default function App() {
   const timeline = buildTimeline(output)
   const day = scrubDay ?? timeline.rfsDay
 
+  const runPanel = (
+    <RunPanel
+      run={run}
+      onAnswer={answer}
+      onRestart={restart}
+      isPlaying={isPlaying}
+      onPlayPause={handlePlayPause}
+      onStep={handleStep}
+      onReplay={handleReplay}
+      queued={queued}
+    />
+  )
+
+  const flowView = (
+    <FlowView
+      nodes={run.nodes}
+      edges={run.edges}
+      trail={output?.reasoning_trail ?? []}
+      decisions={
+        output?.decisions ??
+        run.answered.map((entry) => ({
+          id: entry.id,
+          question: '',
+          answer: entry.answer,
+          impact: '',
+        }))
+      }
+      quality={output?.quality ?? {}}
+      meta={
+        output?.project_meta ?? {
+          project_name: brief?.project_name ?? 'Untitled project',
+          city: brief?.city,
+          tier: brief?.tier,
+          it_load_mw: brief?.it_load_mw,
+          redundancy_topology: brief?.redundancy_topology,
+        }
+      }
+      aside={viewMode === 'split' ? undefined : runPanel}
+      compact={viewMode === 'split'}
+      autoFit={run.status !== 'idle'}
+      linkedZone={linkedZone}
+      onHoverZone={setLinkedZone}
+    />
+  )
+
+  // Which zones any activity actually builds. Only a few activities carry a zone_id, so this
+  // is a small set - and the 3D view needs it to explain a pick that lights nothing.
+  const zonesWithWork = new Set(
+    (output?.activities ?? [])
+      .map((a) => String((a as Record<string, unknown>).zone_id ?? ''))
+      .filter(Boolean),
+  )
+
+  const model3d = (
+    <View3D
+      zones={zones3d}
+      zonesWithWork={zonesWithWork}
+      timeline={timeline}
+      day={day}
+      linkedZone={linkedZone}
+      onHoverZone={setLinkedZone}
+    />
+  )
+
   return (
-    <div className="app">
+    // data-linked-zone is the shared highlight, exposed so the linked behaviour can be asserted
+    // without reaching into React state.
+    <div className="app" data-linked-zone={linkedZone ?? ''}>
       {run.status !== 'idle' && (
         <div className="view-mode-toggle" data-testid="view-mode-toggle">
           <button
@@ -200,66 +271,39 @@ export default function App() {
           >
             🏗️ 3D Model
           </button>
+          <button
+            className={`view-btn ${viewMode === 'split' ? 'active' : ''}`}
+            onClick={() => setViewMode('split')}
+            data-testid="view-split-button"
+            title="Both views, linked by hover"
+          >
+            🔗 Linked
+          </button>
         </div>
       )}
 
-      {viewMode === '2d' ? (
-        <FlowView
-          nodes={run.nodes}
-          edges={run.edges}
-          trail={output?.reasoning_trail ?? []}
-          decisions={
-            output?.decisions ??
-            run.answered.map((entry) => ({
-              id: entry.id,
-              question: '',
-              answer: entry.answer,
-              impact: '',
-            }))
-          }
-          quality={output?.quality ?? {}}
-          meta={
-            output?.project_meta ?? {
-              project_name: brief?.project_name ?? 'Untitled project',
-              city: brief?.city,
-              tier: brief?.tier,
-              it_load_mw: brief?.it_load_mw,
-              redundancy_topology: brief?.redundancy_topology,
-            }
-          }
-          aside={
-            <RunPanel
-              run={run}
-              onAnswer={answer}
-              onRestart={restart}
-              isPlaying={isPlaying}
-              onPlayPause={handlePlayPause}
-              onStep={handleStep}
-              onReplay={handleReplay}
-              queued={queued}
-            />
-          }
-          autoFit={run.status !== 'idle'}
-        />
+      {viewMode === 'split' ? (
+        <div className="view-split" data-testid="view-split">
+          <div className="view-split-2d">{flowView}</div>
+          <div className="view-split-3d">
+            {model3d}
+            {timeline.rfsDay > 0 && (
+              <TimeScrubber timeline={timeline} day={day} onChange={setScrubDay} />
+            )}
+          </div>
+        </div>
+      ) : viewMode === '2d' ? (
+        flowView
       ) : (
         <div className="view-3d-wrapper">
           <div className="view-3d-stack">
-            <View3D zones={zones3d} timeline={timeline} day={day} />
+            {model3d}
             {timeline.rfsDay > 0 && (
               <TimeScrubber timeline={timeline} day={day} onChange={setScrubDay} />
             )}
           </div>
           <div className="view-3d-sidebar">
-            <RunPanel
-              run={run}
-              onAnswer={answer}
-              onRestart={restart}
-              isPlaying={isPlaying}
-              onPlayPause={handlePlayPause}
-              onStep={handleStep}
-              onReplay={handleReplay}
-              queued={queued}
-            />
+            {runPanel}
             {zones3d.length > 0 && (
               <div className="zones-list" style={{ marginTop: '1.5rem' }}>
                 <h4 style={{ marginTop: 0 }}>Zones ({zones3d.length})</h4>

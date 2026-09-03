@@ -26,6 +26,15 @@ export interface HighlightState {
   path: Set<string>
   /** Immediate neighbours, drawn more strongly than the wider chain. */
   direct: Set<string>
+  /**
+   * A zone highlighted from the OTHER view (VISUALIZATION_SPEC.md section 3, `highlight(ref)`).
+   *
+   * Separate from `hovered` because it arrives from elsewhere: the cursor is over a box in the
+   * 3D model, not over a card. When set, the 2D view lights the activities that build that zone
+   * and dims the rest, which is what makes the two views one instrument rather than two
+   * pictures of the same data.
+   */
+  zone: string | null
 }
 
 export const EMPTY_STATE: HighlightState = {
@@ -33,6 +42,7 @@ export const EMPTY_STATE: HighlightState = {
   selected: null,
   path: new Set(),
   direct: new Set(),
+  zone: null,
 }
 
 export const HighlightContext = createContext<HighlightState>(EMPTY_STATE)

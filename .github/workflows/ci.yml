@@ -169,6 +169,10 @@ jobs:
         if: always()
         run: npx playwright test scrubber.spec
 
+      - name: Browser tests - linked hover (2D <-> 3D)
+        if: always()
+        run: npx playwright test linked-hover.spec
+
       - name: Upload rendered screenshots
         # Always, not just on failure: these are how the rendered flow gets reviewed without
         # anyone opening a browser, which is the point of capturing them at all.
