@@ -43,6 +43,22 @@ async function viewport(page: Page): Promise<Viewport> {
 const moved = (a: Viewport, b: Viewport) =>
   Math.abs(a.x - b.x) > 5 || Math.abs(a.y - b.y) > 5
 
+/**
+ * Wait until React Flow has measured the nodes.
+ *
+ * fitView is computed from node BOUNDS and returns false while any node is still unmeasured -
+ * React Flow marks those `visibility: hidden`. Panning and zooming need no bounds and work
+ * regardless, which is exactly the split seen on a CI runner: every viewport test passed there
+ * except the fit-view one. Waiting for a measured card is waiting for the precondition fitView
+ * actually has.
+ */
+async function nodesMeasured(page: Page): Promise<void> {
+  await expect(page.locator('[data-testid="node-card"]:visible').first()).toBeVisible({
+    timeout: 30_000,
+  })
+  await page.waitForTimeout(400)
+}
+
 /** A point on the pane with no node under it, so a drag pans rather than moving a card. */
 async function emptySpot(page: Page): Promise<{ x: number; y: number }> {
   const canvas = (await page.locator('.canvas').boundingBox())!
@@ -115,6 +131,7 @@ test('the canvas can be zoomed after the run completes', async ({ page }) => {
 test('the fit-view control reframes the graph after completion', async ({ page }) => {
   await completedRun(page)
   await page.waitForTimeout(1200)
+  await nodesMeasured(page)
 
   // Move somewhere else first, so fit-view has something to undo.
   for (let i = 0; i < 3; i += 1) {
@@ -125,7 +142,7 @@ test('the fit-view control reframes the graph after completion', async ({ page }
   const zoomedIn = await viewport(page)
 
   await page.locator('.react-flow__controls-fitview').click()
-  await page.waitForTimeout(700)
+  await page.waitForTimeout(900)
   const fitted = await viewport(page)
   console.log('fit:', JSON.stringify(zoomedIn), '->', JSON.stringify(fitted))
 
