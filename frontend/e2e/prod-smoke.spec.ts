@@ -47,6 +47,82 @@ test('production serves the sequenced plan, the 4D scrubber and linked hover', a
   }
   await expect(page.getByTestId('run-status')).toHaveText(/Simulation complete/)
 
+  // ------------------------------------------------------ the canvas still pans and zooms
+  //
+  // Reported from manual testing on a deployment: after a run completed the canvas stopped
+  // responding to zoom. The cause was a zoom floor of 0.15 against a plan that fits at ~0.16 -
+  // one click reached the floor, React Flow disabled the control, and everything after did
+  // nothing. Checked here on the real thing, not just in the local suite.
+  const viewport = async () =>
+    page.evaluate(() => {
+      const el = document.querySelector('.react-flow__viewport') as HTMLElement
+      const t = el?.style.transform ?? ''
+      const translate = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(t)
+      return {
+        x: Number(translate?.[1] ?? 0),
+        y: Number(translate?.[2] ?? 0),
+        zoom: Number(/scale\(([\d.]+)\)/.exec(t)?.[1] ?? 0),
+      }
+    })
+
+  await expect(page.locator('[data-testid="node-card"]:visible').first()).toBeVisible({
+    timeout: 30_000,
+  })
+  await page.waitForTimeout(800)
+
+  const fitted = await viewport()
+  console.log('PROD canvas: fitted at zoom', fitted.zoom)
+  await page.screenshot({ path: `${SHOTS}/prod-04-canvas-fitted.png` })
+
+  // Four zoom-out clicks, each of which must still move the view. Under the old floor the
+  // second one hung on a disabled button.
+  let previous = fitted.zoom
+  for (let i = 0; i < 4; i += 1) {
+    await page.locator('.react-flow__controls-zoomout').click({ timeout: 8000 })
+    await page.waitForTimeout(220)
+    const now = (await viewport()).zoom
+    expect(now, `zoom-out click ${i + 1} did not reduce zoom (stuck at ${previous})`).toBeLessThan(
+      previous,
+    )
+    previous = now
+  }
+  console.log('PROD canvas: zoom', fitted.zoom, '->', previous, 'over four clicks')
+  await page.screenshot({ path: `${SHOTS}/prod-05-canvas-zoomed-out.png` })
+
+  // And it pans: drag from a spot with no card under it.
+  const canvasBox = (await page.locator('.canvas').boundingBox())!
+  const cards = await page.locator('.react-flow__node').evaluateAll((els) =>
+    els.map((e) => e.getBoundingClientRect()).map((r) => ({
+      l: r.left, t: r.top, r: r.right, b: r.bottom,
+    })),
+  )
+  let spot = { x: canvasBox.x + canvasBox.width * 0.2, y: canvasBox.y + canvasBox.height * 0.8 }
+  outer: for (let ny = 0.2; ny <= 0.85; ny += 0.05) {
+    for (let nx = 0.15; nx <= 0.85; nx += 0.05) {
+      const x = canvasBox.x + canvasBox.width * nx
+      const y = canvasBox.y + canvasBox.height * ny
+      if (!cards.some((c) => x >= c.l - 8 && x <= c.r + 8 && y >= c.t - 8 && y <= c.b + 8)) {
+        spot = { x, y }
+        break outer
+      }
+    }
+  }
+
+  const beforePan = await viewport()
+  await page.mouse.move(spot.x, spot.y)
+  await page.mouse.down()
+  await page.mouse.move(spot.x - 220, spot.y - 130, { steps: 25 })
+  await page.mouse.up()
+  await page.waitForTimeout(600)
+  const afterPan = await viewport()
+  console.log('PROD canvas: pan', JSON.stringify(beforePan), '->', JSON.stringify(afterPan))
+
+  expect(
+    Math.abs(beforePan.x - afterPan.x) > 5 || Math.abs(beforePan.y - afterPan.y) > 5,
+    'the canvas did not pan on production',
+  ).toBe(true)
+  await page.screenshot({ path: `${SHOTS}/prod-06-canvas-panned.png` })
+
   // ------------------------------------------------- the sequenced schedule reached prod
   await page.getByTestId('view-3d-button').click()
   await expect(page.getByTestId('time-scrubber')).toBeVisible({ timeout: 60_000 })
