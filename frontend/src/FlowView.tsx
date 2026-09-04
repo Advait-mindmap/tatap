@@ -458,7 +458,19 @@ function FlowViewInner({
               // programme at working zoom and lets the reader pan, with the minimap for context.
               // The component minZoom below still allows zooming out to the whole graph.
               fitViewOptions={{ padding: 0.06, minZoom: 0.62, maxZoom: 1.0 }}
-              minZoom={0.15}
+              // The component's zoom bounds clamp EVERYTHING, including fitView. At 0.15 they
+              // were barely below the zoom a full programme fits at (~0.16 for 98 nodes), which
+              // broke the canvas twice over for a large plan:
+              //
+              //   - one zoom-out click reached the floor, React Flow disabled the control, and
+              //     the reader was left with a button that did nothing and no explanation;
+              //   - and on a larger plan still, the floor would clamp the auto-fit itself, so
+              //     "fit the whole programme" would quietly return a cropped graph the reader
+              //     also could not zoom out of.
+              //
+              // A floor exists to stop someone zooming into meaninglessness, so it belongs far
+              // below any zoom the plan is actually viewed at, not just under it.
+              minZoom={0.02}
               maxZoom={1.75}
               proOptions={{ hideAttribution: true }}
               onNodeMouseEnter={(_, node) => {

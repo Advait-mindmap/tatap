@@ -177,6 +177,10 @@ jobs:
         if: always()
         run: npx playwright test live-3d.spec
 
+      - name: Browser tests - canvas pan and zoom after completion
+        if: always()
+        run: npx playwright test viewport.spec
+
       - name: Upload rendered screenshots
         # Always, not just on failure: these are how the rendered flow gets reviewed without
         # anyone opening a browser, which is the point of capturing them at all.

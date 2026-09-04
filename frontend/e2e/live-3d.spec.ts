@@ -60,6 +60,11 @@ async function answerIfAsked(page: Page): Promise<boolean> {
 }
 
 test('the 3D model builds up as the live run streams', async ({ page }) => {
+  // Stepping through a live stream one event at a time is inherently slower than watching it
+  // play, and the default budget is a whole-run budget. This test drives the run AND inspects
+  // it at three points, so it needs its own.
+  test.setTimeout(900_000)
+
   await extractBrief(page)
 
   // Start the run and go straight to 3D, so the model is on screen while the plan is built
@@ -100,12 +105,16 @@ test('the 3D model builds up as the live run streams', async ({ page }) => {
   }
 
   async function advanceUntil(label: string, ready: (b: Built) => boolean): Promise<Built> {
+    // Six events per round, and one DOM read between rounds rather than three. The first
+    // version stepped four at a time and re-read the zone line, the state line and the run
+    // status every round - roughly sixteen hundred clicks and five thousand reads for a
+    // hundred-event stream, which ran the test out of time while the states themselves were
+    // being captured correctly.
     let last: Built | null = null
-    for (let round = 0; round < 400; round += 1) {
+    for (let round = 0; round < 300; round += 1) {
       last = await built(page)
       if (ready(last)) return last
-      await step(4)
-      await page.waitForTimeout(40)
+      await step(6)
     }
     throw new Error(`never reached "${label}" (last: ${JSON.stringify(last)})`)
   }
@@ -139,7 +148,7 @@ test('the 3D model builds up as the live run streams', async ({ page }) => {
     await answerIfAsked(page)
     final = await built(page)
     if (/Simulation complete/.test(final.stages) && final.inProgress === 0) break
-    await page.waitForTimeout(150)
+    await page.waitForTimeout(250)
   }
   await page.waitForTimeout(600)
   final = await built(page)
