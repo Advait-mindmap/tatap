@@ -53,10 +53,21 @@ const moved = (a: Viewport, b: Viewport) =>
  * actually has.
  */
 async function nodesMeasured(page: Page): Promise<void> {
-  await expect(page.locator('[data-testid="node-card"]:visible').first()).toBeVisible({
-    timeout: 30_000,
-  })
-  await page.waitForTimeout(400)
+  // EVERY node, not one. fitView's precondition is `nodes.every(n => n.width && n.height)`, so
+  // waiting for a single measured card was the wrong bar - it passed while some nodes were
+  // still unmeasured and fitView still refused. React Flow marks unmeasured nodes
+  // `visibility: hidden`, so "all cards visible" is that precondition expressed in the DOM.
+  await expect
+    .poll(
+      async () => {
+        const total = await page.locator('[data-testid="node-card"]').count()
+        const measured = await page.locator('[data-testid="node-card"]:visible').count()
+        return total > 0 && measured === total
+      },
+      { timeout: 45_000 },
+    )
+    .toBe(true)
+  await page.waitForTimeout(500)
 }
 
 /** A point on the pane with no node under it, so a drag pans rather than moving a card. */
