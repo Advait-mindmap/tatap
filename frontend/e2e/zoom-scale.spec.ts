@@ -99,32 +99,63 @@ test('the zoom floor is derived from the graph, not a constant', async ({ page }
       return Number(/scale\(([\d.]+)\)/.exec(el?.style.transform ?? '')?.[1] ?? 0)
     })
 
-  // Fit the whole programme, then find the floor by clicking until it stops moving.
-  await page.locator('.react-flow__controls-fitview').click()
-  await page.waitForTimeout(900)
-  const fitZoom = await zoomNow()
-  expect(fitZoom, 'fit-view produced no zoom').toBeGreaterThan(0)
+  // The zoom at which the WHOLE graph fits the pane, computed the way FlowView computes it.
+  //
+  // Not the fit-view control's zoom, which is what an earlier version of this test used. That
+  // control applies a 0.62 legibility floor, so on a large plan it returns ~0.59 while the whole
+  // graph fits at ~0.27 - a different quantity entirely. The ratio it produced came out at 8.9
+  // against a threshold of 9: passing, but by 1.2%, and measuring the wrong thing to get there.
+  const geometry = await page.evaluate(() => {
+    const pane = document.querySelector('.canvas')!.getBoundingClientRect()
+    const nodes = Array.from(document.querySelectorAll('.react-flow__node')) as HTMLElement[]
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    for (const node of nodes) {
+      const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(node.style.transform ?? '')
+      if (!m) continue
+      const x = Number(m[1])
+      const y = Number(m[2])
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x + (node.offsetWidth || 292))
+      maxY = Math.max(maxY, y + (node.offsetHeight || 104))
+    }
+    const width = maxX - minX
+    const height = maxY - minY
+    return { fits: Math.min(pane.width / width, pane.height / height), width, height }
+  })
+  expect(geometry.fits, 'could not measure the graph').toBeGreaterThan(0)
 
-  let floor = fitZoom
-  for (let i = 0; i < 25; i += 1) {
+  // Find the floor by zooming out until it stops moving.
+  let floor = await zoomNow()
+  for (let i = 0; i < 30; i += 1) {
     await page.locator('.react-flow__controls-zoomout').click({ timeout: 5000 }).catch(() => {})
     await page.waitForTimeout(90)
     const now = await zoomNow()
     if (Math.abs(now - floor) < 1e-6) break
     floor = now
   }
-  console.log(`  fit ${fitZoom.toFixed(4)} -> floor ${floor.toFixed(4)} (${(fitZoom / floor).toFixed(1)}x out)`)
 
-  // Below the fit, or fitView itself gets clamped and "show me the whole programme" silently
-  // returns a cropped graph — the fault the previous fixed floor of 0.15 caused.
-  expect(floor, 'the floor is at or above the zoom the plan fits at').toBeLessThan(fitZoom)
+  // The rule FlowView states: a quarter of the zoom the graph fits at, clamped to [0.005, 0.2].
+  const expected = Math.min(0.2, Math.max(0.005, geometry.fits / 4))
+  console.log(
+    `  graph ${Math.round(geometry.width)}x${Math.round(geometry.height)}px  ` +
+      `fits at ${geometry.fits.toFixed(4)}  floor ${floor.toFixed(4)}  ` +
+      `expected ${expected.toFixed(4)}  (${(geometry.fits / floor).toFixed(1)}x out)`,
+  )
 
-  // But not so far below that the programme becomes a smudge. At the old constant of 0.02 a
-  // 3,504px graph rendered 70px wide: nothing legible, nothing clickable, and the sub-pixel
-  // regime where paint artifacts live.
-  expect(
-    fitZoom / floor,
-    `the floor is ${(fitZoom / floor).toFixed(1)}x below fit — that is a smudge, not a view`,
-  ).toBeLessThan(9)
-  expect(fitZoom / floor, 'there is no real headroom below the fit').toBeGreaterThan(1.5)
+  // Asserted against the rule rather than against a hand-picked ratio, so it stays true as the
+  // plan grows. The tolerance covers node measurement differing slightly from React Flow's own.
+  expect(Math.abs(floor - expected) / expected, `floor ${floor}, expected ~${expected}`)
+    .toBeLessThan(0.15)
+
+  // And the two properties the rule exists for, stated directly:
+  //  - below the whole-graph fit, so fitView is never clamped and "show me the whole
+  //    programme" cannot silently return a cropped graph (the fault the fixed 0.15 floor had);
+  //  - real headroom, so there is somewhere to go for orientation.
+  expect(floor, 'the floor is at or above the zoom the whole graph fits at')
+    .toBeLessThan(geometry.fits)
+  expect(geometry.fits / floor, 'there is no real headroom below the fit').toBeGreaterThan(1.5)
 })
