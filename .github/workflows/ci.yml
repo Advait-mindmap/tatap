@@ -64,7 +64,12 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: python -m pip install -r backend/requirements.txt
+        # requirements-dev.txt carries the third-party XER parser the P6 round-trip test reads
+        # our own export back with. It is GPL-3.0 and test-only, so it is kept out of
+        # requirements.txt and out of the image the Dockerfile builds.
+        run: |
+          python -m pip install -r backend/requirements.txt
+          python -m pip install -r backend/requirements-dev.txt
 
       - name: Run the mocked suite
         # The `live` tests hit the real Base44 gateway and spend credits; they are
@@ -180,6 +185,14 @@ jobs:
       - name: Browser tests - canvas pan and zoom after completion
         if: always()
         run: npx playwright test viewport.spec
+
+      - name: Browser tests - P6 export download
+        if: always()
+        run: npx playwright test export.spec
+
+      - name: Browser tests - one graph at every zoom, and a derived zoom floor
+        if: always()
+        run: npx playwright test zoom-scale.spec
 
       - name: Upload rendered screenshots
         # Always, not just on failure: these are how the rendered flow gets reviewed without

@@ -273,6 +273,7 @@ button.small-btn { padding: 6px 11px; font-size: 12px; }
 .notice { margin: 1rem 0; padding: 0.7rem 0.85rem; border-radius: 8px; border: 1px solid; }
 .notice-error { border-color: rgba(251,113,133,0.5); background: rgba(251,113,133,0.1); }
 .notice-warn { border-color: rgba(251,191,36,0.45); background: rgba(251,191,36,0.08); }
+.notice-ok { border-color: rgba(52,211,153,0.45); background: rgba(52,211,153,0.08); }
 .notice p { margin: 0.3rem 0 0; }
 
 .confirm-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
@@ -512,4 +513,50 @@ button.option:hover { background: rgba(251,113,133,0.2); border-color: var(--ala
 .badge-stale {
   border-color: #64748b; background: rgba(100, 116, 139, 0.16); color: #cbd5e1;
   font-style: italic;
+}
+
+/* ---------------------------------------------------------------- P6 export panel
+   Sits at the foot of the run panel on a completed run. Deliberately quiet: it is the last
+   thing in the flow, not a call to action competing with the decision prompt above it. */
+.export-panel {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.export-panel h5 {
+  margin: 0;
+}
+
+.export-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.export-field input,
+.export-panel .notice input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tier1-list {
+  margin: 6px 0;
+  padding-left: 16px;
+  max-height: 88px;
+  overflow-y: auto;
+  word-break: break-all;
+}
+
+/* The proven/not-proven statement. Low contrast but not hidden — it must survive a skim
+   without being the loudest thing on the panel. */
+.export-caveat {
+  line-height: 1.5;
+}
+
+.export-caveat strong {
+  color: var(--text);
 }

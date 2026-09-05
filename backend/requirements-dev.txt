@@ -1,0 +1,9 @@
+# Test-only dependencies. Deliberately NOT in requirements.txt and NOT installed by the
+# Dockerfile, so nothing here ships in the deployed image.
+#
+# xer-reader is GPL-3.0-only. It exists here to read our own P6 export back and check it
+# against the simulation it came from (backend/tests/test_xer_export.py) - a third-party
+# parser is the whole point of that test, since a reader we wrote ourselves would agree with
+# our writer's mistakes. It parses files at test time and no part of it is linked into or
+# distributed with the product.
+xer-reader==0.4.1

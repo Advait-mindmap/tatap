@@ -1,4 +1,6 @@
 import { useState } from 'react'
+
+import { ExportPanel } from '../components/ExportPanel'
 import type { OpenDecision, RunStatus } from '../types'
 import type { RunState } from '../runState'
 
@@ -175,6 +177,10 @@ export function RunPanel({
             ))}
           </ul>
         </div>
+      )}
+
+      {run.status === 'complete' && run.output && run.runId && (
+        <ExportPanel runId={run.runId} output={run.output} />
       )}
 
       {(run.status === 'complete' || run.status === 'error') && (

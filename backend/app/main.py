@@ -4,7 +4,10 @@ from typing import Any, Dict
 
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from datetime import date, datetime
+
+from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -20,6 +23,7 @@ from backend.app.limits import (
 )
 from backend.app.llm import LLMError
 from backend.app.schemas import IntakeResult, RawBrief
+from backend.app.p6 import export_bytes, export_filename
 from backend.app.simulator import DecisionAnswer, Simulator, registry
 
 app = FastAPI(title='DC Build Planner')
@@ -59,6 +63,17 @@ app.add_middleware(
     allow_credentials=False,
     allow_methods=['*'],
     allow_headers=['*'],
+    # Response headers a cross-origin page is allowed to READ. Without this the browser hides
+    # everything except the few CORS safelists, and hides them silently — no error, the header
+    # is simply absent. The P6 export's filename and its activity/RFS counts travel this way, so
+    # in development (Vite on :5173, API on :8000) the download lost its filename and fell back
+    # to the run id. Deployment is same-origin, which is why nothing showed it there.
+    expose_headers=[
+        'Content-Disposition',
+        'X-Plan-Start-Date',
+        'X-Plan-Rfs-Day',
+        'X-Plan-Activity-Count',
+    ],
 )
 
 
@@ -280,6 +295,96 @@ async def ws_simulate(websocket: WebSocket) -> None:
     except WebSocketDisconnect:
         # The run stays in the registry so it can be attached to and answered later.
         return
+
+
+# ---------------------------------------------------------------------------------------------
+# P6 export.
+# ---------------------------------------------------------------------------------------------
+
+
+@app.get('/export/{run_id}.xer')
+def export_p6(
+    run_id: str,
+    start_date: str = Query(
+        '', description='Day 0 of the plan, YYYY-MM-DD. Defaults to today.'
+    ),
+    signed_by: str = Query(
+        '', description='Name of the person accepting the Tier-1 safety activities.'
+    ),
+) -> Response:
+    """Download a completed run as a Primavera P6 XER file.
+
+    Two things this deliberately refuses to do.
+
+    It will not export a run that has not finished. A partial plan is a legitimate thing to
+    LOOK at - the 2D and 3D views render one happily - but exporting it produces a programme
+    with stages simply missing, and nothing in the file says so.
+
+    It will not export Tier-1 safety activities without a named human accepting them
+    (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md section 7). `signed_by` is that name, and it is
+    written into the file so the export itself records who released it.
+    """
+    simulator = registry.get(run_id)
+    if simulator is None:
+        raise HTTPException(status_code=404, detail=f'No run {run_id}. It may have been stopped.')
+
+    if simulator.is_halted or not simulator.state.is_complete:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                'This run has not finished. Answer the open decision points and let the '
+                'simulation complete before exporting - a partial plan exports as a schedule '
+                'with stages silently missing.'
+            ),
+        )
+
+    output = simulator.output().model_dump()
+    quality = output.get('quality') or {}
+    if quality.get('export_blocked') and not signed_by.strip():
+        raise HTTPException(
+            status_code=409,
+            detail={
+                'reason': 'tier_1_signoff_required',
+                'message': quality.get('export_block_reason', ''),
+                'tier_1_ids': quality.get('tier_1_ids', []),
+            },
+        )
+
+    try:
+        anchor = datetime.strptime(start_date, '%Y-%m-%d') if start_date else datetime.combine(
+            date.today(), datetime.min.time()
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=400, detail=f'start_date must be YYYY-MM-DD, got {start_date!r}'
+        ) from None
+
+    try:
+        payload = export_bytes(
+            output, start_date=anchor, exported_by=signed_by.strip() or 'dc-planner'
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+
+    if signed_by.strip():
+        # No Signoff row yet: that table hangs off a project_id this run has no row for, and
+        # inventing one would put a fake FK in the audit trail the admin console is meant to
+        # read. Logged here, and listed for the admin console to pick up properly.
+        logging.getLogger(__name__).info(
+            'P6 export of run %s released by %r (%s Tier-1 activities)',
+            run_id, signed_by.strip(), len(quality.get('tier_1_ids', [])),
+        )
+
+    return Response(
+        content=payload,
+        media_type='application/octet-stream',
+        headers={
+            'Content-Disposition': f'attachment; filename="{export_filename(output)}"',
+            'X-Plan-Start-Date': anchor.strftime('%Y-%m-%d'),
+            'X-Plan-Rfs-Day': str(output.get('rfs_day', 0)),
+            'X-Plan-Activity-Count': str(len(output.get('activities') or [])),
+        },
+    )
 
 
 # ---------------------------------------------------------------------------------------------
