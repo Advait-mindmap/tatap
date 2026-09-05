@@ -380,6 +380,119 @@
       }
     },
     {
+      "id": "frag.envelope.shell",
+      "name": "Envelope - blockwork, waterproofing and cladding",
+      "stage": "envelope",
+      "dept": "civil",
+      "materials": [
+        "blocks",
+        "waterproofing membrane",
+        "cladding",
+        "insulation"
+      ],
+      "gates": [
+        "fire-rating",
+        "warranties"
+      ],
+      "activities": [
+        {
+          "id": "d10",
+          "name": "External blockwork and infill walls",
+          "duration_days": 35,
+          "calendar": "6day"
+        },
+        {
+          "id": "d20",
+          "name": "Roof waterproofing and insulation",
+          "duration_days": 25,
+          "calendar": "6day"
+        },
+        {
+          "id": "d30",
+          "name": "External cladding and rainscreen",
+          "duration_days": 40,
+          "calendar": "6day"
+        },
+        {
+          "id": "d40",
+          "name": "Louvres, external doors and glazed openings",
+          "duration_days": 20,
+          "calendar": "6day"
+        },
+        {
+          "id": "d50",
+          "name": "Fire-stopping and compartmentation to envelope penetrations",
+          "duration_days": 18,
+          "calendar": "6day"
+        },
+        {
+          "id": "d60",
+          "name": "Water-tightness testing and envelope close-out",
+          "duration_days": 10,
+          "calendar": "6day"
+        }
+      ],
+      "logic": [
+        {
+          "from": "d10",
+          "to": "d20",
+          "type": "SS",
+          "lag": 15
+        },
+        {
+          "from": "d10",
+          "to": "d30",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "d30",
+          "to": "d40",
+          "type": "SS",
+          "lag": 10
+        },
+        {
+          "from": "d40",
+          "to": "d50",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "d20",
+          "to": "d60",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "d50",
+          "to": "d60",
+          "type": "FS",
+          "lag": 0
+        }
+      ],
+      "hold_points": [
+        {
+          "after": "d20",
+          "name": "Roof waterproofing flood test",
+          "role": "qaqc"
+        },
+        {
+          "after": "d50",
+          "name": "Fire-stopping and compartmentation inspection",
+          "role": "qaqc"
+        }
+      ],
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (blocks, waterproofing, cladding) and the two gates (fire-rating, warranties) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 103 days on the longest path (blockwork -> cladding -> openings -> fire-stopping -> water-tightness). JUDGEMENTS TO CHALLENGE: the SS+15 from blockwork to roofing assumes the frame is topped out and edge details can start once perimeter walls are part-built; the SS+10 from cladding to openings assumes openings follow the cladding gang around the building rather than waiting for it. NOT MODELLED: envelope is treated as one whole-building package, so a phased build that encloses one hall at a time is not represented - that needs a per-zone sub-network which does not exist yet. Fire-stopping is placed here as a QA/QC hold, not as a Tier-1 safety activity; it gates the fire NOC but is not itself a live-energy or life-safety operation.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      }
+    },
+    {
       "id": "frag.mep.power_train",
       "name": "MEP - power train (transformer to UPS)",
       "stage": "mep_power",
@@ -593,6 +706,246 @@
         "verified_by": null,
         "verified_on": null,
         "note": "Chilled water pipework is the long pole here, ahead of plant placement. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      }
+    },
+    {
+      "id": "frag.fire_bms.detection_suppression",
+      "name": "Fire detection, gas suppression and BMS",
+      "stage": "fire_bms",
+      "dept": "fire",
+      "materials": [
+        "gas suppression",
+        "VESDA",
+        "BMS panels",
+        "detection cabling"
+      ],
+      "gates": [
+        "fire NOC",
+        "NBC 2016"
+      ],
+      "activities": [
+        {
+          "id": "e10",
+          "name": "Fire detection and VESDA aspiration pipework",
+          "duration_days": 30,
+          "calendar": "6day"
+        },
+        {
+          "id": "e20",
+          "name": "Gas suppression cylinder banks and discharge pipework",
+          "duration_days": 28,
+          "calendar": "6day"
+        },
+        {
+          "id": "e30",
+          "name": "Pre-action sprinkler pipework to back-of-house",
+          "duration_days": 25,
+          "calendar": "6day"
+        },
+        {
+          "id": "e40",
+          "name": "BMS field devices, controllers and panel installation",
+          "duration_days": 30,
+          "calendar": "6day"
+        },
+        {
+          "id": "e50",
+          "name": "BMS head-end integration and graphics",
+          "duration_days": 20,
+          "calendar": "6day"
+        },
+        {
+          "id": "e60",
+          "name": "Fire alarm cause-and-effect testing",
+          "duration_days": 15,
+          "calendar": "6day"
+        }
+      ],
+      "logic": [
+        {
+          "from": "e10",
+          "to": "e20",
+          "type": "SS",
+          "lag": 10
+        },
+        {
+          "from": "e10",
+          "to": "e30",
+          "type": "SS",
+          "lag": 5
+        },
+        {
+          "from": "e10",
+          "to": "e40",
+          "type": "SS",
+          "lag": 15
+        },
+        {
+          "from": "e40",
+          "to": "e50",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "e20",
+          "to": "e60",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "e30",
+          "to": "e60",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "e50",
+          "to": "e60",
+          "type": "FS",
+          "lag": 0
+        }
+      ],
+      "hold_points": [
+        {
+          "after": "e20",
+          "name": "Gas suppression room integrity (door fan) test",
+          "role": "qaqc"
+        },
+        {
+          "after": "e60",
+          "name": "Fire alarm cause-and-effect witnessed for fire NOC",
+          "role": "reviewer"
+        }
+      ],
+      "material_links": [
+        {
+          "activity": "e20",
+          "requires_delivery_of": "lead.gas_suppression"
+        }
+      ],
+      "safety_refs": [
+        "safety.gas_suppression_discharge"
+      ],
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED FOR REVIEW. Stage, owning department (subcontract), materials (suppression, VESDA, BMS) and the two gates (fire NOC, NBC 2016) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SEVEN LOGIC LINKS and the TWO HOLD POINTS are estimates: roughly 73 days on the longest path (detection -> BMS field -> head-end -> cause-and-effect). GROUNDED: the material link from the cylinder banks to lead.gas_suppression is real - the 16-week lead time in equipment_lead_times.json gates that activity, so suppression cannot start before the cylinders land. The safety_ref to safety.gas_suppression_discharge is also real and makes discharge testing a Tier-1 activity requiring sign-off. JUDGEMENTS TO CHALLENGE: cause-and-effect is modelled as one 15-day activity gating the fire NOC, where a real programme often runs it per-zone and re-tests; the three SS overlaps off detection assume one subcontractor sequencing gangs through the building rather than three independent trades. NOT MODELLED: the fire officer witnessing is a hold point, not a statutory pathway activity - the NOC itself lives in the city pathway data.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      }
+    },
+    {
+      "id": "frag.fit_out.cabling",
+      "name": "Fit-out - containment, raised floor and structured cabling",
+      "stage": "fit_out",
+      "dept": "civil",
+      "materials": [
+        "containment",
+        "structured cabling",
+        "raised floor",
+        "racks"
+      ],
+      "gates": [
+        "TIA-942"
+      ],
+      "activities": [
+        {
+          "id": "f10",
+          "name": "Raised floor and plinth installation to data halls",
+          "duration_days": 30,
+          "calendar": "6day"
+        },
+        {
+          "id": "f20",
+          "name": "Overhead containment and cable tray",
+          "duration_days": 25,
+          "calendar": "6day"
+        },
+        {
+          "id": "f30",
+          "name": "Structured cabling backbone (OS2 / OM4)",
+          "duration_days": 35,
+          "calendar": "6day"
+        },
+        {
+          "id": "f40",
+          "name": "Rack and cabinet installation",
+          "duration_days": 20,
+          "calendar": "6day"
+        },
+        {
+          "id": "f50",
+          "name": "Horizontal cabling and patching to racks",
+          "duration_days": 30,
+          "calendar": "6day"
+        },
+        {
+          "id": "f60",
+          "name": "Cable testing and TIA-942 certification",
+          "duration_days": 15,
+          "calendar": "6day"
+        }
+      ],
+      "logic": [
+        {
+          "from": "f10",
+          "to": "f20",
+          "type": "SS",
+          "lag": 10
+        },
+        {
+          "from": "f20",
+          "to": "f30",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "f10",
+          "to": "f40",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "f30",
+          "to": "f50",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "f40",
+          "to": "f50",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "f50",
+          "to": "f60",
+          "type": "FS",
+          "lag": 0
+        }
+      ],
+      "hold_points": [
+        {
+          "after": "f10",
+          "name": "Raised floor level and load test",
+          "role": "qaqc"
+        },
+        {
+          "after": "f60",
+          "name": "Structured cabling certification results acceptance (TIA-942)",
+          "role": "reviewer"
+        }
+      ],
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (containment, structured cabling) and the TIA-942 gate are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 120 days on the longest path (raised floor -> containment -> backbone -> horizontal -> certification). JUDGEMENTS TO CHALLENGE: racks are placed after the raised floor and in parallel with the backbone, which assumes the floor carries the racks - a slab-mounted rack layout would reorder this; the SS+10 from floor to containment assumes containment follows the floor gang across the hall. NOT MODELLED: no material link to a long-lead item, because racks and cabling are not in equipment_lead_times.json - on a real project client-supplied racks are frequently the constraint here and their absence understates this stage. Also not modelled: fit-out is one whole-building package, so a hall-by-hall handover sequence is not represented.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }

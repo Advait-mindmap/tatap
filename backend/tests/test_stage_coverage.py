@@ -1,0 +1,367 @@
+"""No stage may complete silently with nothing in it.
+
+Found by audit on a completed 13-stage run: six stages (approvals, enabling, envelope,
+fire_bms, fit_out, handover) produced zero activities, and four of the six raised no decision
+point either. The walk reported all thirteen `completed`, and a planner reading the output got a
+thirteen-stage programme with six stages missing and nothing anywhere saying so.
+
+That is the exact failure CLAUDE.md rule 3 exists to prevent, and it was inconsistent as well as
+wrong: every other under-specified thing in the reasoning loop stops and asks.
+
+The important test here is `test_no_stage_in_a_full_walk_finishes_silently_empty` — it pins the
+INVARIANT (a stage produces work or it says why not) rather than the mechanism, so it keeps
+holding when a future stage loses its library coverage for some other reason.
+"""
+
+from __future__ import annotations
+
+import collections
+
+import pytest
+
+from backend.app.libraries import load_library
+from backend.app.llm_stub import StubAdapter
+from backend.app.reasoning import gather_stage_libraries
+from backend.app.reasoning.loop import build_stage_reasoning
+from backend.app.reasoning.stages import STAGES
+from backend.app.simulator import DecisionAnswer, Simulator
+
+BRIEF = {
+    'project_name': 'Coverage DC', 'city': 'Chennai', 'tier': 'IV',
+    'it_load_mw': 30.0, 'redundancy_topology': '2N', 'site_context': 'brownfield',
+}
+
+#: Stages with no fragnets at the time of writing. Not a target to keep empty — the assertion
+#: below is that they ASK, not that they stay uncovered. Adding a fragnet for one of these is a
+#: fix, and the invariant test keeps passing when it happens.
+EMPTY_RESPONSE = {'packages': [], 'gates': [], 'long_lead': [], 'decision_points': [], 'notes': ''}
+
+
+def stages_with_fragnets():
+    return {e['stage'] for e in load_library('fragnets')['entries']}
+
+
+# ------------------------------------------------------------------- the invariant
+
+
+@pytest.fixture(scope='module')
+def full_walk():
+    """One real 13-stage run, driven to completion, recording what each stage produced."""
+    simulator = Simulator(BRIEF, run_id='coverage', adapter=StubAdapter())
+    forks = collections.defaultdict(set)
+    for _ in range(40):
+        for event in simulator.run():
+            if event.type == 'decision_needed':
+                forks[event.stage].add(event.payload.get('id'))
+        if not simulator.is_halted:
+            break
+        for fork in sorted(simulator.state.pending_decisions):
+            simulator.answer(DecisionAnswer(decision_point_id=fork, answer='Proceed'))
+    assert not simulator.is_halted, 'the walk never completed'
+
+    output = simulator.output().model_dump()
+    activities = collections.defaultdict(list)
+    for activity in output['activities']:
+        activities[activity['stage']].append(activity)
+    return output, activities, forks
+
+
+def test_no_stage_in_a_full_walk_finishes_silently_empty(full_walk):
+    """Every stage either instances work or raises a decision point about why it did not.
+
+    This is the whole fix, stated as a property. A stage that produces nothing and says nothing
+    is a hole in the plan that looks like a completed stage.
+    """
+    output, activities, forks = full_walk
+    assert output['project_meta']['stages_completed'] == list(STAGES), 'the walk was not full'
+
+    silent = [
+        stage for stage in STAGES
+        if not activities.get(stage) and not forks.get(stage)
+    ]
+    assert not silent, (
+        f'{len(silent)} stage(s) completed with no activities and no decision point: {silent}'
+    )
+
+
+def test_every_empty_stage_raises_its_own_coverage_fork(full_walk):
+    """Specifically the coverage fork, not just any fork.
+
+    approvals and enabling always raised curated forks about other things, which is how four
+    genuinely silent stages hid behind two noisy ones for so long: counting forks per stage
+    showed nothing wrong.
+    """
+    _, activities, forks = full_walk
+    for stage in STAGES:
+        if activities.get(stage):
+            continue
+        assert f'dyn.no_coverage.{stage}' in forks[stage], (
+            f'{stage} produced no activities and raised no coverage fork'
+        )
+
+
+def test_the_coverage_fork_blocks(full_walk):
+    """Non-blocking would be the same silence with extra steps."""
+    _, activities, _ = full_walk
+    stage = next(s for s in STAGES if not activities.get(s))
+    reasoning = build_stage_reasoning(
+        EMPTY_RESPONSE, stage=stage, libs=gather_stage_libraries(stage, 'Chennai'),
+        hits=[], threshold=0.7,
+    )
+    fork = next(
+        d for d in reasoning.decision_points
+        if d.decision_point_id == f'dyn.no_coverage.{stage}'
+    )
+    assert fork.blocking is True
+    assert fork.options, 'a fork with no options cannot be answered'
+
+
+# ------------------------------------------- it distinguishes the two reasons for emptiness
+
+
+def test_a_stage_with_no_library_coverage_says_so():
+    stage = next(s for s in STAGES if s not in stages_with_fragnets())
+    libs = gather_stage_libraries(stage, 'Chennai')
+    assert not libs['fragnets'], f'{stage} has fragnets now; pick another for this test'
+
+    reasoning = build_stage_reasoning(
+        EMPTY_RESPONSE, stage=stage, libs=libs, hits=[], threshold=0.7
+    )
+    fork = next(d for d in reasoning.decision_points
+                if d.decision_point_id == f'dyn.no_coverage.{stage}')
+    assert 'no work packages' in fork.why_stuck
+    assert 'gap in the library' in fork.why_stuck
+
+
+def test_a_stage_that_had_packages_available_but_chose_none_says_that_instead():
+    """A different failure with a different remedy: the library is fine, the reasoning missed."""
+    stage = 'mep_power'
+    libs = gather_stage_libraries(stage, 'Chennai')
+    assert libs['fragnets'], 'mep_power lost its fragnets; this test needs a covered stage'
+
+    reasoning = build_stage_reasoning(
+        EMPTY_RESPONSE, stage=stage, libs=libs, hits=[], threshold=0.7
+    )
+    fork = next(d for d in reasoning.decision_points
+                if d.decision_point_id == f'dyn.no_coverage.{stage}')
+    assert 'selected none' in fork.why_stuck
+    assert 'gap in the library' not in fork.why_stuck
+
+
+def test_a_stage_that_instanced_work_raises_no_coverage_fork():
+    """The fork must not fire on a healthy stage, or it becomes noise to click through."""
+    stage = 'mep_power'
+    libs = gather_stage_libraries(stage, 'Chennai')
+    response = {
+        'packages': [{'fragnet_id': 'frag.mep.power_train', 'why': 'applies',
+                      'confidence': 0.9, 'sources': ['frag.mep.power_train']}],
+        'gates': [], 'long_lead': [], 'decision_points': [], 'notes': '',
+    }
+    reasoning = build_stage_reasoning(
+        response, stage=stage, libs=libs, hits=[], threshold=0.7
+    )
+    assert not [d for d in reasoning.decision_points
+                if d.decision_point_id.startswith('dyn.no_coverage')]
+
+
+# ------------------------------------------------------- the gap is legible in the output
+
+
+def test_the_gap_is_flagged_not_only_asked(full_walk):
+    """A planner reading the finished plan must see the hole without replaying the decisions."""
+    output, activities, _ = full_walk
+    uncovered = [s for s in STAGES if not activities.get(s)]
+    if not uncovered:
+        pytest.skip('every stage is covered; nothing to flag')
+
+    flagged = {
+        ref
+        for flag in output['flags'] if flag['kind'] == 'stage_not_covered'
+        for ref in flag['refs']
+    }
+    assert set(uncovered) <= flagged, (
+        f'uncovered stages with no flag: {set(uncovered) - flagged}'
+    )
+
+
+def test_the_answer_is_recorded_in_the_warning():
+    """Answering 'out of scope' and answering 'in scope' must not read identically afterwards."""
+    stage = next(s for s in STAGES if s not in stages_with_fragnets())
+    libs = gather_stage_libraries(stage, 'Chennai')
+    dyn_id = f'dyn.no_coverage.{stage}'
+
+    def warning_for(answer):
+        reasoning = build_stage_reasoning(
+            EMPTY_RESPONSE, stage=stage, libs=libs, hits=[], threshold=0.7,
+            decisions=[{'id': dyn_id, 'answer': answer}],
+        )
+        return next(w for w in reasoning.warnings if 'NO WORK PACKAGES' in w)
+
+    out_of_scope = warning_for('Out of scope on this project - leave it out of the plan')
+    in_scope = warning_for('In scope - record the plan as incomplete until this stage is covered')
+
+    assert 'out of scope' in out_of_scope
+    assert 'knowingly incomplete' in in_scope
+    assert out_of_scope != in_scope
+
+
+# ---------------------------------------------------- the three new fragnet libraries
+
+
+@pytest.mark.parametrize('stage,fragnet_id', [
+    ('envelope', 'frag.envelope.shell'),
+    ('fire_bms', 'frag.fire_bms.detection_suppression'),
+    ('fit_out', 'frag.fit_out.cabling'),
+])
+def test_the_new_stages_instance_real_work(full_walk, stage, fragnet_id):
+    """Not just that the library entry parses — that the engine turns it into a plan."""
+    _, activities, _ = full_walk
+    rows = activities.get(stage, [])
+    assert rows, f'{stage} still produces nothing'
+    assert {r['source_fragnet'] for r in rows if r.get('source_fragnet')} == {fragnet_id}
+    assert [r for r in rows if r['type'] == 'task'], f'{stage} has no actual work, only markers'
+    assert all(r['duration_days'] > 0 for r in rows if r['type'] == 'task')
+    assert [r for r in rows if r.get('predecessors')], f'{stage} activities have no logic'
+
+
+@pytest.mark.parametrize('fragnet_id', [
+    'frag.envelope.shell', 'frag.fire_bms.detection_suppression', 'frag.fit_out.cabling',
+])
+def test_the_new_entries_declare_themselves_unverified(fragnet_id):
+    """CLAUDE.md: invented numbers must not launder into confident reasoning. These durations
+    are industry estimates and every one of them is a candidate for correction."""
+    entry = next(e for e in load_library('fragnets')['entries'] if e['id'] == fragnet_id)
+    provenance = entry['provenance']
+    assert provenance['origin'] == 'industry_estimate'
+    assert provenance['verification_status'] == 'unverified'
+    assert provenance['verified_by'] is None
+    assert 'INVENTED FOR REVIEW' in provenance['note']
+    assert 'JUDGEMENTS TO CHALLENGE' in provenance['note'], (
+        'the note must name what a reviewer should argue with, not just disclaim generally'
+    )
+
+
+def test_the_new_entries_only_reference_things_that_exist():
+    """A material link or safety ref pointing at nothing fails silently: the gate is simply
+    never inserted and the plan understates the constraint."""
+    leads = {e['id'] for e in load_library('equipment_lead_times')['entries']}
+    safety = {e['id'] for e in load_library('safety_register')['entries']}
+    new = ('frag.envelope.shell', 'frag.fire_bms.detection_suppression', 'frag.fit_out.cabling')
+
+    for entry in load_library('fragnets')['entries']:
+        if entry['id'] not in new:
+            continue
+        activity_ids = {a['id'] for a in entry['activities']}
+        for link in entry.get('material_links', []):
+            assert link['activity'] in activity_ids, f"{entry['id']}: link to unknown activity"
+            assert link['requires_delivery_of'] in leads, (
+                f"{entry['id']}: {link['requires_delivery_of']} is not in equipment_lead_times"
+            )
+        for ref in entry.get('safety_refs', []):
+            assert ref in safety, f'{entry["id"]}: {ref} is not in the safety register'
+        for link in entry['logic']:
+            assert link['from'] in activity_ids and link['to'] in activity_ids, (
+                f"{entry['id']}: logic link references an activity that does not exist"
+            )
+        for hold in entry.get('hold_points', []):
+            assert hold['after'] in activity_ids, (
+                f"{entry['id']}: hold point after an activity that does not exist"
+            )
+
+
+# ------------------------------------------------- the physical build sequence
+
+#: The chain a reviewer checks first. Each must finish before the next starts.
+BUILD_SEQUENCE = ['substructure', 'superstructure', 'envelope', 'fit_out']
+
+#: Commissioning exercises installed plant, so every one of these must be in before it starts.
+COMMISSIONING_NEEDS = ['mep_power', 'mep_cooling', 'fire_bms', 'fit_out']
+
+
+def stage_span(activities, stage):
+    rows = activities.get(stage) or []
+    assert rows, f'{stage} instanced nothing, so its sequencing cannot be checked'
+    return min(r['start_day'] for r in rows), max(r['finish_day'] for r in rows)
+
+
+def test_construction_stages_run_in_sequence_not_in_parallel(full_walk):
+    """Found by audit: every construction stage started on the same day.
+
+    With only the IFC release gate in place, design completion freed substructure,
+    superstructure, envelope and fit-out simultaneously - so the programme had steel erection
+    beginning before the foundations were poured and raised floor going into a building that did
+    not exist. It is the first thing a planner would notice.
+    """
+    _, activities, _ = full_walk
+    spans = {s: stage_span(activities, s) for s in BUILD_SEQUENCE}
+
+    for earlier, later in zip(BUILD_SEQUENCE, BUILD_SEQUENCE[1:]):
+        assert spans[later][0] >= spans[earlier][1], (
+            f'{later} starts on day {spans[later][0]} but {earlier} does not finish until '
+            f'{spans[earlier][1]} — these are running in parallel'
+        )
+
+    starts = [spans[s][0] for s in BUILD_SEQUENCE]
+    assert len(set(starts)) == len(starts), f'construction stages share a start day: {spans}'
+
+
+def test_commissioning_starts_after_everything_it_commissions(full_walk):
+    """An L5 integrated systems test runs the facility under load. Doing that with no
+    suppression installed, or in a hall with no cabling in it, is not something a commissioning
+    agent would sign."""
+    _, activities, _ = full_walk
+    start = stage_span(activities, 'commissioning')[0]
+    for stage in COMMISSIONING_NEEDS:
+        finish = stage_span(activities, stage)[1]
+        assert start >= finish, (
+            f'commissioning starts on day {start} but {stage} runs until day {finish}'
+        )
+
+
+def test_each_sequencing_gate_actually_reaches_the_activities(full_walk):
+    """A gate in the table that never becomes a predecessor constrains nothing.
+
+    Checked on the activities rather than on the edge list: the edge existing and the activity
+    carrying it are different things, and the forward pass only reads the latter.
+    """
+    _, activities, _ = full_walk
+    expected = {
+        'superstructure': 'gate.substructure-complete',
+        'envelope': 'gate.superstructure-complete',
+        'fit_out': 'gate.envelope-complete',
+    }
+    for stage, gate in expected.items():
+        rows = activities.get(stage) or []
+        assert rows, f'{stage} instanced nothing'
+        assert any(
+            p['id'] == gate for r in rows for p in (r.get('predecessors') or [])
+        ), f'{gate} is in the gate table but reaches no {stage} activity'
+
+
+def test_commissioning_carries_all_four_readiness_gates(full_walk):
+    _, activities, _ = full_walk
+    rows = activities.get('commissioning') or []
+    carried = {
+        p['id'] for r in rows for p in (r.get('predecessors') or [])
+        if p['id'].startswith('gate.')
+    }
+    for gate in ('gate.power-installed', 'gate.cooling-installed',
+                 'gate.fire-installed', 'gate.fit-out-complete'):
+        assert gate in carried, f'commissioning does not wait on {gate}'
+
+
+def test_the_critical_path_is_still_procurement_led(full_walk):
+    """DOMAIN_KNOWLEDGE.md §4: long-lead plant usually drives RFS.
+
+    Sequencing the construction stages must not accidentally make the building the critical
+    path — if it does, the plan has stopped describing a data centre and started describing a
+    warehouse, and the lead times have stopped mattering.
+    """
+    output, activities, _ = full_walk
+    construction_end = max(stage_span(activities, s)[1] for s in BUILD_SEQUENCE)
+    mep_end = max(stage_span(activities, s)[1] for s in ('mep_power', 'mep_cooling'))
+    assert mep_end >= construction_end, (
+        f'construction now finishes at day {construction_end}, after MEP at {mep_end} — the '
+        'critical path is no longer procurement-led'
+    )
+    assert output['rfs_day'] > mep_end

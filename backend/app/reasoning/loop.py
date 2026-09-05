@@ -253,7 +253,7 @@ def reason_stage(
 
     return build_stage_reasoning(
         response, stage=stage, libs=libs, hits=hits,
-        threshold=threshold, warnings=warnings, grounded=grounded,
+        threshold=threshold, warnings=warnings, grounded=grounded, decisions=decisions,
     )
 
 
@@ -266,12 +266,15 @@ def build_stage_reasoning(
     threshold: float,
     warnings: Optional[List[str]] = None,
     grounded: bool = False,
+    decisions: Optional[List[Dict[str, Any]]] = None,
 ) -> StageReasoning:
     """Validate a raw reasoning response into a StageReasoning.
 
     Separated from the call so every guardrail is testable without a gateway.
     """
     warnings = list(warnings or [])
+    answered = {str(d.get('id') or '') for d in (decisions or [])}
+    answers_by_id = {str(d.get('id') or ''): str(d.get('answer') or '') for d in (decisions or [])}
     rejected: List[Dict[str, str]] = []
     trail: List[TrailEntry] = []
     flags: List[ReasoningFlag] = []
@@ -387,6 +390,81 @@ def build_stage_reasoning(
         raised.add(ident)
 
     # ---- dynamic decision points ----------------------------------------------------
+    # ---- coverage: a stage that instances nothing must SAY SO ------------------------
+    #
+    # Found by audit: six of the thirteen stages produced no activities and, unlike every other
+    # under-specified thing in this file, four of them raised no decision point either. The run
+    # walked approvals, enabling, envelope, fire_bms, fit_out and handover, reported them
+    # `completed`, and the planner got a thirteen-stage programme with six stages missing and
+    # nothing anywhere saying so.
+    #
+    # That is the one failure mode this product exists to prevent (CLAUDE.md rule 3). Silence is
+    # the worst possible answer here: an empty stage is indistinguishable from a stage with no
+    # work, and only the reader knows which their project is. So it stops and asks.
+    #
+    # Deliberately BLOCKING and deliberately not batched with the low-confidence forks below:
+    # those share one cause and one answer, whereas "is there any envelope work on this job?" is
+    # a different question per stage and only the reader can answer it.
+    if not packages:
+        dyn_id = f'dyn.no_coverage.{stage}'
+        available = len(libs['fragnets'])
+        if available == 0:
+            why = (
+                f'The fragnet library contains no work packages for the {stage} stage at all, so '
+                'there is nothing for the engine to instance. This is a gap in the library, not '
+                'a finding about your project - the plan will contain no {stage} work whichever '
+                'way you answer, and this records which of the two situations it is.'
+            ).replace('{stage}', stage)
+        else:
+            why = (
+                f'The library offers {available} work package(s) for the {stage} stage and the '
+                'reasoning selected none of them. That may be correct for this project or it may '
+                'be a miss, and the difference is not something the reasoner can settle about '
+                'itself.'
+            )
+        decision_points.append(RaisedDecisionPoint(
+            decision_point_id=dyn_id,
+            question=(
+                f'The {stage} stage would produce no activities. Is it out of scope on this '
+                'project, or is the plan incomplete without it?'
+            ),
+            why_stuck=why,
+            options=[
+                'Out of scope on this project - leave it out of the plan',
+                'In scope - record the plan as incomplete until this stage is covered',
+            ],
+            impact=(
+                f'Either way no {stage} activities are instanced - the engine only instances '
+                'library data (CLAUDE.md rule 2). What this decides is whether the finished plan '
+                'is reported as complete or as knowingly missing a stage.'
+            ),
+            blocking=True,
+            detection='dynamic',
+        ))
+        raised.add(dyn_id)
+
+        # The warning is recorded either way, and says which way it was answered so the gap is
+        # legible in the output rather than only in the decision log.
+        answer = answers_by_id.get(dyn_id, '')
+        if dyn_id not in answered:
+            verdict = 'awaiting the planner\'s answer'
+        elif answer.lower().startswith('out of scope'):
+            verdict = 'confirmed out of scope by the planner'
+        else:
+            verdict = 'IN SCOPE and NOT PLANNED - this plan is knowingly incomplete'
+        warnings.append(
+            f'NO WORK PACKAGES for the {stage} stage '
+            f'({available} available in the library, none instanced): {verdict}.'
+        )
+        flags.append(ReasoningFlag(
+            kind='stage_not_covered',
+            message=(
+                f'{stage}: no activities were instanced. {why} Status: {verdict}.'
+            ),
+            refs=[stage],
+            hitl_tier='tier_2',
+        ))
+
     # §4: confidence below CONF_THRESHOLD raises a decision point rather than guessing. This
     # tests the model's OWN stated confidence, not the unverified-data cap: a capped confidence
     # is a data-quality problem for admin to verify, not a fork for a planner to decide, and
