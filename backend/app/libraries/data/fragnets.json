@@ -170,6 +170,107 @@
       }
     },
     {
+      "id": "frag.enabling.site_setup",
+      "name": "Enabling works and site establishment",
+      "stage": "enabling",
+      "dept": "construction",
+      "materials": [
+        "temp works",
+        "fuel"
+      ],
+      "gates": [
+        "BOCW",
+        "CLRA",
+        "PESO (HSD)"
+      ],
+      "activities": [
+        {
+          "id": "h10",
+          "name": "Site clearance, grubbing and level survey",
+          "duration_days": 20,
+          "calendar": "6day"
+        },
+        {
+          "id": "h20",
+          "name": "Site boundary, hoarding and gate house",
+          "duration_days": 15,
+          "calendar": "6day"
+        },
+        {
+          "id": "h30",
+          "name": "Site offices, welfare and material stores",
+          "duration_days": 25,
+          "calendar": "6day"
+        },
+        {
+          "id": "h40",
+          "name": "Temporary power supply and site distribution",
+          "duration_days": 30,
+          "calendar": "6day"
+        },
+        {
+          "id": "h50",
+          "name": "Site access roads and hardstanding",
+          "duration_days": 25,
+          "calendar": "6day"
+        },
+        {
+          "id": "h60",
+          "name": "Labour accommodation and BOCW / CLRA registration",
+          "duration_days": 30,
+          "calendar": "6day"
+        }
+      ],
+      "logic": [
+        {
+          "from": "h10",
+          "to": "h20",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "h20",
+          "to": "h30",
+          "type": "SS",
+          "lag": 5
+        },
+        {
+          "from": "h20",
+          "to": "h50",
+          "type": "SS",
+          "lag": 10
+        },
+        {
+          "from": "h10",
+          "to": "h40",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "h30",
+          "to": "h60",
+          "type": "SS",
+          "lag": 10
+        }
+      ],
+      "hold_points": [
+        {
+          "after": "h60",
+          "name": "BOCW and CLRA registration verified before labour mobilises",
+          "role": "reviewer"
+        }
+      ],
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED FOR REVIEW. Stage, owning departments (Construction, HSE), materials (temp works, fuel) and the three gates (BOCW, CLRA, PESO for HSD) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the FIVE LOGIC LINKS and the ONE HOLD POINT are estimates: about 65 days on the longest path (clearance -> hoarding -> offices -> labour registration). JUDGEMENTS TO CHALLENGE: temporary power is 30 days off site clearance, which assumes a DISCOM supply already at the boundary - on a greenfield parcel this is frequently the longest item in the stage and can run to months; the SS overlaps assume one enabling contractor sequencing gangs rather than separate trades. NOT MODELLED: the PESO licence for bulk HSD is listed as a gate here but has no activity in this package, because the storage it licenses is installed in mep_power (see frag.mep.power_train c67) and the city pathway data carries path.nm.peso_hsd with its own duration. Also not modelled: dewatering and ground improvement, which a brownfield or high-water-table parcel needs and a greenfield one does not, so it cannot be a fixed part of this package.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      }
+    },
+    {
       "id": "frag.substructure.raft",
       "name": "Substructure - raft foundation",
       "stage": "substructure",
@@ -505,7 +606,8 @@
       ],
       "gates": [
         "CEA regs",
-        "CEIG energisation"
+        "CEIG energisation",
+        "PESO (HSD)"
       ],
       "activities": [
         {
@@ -543,6 +645,24 @@
           "name": "Cable termination and continuity test",
           "duration_days": 25,
           "calendar": "6day"
+        },
+        {
+          "id": "c65",
+          "name": "Diesel generator set installation and alignment",
+          "duration_days": 25,
+          "calendar": "6day"
+        },
+        {
+          "id": "c67",
+          "name": "Bulk HSD storage tank and fuel system installation",
+          "duration_days": 20,
+          "calendar": "6day"
+        },
+        {
+          "id": "c70",
+          "name": "HV/MV energisation and live electrical testing",
+          "duration_days": 15,
+          "calendar": "6day"
         }
       ],
       "logic": [
@@ -575,6 +695,36 @@
           "to": "c60",
           "type": "FS",
           "lag": 0
+        },
+        {
+          "from": "c10",
+          "to": "c65",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "c65",
+          "to": "c67",
+          "type": "SS",
+          "lag": 10
+        },
+        {
+          "from": "c60",
+          "to": "c70",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "c65",
+          "to": "c70",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "c67",
+          "to": "c70",
+          "type": "FS",
+          "lag": 0
         }
       ],
       "hold_points": [
@@ -582,6 +732,11 @@
           "after": "c30",
           "name": "Pre-energisation inspection",
           "role": "qaqc"
+        },
+        {
+          "after": "c67",
+          "name": "PESO licence verified before HSD is received on site",
+          "role": "reviewer"
         }
       ],
       "material_links": [
@@ -600,6 +755,10 @@
         {
           "activity": "c50",
           "requires_delivery_of": "lead.busway"
+        },
+        {
+          "activity": "c65",
+          "requires_delivery_of": "lead.generator"
         }
       ],
       "provenance": {
@@ -607,7 +766,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Transformer-to-UPS installation and test. Switchgear and UPS install dominate; the sequence is gated by delivery, not by labour. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.",
+        "note": "Transformer-to-UPS installation and test. Switchgear and UPS install dominate; the sequence is gated by delivery, not by labour. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates. --- EXTENDED FOR REVIEW (three additions). c65 DIESEL GENERATOR SET INSTALLATION: lead.generator was in equipment_lead_times at 30 weeks with drives_rfs=true and was consumed by nothing, so the gensets never appeared in any programme and their lead time constrained nothing. It now carries a material link. Owner-furnished gensets (dp.ofe) change WHO procures, not the lead time, so the delivery gate applies either way. c67 BULK HSD STORAGE: the fuel system path.nm.peso_hsd licenses had no activity to gate; PESO is a safety approval for bulk diesel and its absence was a real hole. c70 HV/MV ENERGISATION: the package previously ended at cable termination, so there was no energisation step at all - which meant DOMAIN_KNOWLEDGE.md#5 (\"energisation cannot precede CEIG approval\") had nothing to attach to, and safety.hv_energisation, a Tier-1 entry that BLOCKS EXPORT, matched no activity in any plan ever produced. THREE DURATIONS AND FIVE LOGIC LINKS ARE ESTIMATES. JUDGEMENTS TO CHALLENGE: 15 days for energisation assumes a single energisation event, where a 2N facility energises each path separately; the SS+10 from genset to fuel system assumes one contractor; and c65 hangs off c10 (plinth and pad preparation), which assumes the genset pads are poured with the transformer pads.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -1055,6 +1214,121 @@
         "verified_by": null,
         "verified_on": null,
         "note": "L1-L5 for a Tier III facility. IST and black-building are the longest-pole risks and both are Tier-1 safety activities requiring sign-off before export. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.",
+        "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
+        "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
+      }
+    },
+    {
+      "id": "frag.handover.dlp",
+      "name": "Handover, certification and defects liability",
+      "stage": "handover",
+      "dept": "pm",
+      "materials": [],
+      "gates": [
+        "occupancy certificate",
+        "warranties",
+        "Uptime Tier certification"
+      ],
+      "activities": [
+        {
+          "id": "j10",
+          "name": "Snag list closure",
+          "duration_days": 25,
+          "calendar": "6day"
+        },
+        {
+          "id": "j20",
+          "name": "As-built drawings and O&M manual compilation",
+          "duration_days": 30,
+          "calendar": "5day"
+        },
+        {
+          "id": "j30",
+          "name": "Uptime Institute Tier Certification of Constructed Facility (TCCF) demonstration and report",
+          "duration_days": 20,
+          "calendar": "5day"
+        },
+        {
+          "id": "j40",
+          "name": "Client operations training and witnessed demonstrations",
+          "duration_days": 15,
+          "calendar": "5day"
+        },
+        {
+          "id": "j50",
+          "name": "Warranty, guarantee and spares register handover",
+          "duration_days": 15,
+          "calendar": "5day"
+        },
+        {
+          "id": "j60",
+          "name": "Final account and defects liability period commencement",
+          "duration_days": 20,
+          "calendar": "5day"
+        }
+      ],
+      "logic": [
+        {
+          "from": "j10",
+          "to": "j20",
+          "type": "SS",
+          "lag": 10
+        },
+        {
+          "from": "j10",
+          "to": "j30",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "j20",
+          "to": "j40",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "j10",
+          "to": "j50",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "j30",
+          "to": "j60",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "j40",
+          "to": "j60",
+          "type": "FS",
+          "lag": 0
+        },
+        {
+          "from": "j50",
+          "to": "j60",
+          "type": "FS",
+          "lag": 0
+        }
+      ],
+      "hold_points": [
+        {
+          "after": "j10",
+          "name": "Snag list closure verified by the client",
+          "role": "reviewer"
+        },
+        {
+          "after": "j30",
+          "name": "Uptime TCCF certificate issued",
+          "role": "reviewer"
+        }
+      ],
+      "provenance": {
+        "origin": "industry_estimate",
+        "verification_status": "unverified",
+        "verified_by": null,
+        "verified_on": null,
+        "note": "INVENTED FOR REVIEW. Stage, owning departments (PM, QA/QC) and the gates (occupancy certificate, warranties) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SEVEN LOGIC LINKS and the TWO HOLD POINTS are estimates: about 85 days on the longest path (snagging -> TCCF -> final account). UPTIME TCCF (j30) IS AN ASSUMPTION ABOUT THIS PROJECT, not a universal step: Tier Certification of Constructed Facility is a demonstration to Uptime Institute after construction, and it applies only where the client is actually pursuing certification. A project building to Tier standards without certifying would delete j30 entirely. Its 20 days covers demonstration and report, not the certification cycle end to end. JUDGEMENTS TO CHALLENGE: TCCF is placed after snag closure and before final account, which assumes a single certification pass - a failed demonstration means remediation and a re-demonstration that this does not model. SCOPE DECISION: this package covers CONTRACTOR work only. The occupancy certificate and final fire NOC are statutory and deliberately absent, because the city pathway data already holds them with their own durations and blocking rules (path.nm.occupancy_certificate 8 weeks blocks handover; path.nm.fire_noc_final 10 weeks blocks occupancy). Duplicating them here would put two numbers for the same approval in two libraries, and CLAUDE.md rules that compliance is versioned data, not fragnet content. NOT MODELLED: the defects liability period itself, typically 12-24 months, which would dwarf the construction programme if drawn as an activity - j60 marks its commencement only.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }

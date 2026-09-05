@@ -135,7 +135,11 @@ def test_activity_ids_are_derived_not_allocated(result):
     from backend.app.engine import activity_id
 
     for activity in result.activities:
-        if activity.type == 'task':
+        # Fragnet-instanced work only. Statutory approvals are real tasks with real durations,
+        # but they come from the city pathway rather than a fragnet, so there is no
+        # (stage, fragnet, spec) triple to derive an id from - theirs is derived from the
+        # pathway id instead, which is just as stable across runs.
+        if activity.type == 'task' and activity.source_fragnet:
             assert activity.id == activity_id(
                 activity.stage, activity.source_fragnet, activity.id.rsplit('.', 1)[-1]
             )
@@ -299,14 +303,20 @@ def test_department_codes_are_carried(result):
 
 def test_delivery_mode_reaches_the_activities_it_governs(result):
     """The per-discipline answer to dp.delivery_mode must not stop at the brief."""
-    electrical = [a for a in result.activities if a.stage == 'mep_power' and a.type == 'task']
+    # source_fragnet filters out the statutory approvals that now sit in these stages. A PESO
+    # licence is not self-performed or subcontracted - it is applied for - so delivery mode is
+    # meaningless for it, and asserting one would be asserting a fiction.
+    electrical = [a for a in result.activities
+                  if a.stage == 'mep_power' and a.type == 'task' and a.source_fragnet]
     assert electrical and all(a.delivery_mode == 'turnkey' for a in electrical)
-    civil = [a for a in result.activities if a.stage == 'substructure' and a.type == 'task']
+    civil = [a for a in result.activities
+             if a.stage == 'substructure' and a.type == 'task' and a.source_fragnet]
     assert civil and all(a.delivery_mode == 'self-perform' for a in civil)
 
 
 def test_compliance_gates_are_carried_onto_activities(result):
-    mep = [a for a in result.activities if a.stage == 'mep_power' and a.type == 'task']
+    mep = [a for a in result.activities
+           if a.stage == 'mep_power' and a.type == 'task' and a.source_fragnet]
     assert all('path.nm.peso_hsd' in a.compliance_gates for a in mep)
 
 

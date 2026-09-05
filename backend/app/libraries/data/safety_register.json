@@ -11,8 +11,14 @@
       "hitl_tier": "tier_1",
       "blocks_export": true,
       "requires_signoff_role": "hse",
-      "permit_predecessors": ["Permit to work - HV electrical", "LOTO isolation certificate"],
-      "hold_points": ["Pre-energisation safety briefing", "Electrical inspector clearance"],
+      "permit_predecessors": [
+        "Permit to work - HV electrical",
+        "LOTO isolation certificate"
+      ],
+      "hold_points": [
+        "Pre-energisation safety briefing",
+        "Electrical inspector clearance"
+      ],
       "provenance": {
         "origin": "spec_transcribed",
         "verification_status": "unverified",
@@ -29,8 +35,14 @@
       "hitl_tier": "tier_1",
       "blocks_export": true,
       "requires_signoff_role": "hse",
-      "permit_predecessors": ["Permit to work - load bank testing", "Fuel system readiness certificate"],
-      "hold_points": ["Load bank setup inspection", "Emergency stop verification"],
+      "permit_predecessors": [
+        "Permit to work - load bank testing",
+        "Fuel system readiness certificate"
+      ],
+      "hold_points": [
+        "Load bank setup inspection",
+        "Emergency stop verification"
+      ],
       "provenance": {
         "origin": "spec_transcribed",
         "verification_status": "unverified",
@@ -47,8 +59,14 @@
       "hitl_tier": "tier_1",
       "blocks_export": true,
       "requires_signoff_role": "hse",
-      "permit_predecessors": ["Permit to work - confined/sealed space", "Room evacuation confirmation"],
-      "hold_points": ["Occupancy sweep and lock-off", "Post-discharge ventilation clearance"],
+      "permit_predecessors": [
+        "Permit to work - confined/sealed space",
+        "Room evacuation confirmation"
+      ],
+      "hold_points": [
+        "Occupancy sweep and lock-off",
+        "Post-discharge ventilation clearance"
+      ],
       "provenance": {
         "origin": "spec_transcribed",
         "verification_status": "unverified",
@@ -65,8 +83,14 @@
       "hitl_tier": "tier_1",
       "blocks_export": true,
       "requires_signoff_role": "hse",
-      "permit_predecessors": ["Permit to work - hot work / fuel", "PESO storage compliance confirmation"],
-      "hold_points": ["Fuel line pressure test witness", "First-fire safety standby"],
+      "permit_predecessors": [
+        "Permit to work - hot work / fuel",
+        "PESO storage compliance confirmation"
+      ],
+      "hold_points": [
+        "Fuel line pressure test witness",
+        "First-fire safety standby"
+      ],
       "provenance": {
         "origin": "spec_transcribed",
         "verification_status": "unverified",
@@ -83,16 +107,23 @@
       "hitl_tier": "tier_1",
       "blocks_export": true,
       "requires_signoff_role": "hse",
-      "permit_predecessors": ["Permit to work - concurrent operations", "Client operations authorisation"],
-      "hold_points": ["Change-freeze window confirmation", "Barrier and containment inspection"],
+      "permit_predecessors": [
+        "Permit to work - concurrent operations",
+        "Client operations authorisation"
+      ],
+      "hold_points": [
+        "Change-freeze window confirmation",
+        "Barrier and containment inspection"
+      ],
       "provenance": {
         "origin": "spec_transcribed",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 5. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review.",
+        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 5. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review. applies_when_site_context ADDED FOR REVIEW: the pattern already says \"(brownfield)\" in prose, but prose is not a condition the engine can read, so this rule fired on greenfield projects too. Found when the fit-out fragnet was added: \"Raised floor and plinth installation to data halls\" shares the words \"data\" and \"halls\" with this pattern, which was enough for the two-word keyword match, and a routine raised-floor activity on a greenfield site was marked Tier-1 and BLOCKED EXPORT. Wrongly blocking export is not a safe failure: it teaches a planner that the block is noise.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#7"
-      }
+      },
+      "applies_when_site_context": "brownfield"
     }
   ]
 }

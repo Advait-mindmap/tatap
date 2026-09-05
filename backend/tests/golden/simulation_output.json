@@ -542,6 +542,55 @@
       "delivery_mode": "unknown",
       "dept_code": "procurement",
       "duration_days": 0,
+      "finish_day": 380,
+      "hitl_tier": "tier_3",
+      "hold_points": [],
+      "id": "gate.delivery-lead-generator",
+      "name": "Delivery to site: lead.generator",
+      "predecessors": [
+        {
+          "id": "procurement.frag.procurement.long_lead.b10",
+          "kind": "delivery",
+          "lag": 210,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b20",
+          "kind": "delivery",
+          "lag": 210,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b30",
+          "kind": "delivery",
+          "lag": 210,
+          "type": "FS"
+        },
+        {
+          "id": "procurement.frag.procurement.long_lead.b40",
+          "kind": "delivery",
+          "lag": 210,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "procurement",
+      "start_day": 380,
+      "trail_ref": "trail.gate.delivery-lead-generator",
+      "type": "milestone",
+      "unverified_dependencies": [],
+      "wbs_id": "00.dl.tor",
+      "zone_id": null
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
+      "compliance_gates": [],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "procurement",
+      "duration_days": 0,
       "finish_day": 324,
       "hitl_tier": "tier_3",
       "hold_points": [],
@@ -1123,7 +1172,7 @@
       "delivery_mode": "unknown",
       "dept_code": "mep",
       "duration_days": 0,
-      "finish_day": 467,
+      "finish_day": 482,
       "hitl_tier": "tier_3",
       "hold_points": [],
       "id": "gate.power-installed",
@@ -1164,16 +1213,62 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c65",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c67",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c70",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
       "source_fragnet": null,
       "stage": "mep_power",
-      "start_day": 467,
+      "start_day": 482,
       "trail_ref": "trail.gate.power-installed",
       "type": "gate",
       "unverified_dependencies": [],
       "wbs_id": "00.re.led",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "7day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.0,
+      "delivery_mode": "unknown",
+      "dept_code": "liaison",
+      "duration_days": 154,
+      "finish_day": 154,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "stat.path-nm-peso-hsd",
+      "name": "PESO licence for HSD (diesel) storage - Petroleum and Explosives Safety Organisation (PESO)",
+      "predecessors": [],
+      "safety_flag": false,
+      "source_fragnet": null,
+      "stage": "mep_power",
+      "start_day": 0,
+      "trail_ref": "trail.stat.path-nm-peso-hsd",
+      "type": "task",
+      "unverified_dependencies": [
+        "path.nm.peso_hsd"
+      ],
+      "wbs_id": "00.st.hsd",
       "zone_id": "zone.electrical-room.01"
     },
     {
@@ -1480,6 +1575,184 @@
     {
       "blocks_export": false,
       "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 25,
+      "finish_day": 405,
+      "hitl_tier": "tier_2",
+      "hold_points": [],
+      "id": "mep_power.frag.mep.power_train.c65",
+      "name": "Diesel generator set installation and alignment",
+      "predecessors": [
+        {
+          "id": "gate.delivery-lead-generator",
+          "kind": "delivery",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c10",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "start_day": 380,
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c65",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.007",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": true,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "unknown",
+      "dept_code": "reviewer",
+      "duration_days": 0,
+      "finish_day": 410,
+      "hitl_tier": "tier_1",
+      "hold_points": [],
+      "id": "hold.mep_power.frag.mep.power_train.c67.peso-licence-verified-before-hsd-is-received-on-site",
+      "name": "HOLD: PESO licence verified before HSD is received on site",
+      "predecessors": [
+        {
+          "id": "mep_power.frag.mep.power_train.c67",
+          "kind": "hold_point",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": false,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "start_day": 410,
+      "trail_ref": "trail.hold.mep_power.frag.mep.power_train.c67.peso-licence-verified-before-hsd-is-received-on-site",
+      "type": "hold_point",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.008",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": true,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 20,
+      "finish_day": 410,
+      "hitl_tier": "tier_1",
+      "hold_points": [
+        "PESO licence verified before HSD is received on site"
+      ],
+      "id": "mep_power.frag.mep.power_train.c67",
+      "name": "Bulk HSD storage tank and fuel system installation",
+      "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c65",
+          "kind": "fragnet",
+          "lag": 10,
+          "type": "SS"
+        }
+      ],
+      "safety_flag": true,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "start_day": 390,
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c67",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.008",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": true,
+      "calendar": "6day",
+      "compliance_gates": [
+        "path.nm.peso_hsd"
+      ],
+      "confidence": 0.5,
+      "delivery_mode": "turnkey",
+      "dept_code": "mep",
+      "duration_days": 15,
+      "finish_day": 482,
+      "hitl_tier": "tier_1",
+      "hold_points": [],
+      "id": "mep_power.frag.mep.power_train.c70",
+      "name": "HV/MV energisation and live electrical testing",
+      "predecessors": [
+        {
+          "id": "gate.ifc-construction",
+          "kind": "cross_stage_gate",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c60",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c65",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c67",
+          "kind": "fragnet",
+          "lag": 0,
+          "type": "FS"
+        }
+      ],
+      "safety_flag": true,
+      "source_fragnet": "frag.mep.power_train",
+      "stage": "mep_power",
+      "start_day": 467,
+      "trail_ref": "trail.mep_power.frag.mep.power_train.c70",
+      "type": "task",
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "wbs_id": "08.01.009",
+      "zone_id": "zone.electrical-room.01"
+    },
+    {
+      "blocks_export": false,
+      "calendar": "6day",
       "compliance_gates": [],
       "confidence": 0.0,
       "delivery_mode": "unknown",
@@ -1776,7 +2049,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 25,
-      "finish_day": 492,
+      "finish_day": 507,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e10",
@@ -1793,12 +2066,18 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "stat.path-nm-peso-hsd",
+          "kind": "statutory",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 467,
+      "start_day": 482,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e10",
       "type": "task",
       "unverified_dependencies": [
@@ -1815,7 +2094,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 20,
-      "finish_day": 512,
+      "finish_day": 527,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e20",
@@ -1838,12 +2117,18 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "stat.path-nm-peso-hsd",
+          "kind": "statutory",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 492,
+      "start_day": 507,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e20",
       "type": "task",
       "unverified_dependencies": [
@@ -1860,7 +2145,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 35,
-      "finish_day": 547,
+      "finish_day": 562,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e30",
@@ -1883,12 +2168,18 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "stat.path-nm-peso-hsd",
+          "kind": "statutory",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 512,
+      "start_day": 527,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e30",
       "type": "task",
       "unverified_dependencies": [
@@ -1905,7 +2196,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 40,
-      "finish_day": 587,
+      "finish_day": 602,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e40",
@@ -1928,12 +2219,18 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "stat.path-nm-peso-hsd",
+          "kind": "statutory",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 547,
+      "start_day": 562,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e40",
       "type": "task",
       "unverified_dependencies": [
@@ -1950,7 +2247,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 28,
-      "finish_day": 615,
+      "finish_day": 630,
       "hitl_tier": "tier_1",
       "hold_points": [
         "IST results acceptance - RFS gate"
@@ -1975,12 +2272,18 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "stat.path-nm-peso-hsd",
+          "kind": "statutory",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": true,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 587,
+      "start_day": 602,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e50",
       "type": "task",
       "unverified_dependencies": [
@@ -1997,7 +2300,7 @@
       "delivery_mode": "unknown",
       "dept_code": "reviewer",
       "duration_days": 0,
-      "finish_day": 615,
+      "finish_day": 630,
       "hitl_tier": "tier_1",
       "hold_points": [],
       "id": "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
@@ -2013,7 +2316,7 @@
       "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 615,
+      "start_day": 630,
       "trail_ref": "trail.hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
       "type": "hold_point",
       "unverified_dependencies": [
@@ -2030,7 +2333,7 @@
       "delivery_mode": "turnkey",
       "dept_code": "commissioning",
       "duration_days": 14,
-      "finish_day": 629,
+      "finish_day": 644,
       "hitl_tier": "tier_1",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e60",
@@ -2053,12 +2356,18 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "stat.path-nm-peso-hsd",
+          "kind": "statutory",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": true,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
-      "start_day": 615,
+      "start_day": 630,
       "trail_ref": "trail.commissioning.frag.commissioning.ladder.e60",
       "type": "task",
       "unverified_dependencies": [
@@ -2196,7 +2505,13 @@
     {
       "hitl_tier": "tier_2",
       "kind": "engine_warning",
-      "message": "37 assembled activities rest on 6 unverified library entries; their confidence is the capped value, not the reasoner's claim.",
+      "message": "1 statutory approval(s) are modelled as starting at project start and running their typical duration. The library records how long an approval takes but not when it is lodged, so an approval binds only where its duration outlasts the work it gates. Approvals late in the programme are therefore modelled as non-binding, which understates their risk.",
+      "refs": []
+    },
+    {
+      "hitl_tier": "tier_2",
+      "kind": "engine_warning",
+      "message": "39 assembled activities rest on 7 unverified library entries; their confidence is the capped value, not the reasoner's claim.",
       "refs": []
     }
   ],
@@ -2451,6 +2766,14 @@
         "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
       },
       {
+        "from": "gate.delivery-lead-generator",
+        "kind": "delivery",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c65",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
         "from": "gate.delivery-lead-hv-switchgear",
         "kind": "delivery",
         "lag": 0,
@@ -2559,6 +2882,30 @@
         "kind": "cross_stage_gate",
         "lag": 0,
         "to": "mep_power.frag.mep.power_train.c60",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c65",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c67",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
+      },
+      {
+        "from": "gate.ifc-construction",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c70",
         "type": "FS",
         "why": "INTRODUCED FOR REVIEW, not transcribed from a doc. You cannot build to drawings that have not been issued, so IFC release gates physical construction the same way it gates procurement. Without this rule every construction stage started on day one, in parallel with the design that defines it. Real programmes often release foundations for construction ahead of full IFC, so this is arguably too strict - a partial-release gate would model it better."
       },
@@ -2787,6 +3134,14 @@
         "why": "Fragnet logic from frag.mep.power_train."
       },
       {
+        "from": "mep_power.frag.mep.power_train.c10",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c65",
+        "type": "FS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
         "from": "mep_power.frag.mep.power_train.c20",
         "kind": "cross_stage_gate",
         "lag": 0,
@@ -2867,6 +3222,70 @@
         "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
       },
       {
+        "from": "mep_power.frag.mep.power_train.c60",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c70",
+        "type": "FS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c65",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c65",
+        "kind": "fragnet",
+        "lag": 10,
+        "to": "mep_power.frag.mep.power_train.c67",
+        "type": "SS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c65",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c70",
+        "type": "FS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c67",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c67",
+        "kind": "hold_point",
+        "lag": 0,
+        "to": "hold.mep_power.frag.mep.power_train.c67.peso-licence-verified-before-hsd-is-received-on-site",
+        "type": "FS",
+        "why": "Quality hold point owned by reviewer."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c67",
+        "kind": "fragnet",
+        "lag": 0,
+        "to": "mep_power.frag.mep.power_train.c70",
+        "type": "FS",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c70",
+        "kind": "cross_stage_gate",
+        "lag": 0,
+        "to": "gate.power-installed",
+        "type": "FS",
+        "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
         "from": "procurement.frag.procurement.long_lead.b10",
         "kind": "delivery",
         "lag": 112,
@@ -2887,6 +3306,14 @@
         "kind": "delivery",
         "lag": 126,
         "to": "gate.delivery-lead-crah",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b10",
+        "kind": "delivery",
+        "lag": 210,
+        "to": "gate.delivery-lead-generator",
         "type": "FS",
         "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
       },
@@ -2950,6 +3377,14 @@
         "from": "procurement.frag.procurement.long_lead.b20",
         "kind": "delivery",
         "lag": 210,
+        "to": "gate.delivery-lead-generator",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b20",
+        "kind": "delivery",
+        "lag": 210,
         "to": "gate.delivery-lead-hv-switchgear",
         "type": "FS",
         "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
@@ -2999,6 +3434,14 @@
         "kind": "delivery",
         "lag": 126,
         "to": "gate.delivery-lead-crah",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b30",
+        "kind": "delivery",
+        "lag": 210,
+        "to": "gate.delivery-lead-generator",
         "type": "FS",
         "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
       },
@@ -3070,6 +3513,14 @@
         "from": "procurement.frag.procurement.long_lead.b40",
         "kind": "delivery",
         "lag": 210,
+        "to": "gate.delivery-lead-generator",
+        "type": "FS",
+        "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "procurement.frag.procurement.long_lead.b40",
+        "kind": "delivery",
+        "lag": 210,
         "to": "gate.delivery-lead-hv-switchgear",
         "type": "FS",
         "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
@@ -3089,6 +3540,54 @@
         "to": "gate.delivery-lead-ups",
         "type": "FS",
         "why": "Long-lead gear usually drives RFS (DOMAIN_KNOWLEDGE.md §4): \"Front-load it; tie construction to delivery.\" The installing activity cannot start before the plant arrives, so delivery is a hard predecessor rather than an assumption."
+      },
+      {
+        "from": "stat.path-nm-peso-hsd",
+        "kind": "statutory",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e10",
+        "type": "FS",
+        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
+      },
+      {
+        "from": "stat.path-nm-peso-hsd",
+        "kind": "statutory",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e20",
+        "type": "FS",
+        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
+      },
+      {
+        "from": "stat.path-nm-peso-hsd",
+        "kind": "statutory",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e30",
+        "type": "FS",
+        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
+      },
+      {
+        "from": "stat.path-nm-peso-hsd",
+        "kind": "statutory",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e40",
+        "type": "FS",
+        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
+      },
+      {
+        "from": "stat.path-nm-peso-hsd",
+        "kind": "statutory",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e50",
+        "type": "FS",
+        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
+      },
+      {
+        "from": "stat.path-nm-peso-hsd",
+        "kind": "statutory",
+        "lag": 0,
+        "to": "commissioning.frag.commissioning.ladder.e60",
+        "type": "FS",
+        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
       },
       {
         "from": "substructure.frag.substructure.raft.a10",
@@ -3560,6 +4059,25 @@
         "duration_days": 0,
         "finish": null,
         "hitl_tier": "tier_3",
+        "id": "gate.delivery-lead-generator",
+        "kind": "milestone",
+        "label": "Delivery to site: lead.generator",
+        "parent": "stage.procurement",
+        "safety_flag": false,
+        "stage": "procurement",
+        "start": null,
+        "trail_ref": "trail.gate.delivery-lead-generator",
+        "unverified_dependencies": [],
+        "wbs_id": "00.dl.tor",
+        "zone_id": null
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "procurement",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_3",
         "id": "gate.delivery-lead-ups",
         "kind": "milestone",
         "label": "Delivery to site: lead.ups",
@@ -3885,6 +4403,27 @@
       },
       {
         "blocks_export": false,
+        "confidence": 0.0,
+        "dept": "liaison",
+        "duration_days": 154,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "stat.path-nm-peso-hsd",
+        "kind": "activity",
+        "label": "PESO licence for HSD (diesel) storage - Petroleum and Explosives Safety Organisation (PESO)",
+        "parent": "stage.mep_power",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.stat.path-nm-peso-hsd",
+        "unverified_dependencies": [
+          "path.nm.peso_hsd"
+        ],
+        "wbs_id": "00.st.hsd",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
         "confidence": 0.5,
         "dept": "mep",
         "duration_days": 12,
@@ -4028,6 +4567,90 @@
           "frag.mep.power_train"
         ],
         "wbs_id": "08.01.006",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": false,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 25,
+        "finish": null,
+        "hitl_tier": "tier_2",
+        "id": "mep_power.frag.mep.power_train.c65",
+        "kind": "activity",
+        "label": "Diesel generator set installation and alignment",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c65",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.007",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": true,
+        "confidence": 0.5,
+        "dept": "reviewer",
+        "duration_days": 0,
+        "finish": null,
+        "hitl_tier": "tier_1",
+        "id": "hold.mep_power.frag.mep.power_train.c67.peso-licence-verified-before-hsd-is-received-on-site",
+        "kind": "quality_hold",
+        "label": "HOLD: PESO licence verified before HSD is received on site",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": false,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.hold.mep_power.frag.mep.power_train.c67.peso-licence-verified-before-hsd-is-received-on-site",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.008",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": true,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 20,
+        "finish": null,
+        "hitl_tier": "tier_1",
+        "id": "mep_power.frag.mep.power_train.c67",
+        "kind": "activity",
+        "label": "Bulk HSD storage tank and fuel system installation",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": true,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c67",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.008",
+        "zone_id": "zone.electrical-room.01"
+      },
+      {
+        "blocks_export": true,
+        "confidence": 0.5,
+        "dept": "mep",
+        "duration_days": 15,
+        "finish": null,
+        "hitl_tier": "tier_1",
+        "id": "mep_power.frag.mep.power_train.c70",
+        "kind": "activity",
+        "label": "HV/MV energisation and live electrical testing",
+        "parent": "package.mep_power.frag.mep.power_train",
+        "safety_flag": true,
+        "stage": "mep_power",
+        "start": null,
+        "trail_ref": "trail.mep_power.frag.mep.power_train.c70",
+        "unverified_dependencies": [
+          "frag.mep.power_train"
+        ],
+        "wbs_id": "08.01.009",
         "zone_id": "zone.electrical-room.01"
       },
       {
@@ -4463,7 +5086,7 @@
   },
   "quality": {
     "dcma_summary": {
-      "activity_count": 32,
+      "activity_count": 36,
       "checks_not_run": [
         "float",
         "negative_float",
@@ -4476,33 +5099,38 @@
       "dangling_ids": [
         "commissioning.frag.commissioning.ladder.e60"
       ],
-      "lag_count": 31,
+      "lag_count": 36,
       "lead_count": 0,
-      "missing_predecessor_count": 1,
+      "missing_predecessor_count": 2,
       "missing_predecessor_ids": [
-        "design.frag.design.engineering.e10"
+        "design.frag.design.engineering.e10",
+        "stat.path-nm-peso-hsd"
       ],
       "note": "Partial. The date-dependent DCMA checks are not run because scheduling (CPM dates) is not yet computed; they are listed in checks_not_run rather than reported as passing.",
-      "total_nodes": 50
+      "total_nodes": 56
     },
-    "export_block_reason": "3 Tier-1 safety activities require a named sign-off before export (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md §7).",
+    "export_block_reason": "6 Tier-1 safety activities require a named sign-off before export (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md §7).",
     "export_blocked": true,
     "governance_complete": false,
     "open_decision_count": 0,
-    "tier_1_count": 3,
+    "tier_1_count": 6,
     "tier_1_ids": [
       "commissioning.frag.commissioning.ladder.e50",
       "commissioning.frag.commissioning.ladder.e60",
-      "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate"
+      "hold.commissioning.frag.commissioning.ladder.e50.ist-results-acceptance-rfs-gate",
+      "hold.mep_power.frag.mep.power_train.c67.peso-licence-verified-before-hsd-is-received-on-site",
+      "mep_power.frag.mep.power_train.c67",
+      "mep_power.frag.mep.power_train.c70"
     ],
-    "tier_2_count": 37,
+    "tier_2_count": 39,
     "unverified_dependencies": [
       "frag.commissioning.ladder",
       "frag.design.engineering",
       "frag.mep.cooling",
       "frag.mep.power_train",
       "frag.procurement.long_lead",
-      "frag.substructure.raft"
+      "frag.substructure.raft",
+      "path.nm.peso_hsd"
     ]
   },
   "questions": [
@@ -4944,6 +5572,57 @@
       "decided_by": "engine",
       "decision": null,
       "hitl_tier": "tier_2",
+      "ref_id": "mep_power.frag.mep.power_train.c65",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_1",
+      "ref_id": "mep_power.frag.mep.power_train.c67",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_1",
+      "ref_id": "mep_power.frag.mep.power_train.c70",
+      "sources": [
+        "corpus:1#0",
+        "frag.mep.power_train"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.9,
+      "unverified_dependencies": [
+        "frag.mep.power_train"
+      ],
+      "why": "Instanced from frag.mep.power_train (MEP - power train (transformer to UPS)), selected because: frag.mep.power_train is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
       "ref_id": "procurement.frag.procurement.long_lead.b10",
       "sources": [
         "corpus:1#0",
@@ -5006,6 +5685,22 @@
         "frag.procurement.long_lead"
       ],
       "why": "Instanced from frag.procurement.long_lead (Procurement - tender to purchase order for long-lead plant), selected because: frag.procurement.long_lead is the applicable package for this stage"
+    },
+    {
+      "confidence": 0.5,
+      "decided_by": "engine",
+      "decision": null,
+      "hitl_tier": "tier_2",
+      "ref_id": "stat.path-nm-peso-hsd",
+      "sources": [
+        "path.nm.peso_hsd"
+      ],
+      "stage": "mep_power",
+      "stated_confidence": 0.8,
+      "unverified_dependencies": [
+        "path.nm.peso_hsd"
+      ],
+      "why": "Bulk HSD storage for the generators"
     },
     {
       "confidence": 0.5,
@@ -5110,11 +5805,11 @@
       "why": "Instanced from frag.substructure.raft (Substructure - raft foundation), selected because: frag.substructure.raft is the applicable package for this stage"
     }
   ],
-  "rfs_day": 629,
+  "rfs_day": 644,
   "stage_timeline": {
     "commissioning": {
-      "from_day": 467,
-      "to_day": 629
+      "from_day": 482,
+      "to_day": 644
     },
     "design": {
       "from_day": 0,
@@ -5125,8 +5820,8 @@
       "to_day": 418
     },
     "mep_power": {
-      "from_day": 95,
-      "to_day": 467
+      "from_day": 0,
+      "to_day": 482
     },
     "procurement": {
       "from_day": 95,
@@ -5178,24 +5873,24 @@
       ]
     },
     "zone.data-hall.01": {
-      "first_day": 467,
-      "last_day": 629,
+      "first_day": 482,
+      "last_day": 644,
       "stages": [
         {
-          "from_day": 467,
+          "from_day": 482,
           "stage": "commissioning",
-          "to_day": 629
+          "to_day": 644
         }
       ]
     },
     "zone.electrical-room.01": {
-      "first_day": 95,
-      "last_day": 467,
+      "first_day": 0,
+      "last_day": 482,
       "stages": [
         {
-          "from_day": 95,
+          "from_day": 0,
           "stage": "mep_power",
-          "to_day": 467
+          "to_day": 482
         }
       ]
     },

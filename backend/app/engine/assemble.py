@@ -18,15 +18,22 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 from backend.app.engine.gates import (
     CROSS_STAGE_GATES,
     DELIVERY_GATE,
+    PATHWAY_BLOCK_ALIASES,
     GateRule,
     cross_stage_gate_id,
     delivery_gate_id,
     material_link_index,
+    statutory_id,
 )
 from backend.app.engine.ids import activity_id, hold_point_id, trail_ref, wbs_id
 from backend.app.engine.schedule import apply_schedule, stage_timeline, zone_timeline
 from backend.app.engine.zones import generate_zones
-from backend.app.libraries import library_version, load_library
+from backend.app.libraries import (
+    available_cities,
+    library_version,
+    load_city_pathway,
+    load_library,
+)
 from backend.app.reasoning.stages import STAGE_DEPARTMENT, STAGE_INDEX
 from backend.app.schemas import (
     AssembledActivity,
@@ -76,19 +83,35 @@ def _keywords(text: str) -> frozenset:
 
 
 def match_safety_rules(
-    activity_name: str, safety_entries: Sequence[Dict[str, Any]], min_overlap: int = 2
+    activity_name: str,
+    safety_entries: Sequence[Dict[str, Any]],
+    min_overlap: int = 2,
+    site_context: str = '',
 ) -> List[Dict[str, Any]]:
     """Tier-1 safety entries whose activity_pattern matches this activity name.
 
     Keyword overlap rather than substring, because library patterns are written as descriptions
     ("HV/MV energisation & live electrical testing") not as the activity names they must catch.
     Deterministic: sorted by id.
+
+    `site_context` filters rules that only apply to some sites. A two-word overlap is a loose
+    test, and loose tests produce false positives that matter here: on a greenfield project
+    "Raised floor and plinth installation to data halls" matched "Work in or next to live data
+    halls (brownfield)" on {data, halls} alone, and a routine fit-out activity came out Tier-1
+    and export-blocking. A block that fires on the wrong activity trains people to ignore
+    blocks, so it is worth more than a cosmetic fix.
+
+    The condition is library DATA (`applies_when_site_context`), not a rule encoded here.
     """
     words = _keywords(activity_name)
-    matched = [
-        entry for entry in safety_entries
-        if len(words & _keywords(entry.get('activity_pattern', ''))) >= min_overlap
-    ]
+    context = (site_context or '').strip().lower()
+    matched = []
+    for entry in safety_entries:
+        required = (entry.get('applies_when_site_context') or '').strip().lower()
+        if required and required != context:
+            continue
+        if len(words & _keywords(entry.get('activity_pattern', ''))) >= min_overlap:
+            matched.append(entry)
     return sorted(matched, key=lambda e: e['id'])
 
 
@@ -119,6 +142,13 @@ def assemble(
         libraries.get('equipment_lead_times')
         or load_library('equipment_lead_times')['entries']
     )
+    # The statutory pathway is per city, so unlike the other libraries it can legitimately be
+    # absent: a city with no pathway file yields no approvals rather than an error, and the
+    # coverage fork in the reasoning loop is what tells the planner the approvals stage is empty.
+    pathway_lib = libraries.get('city_pathway')
+    if pathway_lib is None:
+        pathway_lib = _city_pathway_entries(brief.get('city'))
+    site_context = str(brief.get('site_context') or '')
     fragnet_index = {f['id']: f for f in fragnet_lib}
 
     ordered = sorted(
@@ -163,7 +193,9 @@ def assemble(
 
             for activity_index, spec in enumerate(fragnet.get('activities', []) or []):
                 ident = activity_id(stage, fragnet['id'], spec['id'])
-                safety_matches = match_safety_rules(spec['name'], safety_lib)
+                safety_matches = match_safety_rules(
+                    spec['name'], safety_lib, site_context=site_context
+                )
                 explicit_safety = bool(spec.get('safety_flag'))
                 is_safety = explicit_safety or bool(safety_matches)
                 hitl = spec.get('hitl_tier') or ('tier_1' if safety_matches else tier)
@@ -253,6 +285,18 @@ def assemble(
     edges.extend(gate_edges)
     warnings.extend(gate_warnings)
 
+    # ------------------------------------------------------------- statutory approvals
+    #
+    # After the cross-stage gates, because an approval blocks the activities those gates have
+    # already produced ids for, and the block targets are resolved by id.
+    stat_activities, stat_edges, stat_warnings, stat_trail = _build_statutory_activities(
+        ordered, stage_activity_ids, link_target, pathway_lib
+    )
+    activities.extend(stat_activities)
+    edges.extend(stat_edges)
+    warnings.extend(stat_warnings)
+    trail.extend(stat_trail)
+
     # ---------------------------------------------------------------------- projections
     _attach_zones(activities)
     _apply_predecessors(activities, edges)
@@ -310,6 +354,164 @@ def assemble(
         corpus_version=getattr(reference, 'corpus_version', '') or '',
         prompt_version=getattr(reference, 'prompt_version', '') or '',
     )
+
+
+
+
+#: How long before the work it gates an approval is assumed to be lodged. See
+#: `_build_statutory_activities` for why this is a constant and what it costs.
+STATUTORY_START_DAY = 0
+
+
+def _city_pathway_entries(city):
+    """The statutory pathway for this city, or nothing.
+
+    Slugged the same way output.py does it, so the schedule and the reported pathway can never
+    disagree about which city file they read.
+    """
+    if not city:
+        return []
+    slug_name = str(city).strip().lower().replace(' ', '_').replace('-', '_')
+    if slug_name not in available_cities():
+        return []
+    return load_city_pathway(slug_name)['entries']
+
+
+def _build_statutory_activities(
+    ordered: Sequence[StageReasoning],
+    stage_activity_ids: Dict[str, List[str]],
+    link_target: Dict[Tuple[str, str], str],
+    pathway_lib: Sequence[Dict[str, Any]],
+) -> Tuple[List[AssembledActivity], List[AssembledEdge], List[str], List[TrailEntry]]:
+    """Turn the city-pathway approvals the reasoner selected into real activities and edges.
+
+    Before this, the statutory pathway was REPORTED and nothing more: SimulationOutput carried
+    each approval's authority, its typical_weeks and the stages it `blocks`, and not one of them
+    became a day of schedule or a single edge. A plan could show an Environmental Clearance that
+    takes thirty weeks and start excavation in week two, and nothing in the output contradicted
+    it.
+
+    The approvals are already versioned, human-verifiable compliance data (CLAUDE.md: compliance
+    and city pathways are data, never model output). This reads that data; it does not add to it.
+
+    MODELLING LIMIT, and it is a real one. Each approval is modelled as starting at project start
+    and running its typical duration, because the library says how long an approval takes but not
+    when it is lodged. So an approval binds only where its duration outlasts the date the work it
+    gates would otherwise begin - which is right for the early ones (an EC at thirty weeks does
+    hold up excavation) and understates the late ones (CEIG modelled from day zero clears long
+    before energisation, whereas a real project lodges it once the installation is testable and
+    can genuinely be held up by it). A warning states this on every plan that uses it.
+    """
+    selection_by_id = {
+        g.gate_id: (reasoning.stage, g)
+        for reasoning in ordered for g in reasoning.gates
+    }
+    activities: List[AssembledActivity] = []
+    edges: List[AssembledEdge] = []
+    warnings: List[str] = []
+    trail: List[TrailEntry] = []
+    if not selection_by_id:
+        return activities, edges, warnings, trail
+
+    entries = [e for e in pathway_lib if e.get('id') in selection_by_id]
+    if not entries:
+        return activities, edges, warnings, trail
+
+    by_pathway_id = {e['id']: statutory_id(e['id']) for e in entries}
+
+    for entry in entries:
+        pathway_id = entry['id']
+        ident = by_pathway_id[pathway_id]
+        weeks = entry.get('typical_weeks')
+        # Approval durations are quoted in WEEKS and applied as CALENDAR days: an authority does
+        # not observe the site's six-day calendar.
+        duration = int(round(float(weeks) * 7)) if weeks is not None else 0
+        if weeks is None:
+            warnings.append(
+                f'Statutory approval {pathway_id} has no typical_weeks, so it is a zero-duration '
+                'milestone and imposes no delay. The plan understates the time this approval '
+                'takes.'
+            )
+        approval = entry.get('approval') or pathway_id
+        authority = entry.get('authority') or ''
+        activities.append(AssembledActivity(
+            id=ident,
+            wbs_id=f'00.st.{pathway_id[-3:]}',
+            name=f'{approval} - {authority}' if authority else approval,
+            type='task' if duration > 0 else 'milestone',
+            duration_days=duration,
+            calendar='7day',
+            dept_code='liaison',
+            stage=entry.get('gates_stage') or 'approvals',
+            trail_ref=trail_ref(ident),
+            # Statutory approvals rest on unverified library durations, and the pathway itself is
+            # confirmed with the client's compliance team rather than assumed (DOMAIN_KNOWLEDGE
+            # section 5), so they are never tier_3.
+            hitl_tier='tier_2',
+            compliance_gates=[pathway_id],
+            unverified_dependencies=[pathway_id],
+        ))
+
+        # Every activity in a plan must be answerable for. An approval that appears in the
+        # schedule with no trail entry is a date nobody can trace, which is exactly what the
+        # reasoning trail exists to prevent - and the assembly tests caught this omission.
+        selected_stage, selection = selection_by_id[pathway_id]
+        trail.append(TrailEntry(
+            ref_id=ident,
+            stage=entry.get('gates_stage') or selected_stage,
+            why=(
+                getattr(selection, 'why', '') or
+                f'{approval} is on the statutory pathway for this city.'
+            ),
+            sources=[pathway_id],
+            confidence=float(getattr(selection, 'effective_confidence', 0.0) or 0.0),
+            stated_confidence=float(getattr(selection, 'confidence', 0.0) or 0.0),
+            decided_by='engine',
+            hitl_tier='tier_2',
+            unverified_dependencies=[pathway_id],
+        ))
+
+        for token in entry.get('blocks', []) or []:
+            targets: List[str] = []
+            if token in stage_activity_ids:
+                targets.extend(sorted(stage_activity_ids[token]))
+            elif token in PATHWAY_BLOCK_ALIASES:
+                for alias in PATHWAY_BLOCK_ALIASES[token]:
+                    if alias[0] == 'fragnet':
+                        target = link_target.get((alias[1], alias[2]))
+                        if target:
+                            targets.append(target)
+                    elif alias[0] == 'statutory' and alias[1] in by_pathway_id:
+                        targets.append(by_pathway_id[alias[1]])
+            if not targets:
+                # Silence here is how the whole pathway stayed inert. Say which token found
+                # nothing, so an unroutable block target is a visible gap rather than a no-op.
+                warnings.append(
+                    f'Statutory approval {pathway_id} ({approval}) blocks "{token}", which '
+                    'matched no stage, no alias and no instanced activity in this plan, so it '
+                    'constrains nothing. Either the stage was not walked or the token needs a '
+                    'row in PATHWAY_BLOCK_ALIASES.'
+                )
+                continue
+            for target in targets:
+                edges.append(AssembledEdge(
+                    from_id=ident, to_id=target, type='FS', lag=0, kind='statutory',
+                    why=(
+                        f'{approval} ({authority}) must be in hand first. Statutory pathway, '
+                        f'held as versioned compliance data ({pathway_id}) and confirmed with '
+                        "the client's compliance team, not assumed."
+                    ),
+                ))
+
+    if activities:
+        warnings.append(
+            f'{len(activities)} statutory approval(s) are modelled as starting at project start '
+            'and running their typical duration. The library records how long an approval takes '
+            'but not when it is lodged, so an approval binds only where its duration outlasts '
+            'the work it gates. Approvals late in the programme are therefore modelled as '
+            'non-binding, which understates their risk.'
+        )
+    return activities, edges, warnings, trail
 
 
 def _build_cross_stage_gates(

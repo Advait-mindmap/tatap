@@ -25,7 +25,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Sequence, Tuple
 
-from backend.app.engine.ids import gate_id
+from backend.app.engine.ids import gate_id, slug
 
 
 @dataclass(frozen=True)
@@ -96,6 +96,35 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
     # would achieve. That is the right direction to be wrong in for a bid, but it is still wrong:
     # modelling the overlap properly needs per-zone sub-networks, which do not exist yet. Until
     # they do, the sequence is at least real.
+    GateRule(
+        id='enabling_complete',
+        label='Site established - ready for permanent works',
+        producer_stage='enabling',
+        consumer_stages=('substructure',),
+        kind='predecessor_stage',
+        why=(
+            'INTRODUCED FOR REVIEW. Foundations are not poured on an unestablished site: access '
+            'roads, hoarding, temporary power and the BOCW/CLRA registrations that let labour on '
+            'site all precede permanent works. Conservative in the usual way - a real job starts '
+            'piling while the site offices are still going up - and it holds substructure behind '
+            'the whole enabling package rather than behind the parts that actually matter to it.'
+        ),
+    ),
+    GateRule(
+        id='commissioning_complete',
+        label='Commissioning complete - facility ready for handover',
+        producer_stage='commissioning',
+        consumer_stages=('handover',),
+        kind='readiness',
+        why=(
+            'INTRODUCED FOR REVIEW. Handover documents and certifies a facility that works, so '
+            'it follows the L1-L5 ladder rather than running beside it. Without this rule the '
+            'handover package started on day one, in parallel with design: as-built drawings '
+            'before there was anything built, and an Uptime Tier demonstration of a facility '
+            'that did not yet exist. This is the same fault the construction-sequence rules fix, '
+            'and adding handover work without it would have reintroduced it.'
+        ),
+    ),
     GateRule(
         id='substructure_complete',
         label='Substructure complete - foundations available for erection',
@@ -201,6 +230,31 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
     ),
 )
 
+#: What a city-pathway entry's `blocks` token points at, when it is not a stage name.
+#:
+#: The pathway library blocks a mixture of stages ('substructure', 'handover') and finer things
+#: ('energisation', 'commissioning_l4'). The stage names resolve themselves; these do not, and
+#: before this table they resolved to nothing at all - the entries were reported as metadata and
+#: constrained no activity. Each row says which library activity the approval actually holds up.
+#:
+#: ('fragnet', fragnet_id, activity_id) targets one instanced activity.
+#: ('statutory', pathway_id)            targets another approval, so approvals can chain.
+PATHWAY_BLOCK_ALIASES: Dict[str, Tuple[Tuple[str, ...], ...]] = {
+    # CEIG clears the installation for live HV work. DOMAIN_KNOWLEDGE.md section 5:
+    # "Energisation cannot precede CEIG approval."
+    'energisation': (('fragnet', 'frag.mep.power_train', 'c70'),),
+    # And the commissioning levels that exercise the facility energised.
+    'commissioning_l4': (('fragnet', 'frag.commissioning.ladder', 'e40'),),
+    'commissioning_l5': (
+        ('fragnet', 'frag.commissioning.ladder', 'e50'),
+        ('fragnet', 'frag.commissioning.ladder', 'e60'),
+    ),
+    # The final fire NOC gates the occupancy certificate, not the whole handover stage:
+    # "occupancy cannot precede the final fire NOC" (section 5). Approval chains to approval.
+    'occupancy': (('statutory', 'path.nm.occupancy_certificate'),),
+}
+
+
 #: Delivery gates are not listed above because there is one per long-lead item actually selected;
 #: they are generated from the fragnets' material_links. This rule carries their shared metadata.
 DELIVERY_GATE = GateRule(
@@ -240,3 +294,8 @@ def delivery_gate_id(lead_id: str) -> str:
 
 def cross_stage_gate_id(rule: GateRule) -> str:
     return gate_id(rule.id)
+
+
+def statutory_id(pathway_id: str) -> str:
+    """Id for the activity an approval becomes. Distinct prefix so it is greppable in a plan."""
+    return f'stat.{slug(pathway_id)}'
