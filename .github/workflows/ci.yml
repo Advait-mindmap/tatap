@@ -72,6 +72,10 @@ jobs:
           python -m pip install -r backend/requirements-dev.txt
 
       - name: Run the mocked suite
+        # test_event_loop_responsive.py starts a real uvicorn and times /health while a stage
+        # reasons, so it needs a few seconds of wall clock and a free port. It is in the normal
+        # suite deliberately: the bug it guards was invisible to every other test because the
+        # stub answers instantly, and only a slow provider exposes it.
         # The `live` tests hit the real Base44 gateway and spend credits; they are
         # deselected here and skip themselves anyway without BASE44_* secrets.
         run: python -m pytest -m "not live" -q

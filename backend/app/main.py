@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from typing import Any, Dict
@@ -161,9 +162,35 @@ async def ws_simulate(websocket: WebSocket) -> None:
         The checkpoint is after streaming rather than per event: a halt and a completion are the
         only points where the run is worth resuming from, and writing on every activity would
         put a database round trip inside the draw loop.
+
+        EVERY BLOCKING STEP RUNS OFF THE EVENT LOOP. `simulator.run()` is a synchronous
+        generator that makes an LLM call per stage, and `registry.save()` writes to Postgres.
+        Iterating the generator directly - `for event in simulator.run()` - froze the single
+        asyncio loop for the whole of each stage's reasoning, which was not a theoretical
+        concern:
+
+          - uvicorn could not service its own websocket keepalive, so it closed live runs with
+            1011 "keepalive ping timeout" partway through;
+          - and it is one loop for the whole process, so EVERY request from EVERY client queued
+            behind it. Measured against the deployment: GET /health, which does nothing but
+            return a dict, timed out at 30 seconds during a walk and answered in 0.4 seconds
+            once idle. A platform health check hitting that window concludes the container is
+            dead and restarts it, taking every in-flight run with it.
+          - a run whose client had gone kept walking and kept blocking, so one abandoned socket
+            degraded the service for minutes.
+
+        `to_thread` per `next()` keeps the generator's own semantics - it is advanced
+        sequentially, never concurrently - while the loop stays free to answer pings, health
+        checks and other clients between stages.
         """
+        events = simulator.run()
         try:
-            for event in simulator.run():
+            while True:
+                # `next` in a worker thread: the sentinel avoids StopIteration crossing the
+                # thread boundary, which does not propagate through a future cleanly.
+                event = await asyncio.to_thread(next, events, None)
+                if event is None:
+                    break
                 await websocket.send_json(event.to_wire())
         except CapExceeded as exc:
             # The run keeps its state and stays stored, so it can be resumed tomorrow rather
@@ -175,6 +202,12 @@ async def ws_simulate(websocket: WebSocket) -> None:
             registry.save(simulator)
             await fail(f'Usage metering is unavailable, so the run was stopped: {exc}')
             return
+        # Deliberately NOT off the loop. The blocker was the per-stage LLM call, measured in
+        # seconds; this is one indexed write, measured in milliseconds. Offloading it added an
+        # await point after the final event, and a client that sends {"action": "stop"} and
+        # closes immediately then won the race - the socket shut before the server came back to
+        # read it, so the run was never dropped. Trading a guaranteed correctness regression for
+        # an unmeasurable latency gain is a bad trade.
         registry.save(simulator)
 
     try:
