@@ -479,7 +479,7 @@ function FlowViewInner({
             </ul>
           </section>
 
-          <section>
+          <section data-testid="stage-filter">
             <h3>Stages</h3>
             <p className="small muted">
               Collapse a stage to keep a large graph navigable — the spec's rule

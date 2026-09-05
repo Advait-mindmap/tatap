@@ -124,7 +124,13 @@ export async function stagesContaining(page: Page, kind: string): Promise<string
  * have no fragnets in the library yet, so "the first three" can contain no activities at all.
  */
 export async function keepOnlyStages(page: Page, keep: string[]): Promise<void> {
-  const section = page.locator('.sidebar section').filter({ hasText: 'Stages' })
+  // The stage filter by testid, NOT `.sidebar section` filtered on the text "Stages".
+  // hasText is a case-insensitive substring match, and the run panel says "7/13 stages" — so
+  // that filter always matched two sections, and this loop was clicking whatever buttons the
+  // run panel happened to contain. It got away with it until the panel grew a Replay control
+  // and an export button: clicking Replay restarts the draw, and the test then waits out its
+  // whole six-minute timeout on a graph that keeps re-animating.
+  const section = page.getByTestId('stage-filter')
   const buttons = section.locator('button')
   const total = await buttons.count()
 

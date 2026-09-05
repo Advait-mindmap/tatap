@@ -209,8 +209,13 @@ test.describe('2D process flow', () => {
 
     // And on the node cards themselves — a reviewer scanning the graph must see these without
     // clicking anything.
-    await expect(page.getByTestId('badge-tier1').first()).toBeVisible()
-    await expect(page.getByTestId('badge-unverified').first()).toBeVisible()
+    // `:visible`, not `.first()` — the pattern this repo already settled on. React Flow leaves
+    // a node `visibility: hidden` until it has measured it, and a thirteen-column graph always
+    // has nodes that never get measured at this viewport, so the first badge in DOM order is a
+    // lottery over which node that is. It grew worse when the envelope, fire_bms and fit_out
+    // fragnets took the graph from 89 nodes to 116. What matters is that badges painted.
+    await expect(page.locator('[data-testid="badge-tier1"]:visible').first()).toBeVisible()
+    await expect(page.locator('[data-testid="badge-unverified"]:visible').first()).toBeVisible()
 
     const tier1 = await page.getByTestId('badge-tier1').count()
     const unverified = await page.getByTestId('badge-unverified').count()
