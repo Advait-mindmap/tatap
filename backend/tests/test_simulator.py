@@ -40,6 +40,7 @@ from backend.app.simulator import (
     STAGE_COMPLETED,
     STAGE_STARTED,
     DecisionAnswer,
+    RunState,
     Simulator,
     registry,
     run_to_completion,
@@ -580,3 +581,103 @@ def test_the_announced_site_plan_matches_what_assembly_produces(monkeypatch):
     assembled = simulator.result.zones
 
     assert [z['id'] for z in announced] == [z['id'] for z in assembled]
+
+
+# ------------------------------------------------- what "pending" means on the wire
+
+
+def test_open_decisions_exclude_answered_ones():
+    """`pending_decisions` is not the set of open forks, and the difference is load-bearing.
+
+    An entry stays in the map until `run()` emits decision_resolved, so between answering a fork
+    and resuming the walk the map still contains it. Anything telling a client what is
+    outstanding must say `open_decision_ids` instead.
+    """
+    state = RunState(run_id='r')
+    state.pending_decisions = {'dp.a': {}, 'dp.b': {}}
+    state.answers = {'dp.a': {'answer': 'yes'}}
+
+    assert state.open_decision_ids == ['dp.b']
+    # is_halted deliberately still reads the raw map: the socket handler relies on a run staying
+    # halted between answering one fork of a stage and answering the last.
+    assert state.is_halted is True
+
+
+def test_a_resumed_halt_reports_only_the_forks_still_open(monkeypatch):
+    """Pins the invariant on the streaming path, where it already held.
+
+    Worth being precise about, because the obvious story is wrong. `run()` pops answered
+    decisions out of `pending_decisions` at the top of every resume, before it can halt again -
+    so the halted event emitted by the runner never listed an answered fork, and swapping it to
+    `open_decision_ids` changed nothing here. Reverting that line leaves this test green, and it
+    is not claimed as a regression test for it.
+
+    The divergence that actually killed two live runs was in the ATTACH path, which builds its
+    payload from restored state before `run()` has popped anything - covered by
+    test_attach_re_raises_only_the_forks_still_open, which does fail when reverted.
+    """
+    reasoner = FakeReasoner(forks_by_stage={
+        'procurement': [fork('dp.ofe'), fork('dp.delivery_mode')],
+    })
+    ws_reasoner_like = make(monkeypatch, reasoner)
+
+    events = list(ws_reasoner_like.run())
+    halted = [e for e in events if e.type == SIMULATION_HALTED]
+    assert halted, 'the run did not halt'
+    assert set(halted[-1].payload['pending']) == {'dp.ofe', 'dp.delivery_mode'}
+
+    # Answer ONE of the two. The stage is still halted, but that fork is no longer open.
+    ws_reasoner_like.answer(DecisionAnswer(decision_point_id='dp.ofe', answer='Owner-furnished'))
+    assert ws_reasoner_like.state.is_halted, 'still waiting on the second fork'
+
+    # The payload is what matters, not the property: resume, and the halted event the client
+    # receives must no longer list the fork it just answered. Asserting the property alone
+    # passed whether or not the payload used it, so it was not earning its place.
+    again = list(ws_reasoner_like.run())
+    halted_again = [e for e in again if e.type == SIMULATION_HALTED]
+    assert halted_again, 'the run should still be halted on the second fork'
+    assert halted_again[-1].payload['pending'] == ['dp.delivery_mode'], (
+        f"simulation_halted still reports the answered fork: "
+        f"{halted_again[-1].payload['pending']}"
+    )
+
+
+def test_attach_re_raises_only_the_forks_still_open(monkeypatch):
+    """Reconnecting must not invite the client to answer something already answered."""
+    reasoner = FakeReasoner(forks_by_stage={
+        'procurement': [fork('dp.ofe'), fork('dp.delivery_mode')],
+    })
+    monkeypatch.setattr('backend.app.simulator.runner.reason_stage', reasoner)
+    monkeypatch.setattr(
+        'backend.app.main.build_simulator',
+        lambda brief, run_id: Simulator(BRIEF, run_id=run_id, stages=WALK),
+    )
+
+    with TestClient(app).websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'start', 'brief': BRIEF})
+        run_id = ''
+        while True:
+            event = ws.receive_json()
+            if event['type'] == SIMULATION_STARTED:
+                run_id = event['payload']['run_id']
+            if event['type'] == SIMULATION_HALTED:
+                break
+        ws.send_json({'action': 'answer', 'decision_point_id': 'dp.ofe',
+                      'answer': 'Owner-furnished'})
+        ws.receive_json()  # decision_recorded: one fork still open
+
+    # Reconnect, as a client whose socket dropped would.
+    with TestClient(app).websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'attach', 'run_id': run_id})
+        raised, payload = [], None
+        while True:
+            event = ws.receive_json()
+            if event['type'] == DECISION_NEEDED:
+                raised.append(event['payload']['id'])
+            elif event['type'] in (SIMULATION_HALTED, SIMULATION_STARTED):
+                payload = event['payload']
+                break
+
+    assert 'dp.ofe' not in raised, 'attach re-raised a fork that was already answered'
+    assert raised == ['dp.delivery_mode']
+    assert payload['pending'] == ['dp.delivery_mode']

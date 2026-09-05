@@ -178,7 +178,7 @@ class Simulator:
                 self.state.halted_at = stage
                 yield self._event(
                     SIMULATION_HALTED, stage=stage,
-                    pending=sorted(self.state.pending_decisions),
+                    pending=self.state.open_decision_ids,
                     reason='The flow of thought cannot continue without a human decision. '
                            'Nothing downstream is assembled until it is answered.',
                     # The authoritative partial output. A halted run is a legitimate thing to

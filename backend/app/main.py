@@ -249,7 +249,13 @@ async def ws_simulate(websocket: WebSocket) -> None:
                 # Re-raise the open forks as decision_needed so a reconnected client can render
                 # and answer them. Without this the client knew a run was halted but not what it
                 # was halted ON, which made attach useless for the case it exists for.
+                # Only the forks still OPEN. Re-raising an answered one invites the client to
+                # answer it again, which the server then rejects and the run dies - the exact
+                # failure that killed two live runs while verifying a deployment.
+                open_ids = set(simulator.state.open_decision_ids)
                 for decision_id, pending in sorted(simulator.state.pending_decisions.items()):
+                    if decision_id not in open_ids:
+                        continue
                     await websocket.send_json({
                         'seq': simulator.state.seq, 'type': 'decision_needed',
                         'stage': pending.get('stage', ''),
@@ -270,7 +276,7 @@ async def ws_simulate(websocket: WebSocket) -> None:
                     'payload': {
                         'run_id': simulator.state.run_id,
                         'completed_stages': simulator.state.completed_stages,
-                        'pending': sorted(simulator.state.pending_decisions),
+                        'pending': simulator.state.open_decision_ids,
                         # The authoritative output, so the reconnected view redraws the plan
                         # built so far instead of starting from an empty canvas.
                         'output': simulator.output().model_dump(),
@@ -300,7 +306,7 @@ async def ws_simulate(websocket: WebSocket) -> None:
                 # `answer()` records into state.answers; pending_decisions is only cleared when
                 # run() emits decision_resolved, so is_halted is still True here. Compare the
                 # two sets instead.
-                unanswered = set(simulator.state.pending_decisions) - set(simulator.state.answers)
+                unanswered = simulator.state.open_decision_ids
                 if unanswered:
                     # Checkpoint the answer even though the walk is not resuming yet, so a
                     # restart between two answers to the same stage does not lose the first.
@@ -309,7 +315,7 @@ async def ws_simulate(websocket: WebSocket) -> None:
                         'seq': simulator.state.seq, 'type': 'decision_recorded', 'stage': '',
                         'payload': {
                             'decision_point_id': message.get('decision_point_id'),
-                            'pending': sorted(unanswered),
+                            'pending': unanswered,
                         },
                     })
                     continue

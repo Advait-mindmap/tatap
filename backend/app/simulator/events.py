@@ -95,7 +95,27 @@ class RunState(BaseModel):
     seq: int = 0
 
     @property
+    def open_decision_ids(self) -> List[str]:
+        """Forks still waiting on an answer.
+
+        NOT the same as `pending_decisions`, which is the subtlety this exists to hide.
+        `pending_decisions` keeps an entry until `run()` emits decision_resolved, so between
+        answering a fork and resuming the walk it still lists forks that HAVE been answered.
+
+        Every wire payload that tells a client what is outstanding must use this. Sending the
+        raw map meant `simulation_halted.pending` and `decision_recorded.pending` disagreed
+        about what the same field name meant: one filtered, the other did not. A client that
+        trusted the unfiltered one answered a resolved fork, and the server rejects that with
+        "not an open decision on this run" and kills the run. Found the hard way, driving the
+        deployment from a script.
+        """
+        return sorted(set(self.pending_decisions) - set(self.answers))
+
+    @property
     def is_halted(self) -> bool:
+        # Deliberately the RAW map, not open_decision_ids. The websocket handler relies on a run
+        # staying halted between answering one fork of a multi-fork stage and answering the
+        # last, so that it waits rather than resuming early.
         return bool(self.pending_decisions)
 
     @property
