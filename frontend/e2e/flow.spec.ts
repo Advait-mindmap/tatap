@@ -225,12 +225,19 @@ test.describe('2D process flow', () => {
   // FIXME: needs an on-screen activity card, which depends on how big a graph the run
   // produced. Worth restoring - this is the test that caught the hover-flicker bug.
   test('hovering a node highlights its transitive path and dims the rest', async ({ page }) => {
-    // Skipped on CI ONLY, and deliberately not fixme: this passes consistently on a real
-    // machine and is the test that caught the hover-flicker bug, so it keeps earning its place
-    // locally. What it needs is a genuine pointer crossing - React's synthetic mouseenter is
-    // built on one - and Playwright's stepped mouse moves do not reliably produce it on a
-    // headless runner with no GPU, where the card is small and the compositor differs. That is
-    // an environment limit, not a defect in the view, and asserting it there tests the runner.
+    // Skipped on CI ONLY, and deliberately not fixme: this is the test that caught the
+    // hover-flicker bug, so it keeps earning its place locally. What it needs is a genuine
+    // pointer crossing - React's synthetic mouseenter is built on one - and Playwright's
+    // stepped mouse moves do not reliably produce it on a headless runner with no GPU, where
+    // the card is small and the compositor differs.
+    //
+    // MEASURED, not assumed: it is flaky locally too - one failure in three consecutive runs
+    // once the envelope/fire_bms/fit_out fragnets grew the graph from 89 nodes to 116, which
+    // leaves more cards in the two stages this keeps and makes the hover target smaller. An
+    // earlier version of this comment claimed it passed consistently on a real machine; that
+    // was not true when measured. The behaviour under test is sound - the flake is in picking
+    // a card to hover, not in the highlight - but it needs a deterministic target rather than
+    // whichever activity layout happens to put on screen.
     test.skip(Boolean(process.env.CI), 'synthetic hover does not fire reliably on the CI runner')
 
     await ready(page)

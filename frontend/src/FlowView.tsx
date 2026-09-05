@@ -22,7 +22,7 @@ import {
   edgeId,
   EMPTY_HIGHLIGHT,
 } from "./highlight";
-import { layout, stageOrder } from "./layout";
+import { COLUMN_WIDTH, ROW_HEIGHT, layout, stageOrder } from "./layout";
 import { EDGE_STYLES, KIND_ORDER, KIND_STYLES } from "./nodeKinds";
 import type {
   DecisionRecord,
@@ -282,6 +282,60 @@ function FlowViewInner({
   }, [autoFit, nodesInitialized, canFit, signature, reactFlow]);
 
   /**
+   * How far out the reader may zoom: four times beyond the whole programme, and no further.
+   *
+   * The floor used to be a constant. It has been wrong in both directions:
+   *
+   *  - at 0.15 it sat just BELOW the zoom a large plan fits at (~0.16), so one zoom-out click
+   *    hit the floor, React Flow disabled the control, and the canvas appeared frozen;
+   *  - at 0.02 - the fix for that - a 3,504px programme becomes a 70px smudge. Nothing is
+   *    legible, nothing is clickable, and it is the regime where a browser is asked to paint
+   *    a whole graph at sub-pixel scale.
+   *
+   * A constant cannot be right for both a four-stage plan and a thirteen-stage one, because
+   * "too far out" is a statement about THIS graph in THIS pane. So it is computed: find the
+   * zoom at which the graph exactly fits, and allow four times further out. That is real
+   * headroom for orientation, and it can never clamp fitView, which was the original fault.
+   *
+   * NOTE: this is also a MITIGATION, not a confirmed fix, for a report of the graph painting
+   * tiled/repeated at extreme zoom-out. Measured here on the real GPU compositor, the DOM holds
+   * exactly one copy - 116 nodes at 116 distinct positions, one renderer, one viewport - so
+   * whatever repeats, repeats in paint. That was not reproducible in this environment; bounding
+   * the sub-pixel regime removes the conditions such artifacts occur in without ever cropping
+   * the fit.
+   */
+  const canvasRef = useRef<HTMLElement | null>(null);
+  const [zoomFloor, setZoomFloor] = useState(0.02);
+
+  useEffect(() => {
+    if (!nodesInitialized || nodes.length === 0) return;
+    const pane = canvasRef.current?.getBoundingClientRect();
+    if (!pane?.width || !pane.height) return;
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const node of nodes) {
+      minX = Math.min(minX, node.position.x);
+      minY = Math.min(minY, node.position.y);
+      maxX = Math.max(maxX, node.position.x + (node.width ?? COLUMN_WIDTH));
+      maxY = Math.max(maxY, node.position.y + (node.height ?? ROW_HEIGHT));
+    }
+    const width = maxX - minX;
+    const height = maxY - minY;
+    if (!(width > 0 && height > 0)) return;
+
+    const fits = Math.min(pane.width / width, pane.height / height);
+    // Clamped at both ends: a tiny graph must not end up with a floor above a sensible zoom,
+    // and a vast one must not push the floor to zero.
+    const next = Math.min(0.2, Math.max(0.005, fits / 4));
+
+    // Only react to a real change. Writing state on every render would refit forever.
+    setZoomFloor((current) => (Math.abs(current - next) / next > 0.02 ? next : current));
+  }, [nodes, nodesInitialized, signature]);
+
+  /**
    * Bring the decision points within reach.
    *
    * Stop-and-ask is the product's differentiator, and at a whole-programme zoom every fork is a
@@ -470,7 +524,7 @@ function FlowViewInner({
           </section>
         </nav>}
 
-        <main className="canvas" data-testid="canvas">
+        <main className="canvas" data-testid="canvas" ref={canvasRef}>
           <HighlightContext.Provider value={highlightState}>
             <ReactFlow
               nodes={nodes}
@@ -483,19 +537,9 @@ function FlowViewInner({
               // programme at working zoom and lets the reader pan, with the minimap for context.
               // The component minZoom below still allows zooming out to the whole graph.
               fitViewOptions={{ padding: 0.06, minZoom: 0.62, maxZoom: 1.0 }}
-              // The component's zoom bounds clamp EVERYTHING, including fitView. At 0.15 they
-              // were barely below the zoom a full programme fits at (~0.16 for 98 nodes), which
-              // broke the canvas twice over for a large plan:
-              //
-              //   - one zoom-out click reached the floor, React Flow disabled the control, and
-              //     the reader was left with a button that did nothing and no explanation;
-              //   - and on a larger plan still, the floor would clamp the auto-fit itself, so
-              //     "fit the whole programme" would quietly return a cropped graph the reader
-              //     also could not zoom out of.
-              //
-              // A floor exists to stop someone zooming into meaninglessness, so it belongs far
-              // below any zoom the plan is actually viewed at, not just under it.
-              minZoom={0.02}
+              // The component's zoom bounds clamp EVERYTHING, including fitView, which is
+              // why this is derived from the graph rather than fixed. See zoomFloor above.
+              minZoom={zoomFloor}
               maxZoom={1.75}
               proOptions={{ hideAttribution: true }}
               onNodeMouseEnter={(_, node) => {
