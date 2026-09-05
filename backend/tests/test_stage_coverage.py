@@ -284,25 +284,79 @@ def stage_span(activities, stage):
     return min(r['start_day'] for r in rows), max(r['finish_day'] for r in rows)
 
 
-def test_construction_stages_run_in_sequence_not_in_parallel(full_walk):
+def test_construction_stages_are_sequenced_with_controlled_overlap(full_walk):
     """Found by audit: every construction stage started on the same day.
 
     With only the IFC release gate in place, design completion freed substructure,
-    superstructure, envelope and fit-out simultaneously - so the programme had steel erection
-    beginning before the foundations were poured and raised floor going into a building that did
-    not exist. It is the first thing a planner would notice.
+    superstructure, envelope and fit-out simultaneously - steel erection before the foundations
+    were poured, raised floor in a building that did not exist.
+
+    The first fix was whole-stage finish-to-start, which was correct about the order and wrong
+    about the cost: it charged the programme for work the next stage does not wait on (envelope
+    waiting for fireproofing to steel; fit-out waiting for water-tightness CLOSE-OUT), and made
+    fit-out the false long pole of the whole job. Stages now release on named milestones, so
+    they OVERLAP - which is what real construction does and what this test has to allow.
+
+    So the assertion is not "strictly serial" any more. It is: the order is right, the starts
+    are distinct, and each stage waits for the specific work that actually releases it.
     """
     _, activities, _ = full_walk
     spans = {s: stage_span(activities, s) for s in BUILD_SEQUENCE}
 
+    starts = [spans[s][0] for s in BUILD_SEQUENCE]
+    assert starts == sorted(starts), f'construction stages start out of order: {spans}'
+    assert len(set(starts)) == len(starts), (
+        f'construction stages share a start day - the original bug: {spans}'
+    )
+
+    # Overlap is allowed but must be partial: no stage may start before its predecessor has,
+    # and none may start on the predecessor's own start day.
     for earlier, later in zip(BUILD_SEQUENCE, BUILD_SEQUENCE[1:]):
-        assert spans[later][0] >= spans[earlier][1], (
-            f'{later} starts on day {spans[later][0]} but {earlier} does not finish until '
-            f'{spans[earlier][1]} — these are running in parallel'
+        assert spans[later][0] > spans[earlier][0], (
+            f'{later} starts on day {spans[later][0]}, not after {earlier} began on '
+            f'{spans[earlier][0]}'
         )
 
-    starts = [spans[s][0] for s in BUILD_SEQUENCE]
-    assert len(set(starts)) == len(starts), f'construction stages share a start day: {spans}'
+
+def test_each_stage_waits_for_the_work_that_actually_releases_it(full_walk):
+    """The partial-release rules, checked against the activities rather than the gate table.
+
+    A rule that names milestones but resolves to nothing would silently fall back to the whole
+    stage, which is the conservative behaviour this replaced - so the point is to prove the
+    named activity is what the next stage is waiting on.
+    """
+    output, activities, _ = full_walk
+    by_id = {a['id']: a for a in output['activities']}
+
+    def activity_ending(stage, fragment):
+        return next(
+            a for a in output['activities']
+            if a['stage'] == stage and fragment.lower() in a['name'].lower()
+        )
+
+    # Envelope follows the composite slab pour, NOT fireproofing to steel - which is interior
+    # work on the frame that in practice runs while the envelope is being clad.
+    slab = activity_ending('superstructure', 'composite slab pour')
+    fireproofing = activity_ending('superstructure', 'fireproofing to steel')
+    envelope_start = stage_span(activities, 'envelope')[0]
+    assert envelope_start >= slab['finish_day']
+    assert envelope_start < fireproofing['finish_day'], (
+        'envelope is still waiting for fireproofing, so the partial release is not in effect'
+    )
+
+    # Fit-out follows halls being roofed and clad, not envelope close-out.
+    cladding = activity_ending('envelope', 'external cladding')
+    closeout = activity_ending('envelope', 'water-tightness testing')
+    fit_out_start = stage_span(activities, 'fit_out')[0]
+    assert fit_out_start >= cladding['start_day'], 'fit-out starts before cladding even begins'
+    assert fit_out_start < closeout['finish_day'], (
+        'fit-out is still waiting for envelope close-out, so it will remain the false long pole'
+    )
+
+    # And the release is staged across the data halls rather than waiting for the last one.
+    assert fit_out_start < cladding['finish_day'], (
+        'fit-out waits for ALL cladding — the per-hall staged release is not being applied'
+    )
 
 
 def test_commissioning_starts_after_everything_it_commissions(full_walk):
@@ -325,12 +379,14 @@ def test_each_sequencing_gate_actually_reaches_the_activities(full_walk):
     carrying it are different things, and the forward pass only reads the latter.
     """
     _, activities, _ = full_walk
+    # Envelope and MEP release from the superstructure differently: envelope on the frame
+    # being up (the slab), MEP on the whole package. Two rules, two milestones.
     expected = {
         'superstructure': 'gate.substructure-complete',
-        'envelope': 'gate.superstructure-complete',
+        'envelope': 'gate.superstructure-frame-up',
         'mep_power': 'gate.superstructure-complete',
         'mep_cooling': 'gate.superstructure-complete',
-        'fit_out': 'gate.envelope-complete',
+        'fit_out': 'gate.envelope-weathertight',
     }
     for stage, gate in expected.items():
         rows = activities.get(stage) or []
@@ -352,53 +408,45 @@ def test_commissioning_carries_all_four_readiness_gates(full_walk):
         assert gate in carried, f'commissioning does not wait on {gate}'
 
 
-def test_commissioning_is_driven_by_the_last_thing_it_needs(full_walk):
-    """Which path drives the programme — pinned, because it has changed and may change back.
+def test_the_critical_path_is_procurement_led(full_walk):
+    """DOMAIN_KNOWLEDGE.md section 4: long-lead plant usually drives RFS.
 
-    DOMAIN_KNOWLEDGE.md section 4 says long-lead plant usually drives RFS, and until the
-    construction stages were sequenced that was what this plan showed. It is no longer true.
-    With substructure -> superstructure -> envelope -> fit_out as four whole stages in series,
-    fit-out finishes after the power train on every brief in the library, and fit-out is what
-    commissioning waits for.
+    This assertion has been true, then false, then true again, and the history is the point.
 
-    THAT IS ALMOST CERTAINLY AN ARTEFACT, not a finding. The chain is whole-stage
-    finish-to-start; a real programme starts fit-out in the halls that are already enclosed
-    while cladding continues elsewhere, and that overlap is exactly what is not modelled. A data
-    centre programme in which raised floor rather than the transformer is critical is the kind
-    of thing a reviewer would question.
+    It held until the construction stages were sequenced. Whole-stage finish-to-start then made
+    fit-out finish AFTER the power train on every brief, so commissioning waited on raised floor
+    and structured cabling rather than on the transformer - which no reviewer would accept for a
+    data centre, and which was an artefact of the modelling rather than a finding about the job.
+    Rather than assert something false, the test was rewritten to record that fit-out drove the
+    plan and to say plainly that this was probably wrong.
 
-    So this test does not assert the old claim, which would be asserting something false. It
-    asserts the plan is COHERENT - commissioning follows everything it commissions - and pins
-    which path currently drives it, so that softening the chain shows up here as a deliberate
-    change rather than passing unnoticed.
+    It is now true again, and for a reason rather than by tuning: stages release on the
+    milestones the next stage actually waits for, and fit-out's per-hall work overlaps instead
+    of running as one whole-building chain. So the claim is asserted again.
     """
     output, activities, _ = full_walk
-    commissioning_start = stage_span(activities, 'commissioning')[0]
-
-    feeders = {
-        stage: stage_span(activities, stage)[1] for stage in COMMISSIONING_NEEDS
-    }
+    feeders = {stage: stage_span(activities, stage)[1] for stage in COMMISSIONING_NEEDS}
     driver = max(feeders, key=feeders.get)
 
-    # Coherence: nothing commissioning depends on may finish after it starts.
-    for stage, finish in feeders.items():
-        assert commissioning_start >= finish, (
-            f'commissioning starts on day {commissioning_start} but {stage} runs to {finish}'
-        )
-
-    # The driver is fit_out today. If this fails, read the docstring before "fixing" it: either
-    # the chain was softened (good, update this) or something re-flattened the sequence (bad).
-    assert driver == 'fit_out', (
-        f'commissioning is now driven by {driver} (day {feeders[driver]}), not fit_out. '
+    assert driver == 'mep_power', (
+        f'commissioning is driven by {driver} (day {feeders[driver]}), not the power train. '
         f'Feeders: {feeders}'
     )
+    assert feeders['fit_out'] < feeders['mep_power'], (
+        f"fit-out finishes on day {feeders['fit_out']}, after the power train on "
+        f"{feeders['mep_power']} — it is the long pole again"
+    )
 
-    # And procurement still shapes the MEP path even though it no longer sets RFS: the power
-    # train cannot finish before its transformer lands. That part of section 4 still holds.
+    # And the power train's own finish traces back to the transformer, which is what
+    # "procurement-led" means. Without this the assertion above could be satisfied by MEP
+    # simply being slow.
     delivery = next(
         a for a in output['activities'] if a['id'] == 'gate.delivery-lead-transformer-hv'
     )
     assert stage_span(activities, 'mep_power')[1] > delivery['finish_day']
+    assert delivery['finish_day'] > stage_span(activities, 'superstructure')[1], (
+        'the frame now lands after the transformer, so the power train is structure-led'
+    )
 
 
 def test_mep_waits_for_the_frame_but_delivery_still_drives_its_finish(full_walk):

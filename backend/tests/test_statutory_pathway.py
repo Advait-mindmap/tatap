@@ -301,3 +301,70 @@ def test_the_condition_is_library_data_not_code():
         if e['id'] == 'safety.live_hall_works'
     )
     assert entry['applies_when_site_context'] == 'brownfield'
+
+
+# ------------------------------------------- lodgement: an approval that can actually bind
+
+
+def test_ceig_is_lodged_against_the_installation_and_actually_binds(plan):
+    """The whole point of modelling lodgement.
+
+    CEIG is eight weeks. Started at project start it cleared on day 56 against an energisation
+    on day 520 - a hard edge in the graph that could never bind, which is worse than no edge
+    because it looks handled. Lodged once the HV/MV switchgear is in, the eight weeks land where
+    they actually fall and energisation waits for them.
+    """
+    output, by_id, _ = plan
+    ceig = next(a for a in output['activities'] if 'permission to energise' in a['name'])
+    switchgear = next(
+        a for a in output['activities'] if 'switchgear installation' in a['name'].lower()
+    )
+    energise = named(output, 'energisation and live electrical testing')
+
+    assert ceig['start_day'] >= switchgear['finish_day'], (
+        f"CEIG starts on day {ceig['start_day']}, before the switchgear it inspects is in on "
+        f"{switchgear['finish_day']}"
+    )
+    assert ceig['start_day'] > 0, 'CEIG still starts at project start'
+
+    # And it BINDS: energisation cannot begin until the approval is granted.
+    assert energise['start_day'] >= ceig['finish_day'], (
+        f"energisation starts on day {energise['start_day']} but CEIG is not granted until "
+        f"{ceig['finish_day']} — the approval is expressed but inert"
+    )
+
+
+def test_the_late_approvals_are_lodged_against_real_work(plan):
+    """Occupancy and the final fire NOC are applied for against a finished, tested building.
+    Left at project start they cleared before the building existed."""
+    output, _, _ = plan
+    for name in ('Occupancy Certificate', 'Final Fire NOC'):
+        approval = next(a for a in output['activities'] if name in a['name'])
+        assert approval['start_day'] > 0, f'{name} is still lodged at project start'
+
+
+def test_the_early_approvals_are_still_lodged_at_the_outset(plan):
+    """Not everything should move. EC, CTE and building sanction are applied for off drawings
+    at the start of the job, and making them wait for site work would be as wrong in the other
+    direction."""
+    output, _, _ = plan
+    for name in ('Environmental Clearance', 'Consent to Establish', 'Building plan sanction'):
+        approval = next(a for a in output['activities'] if name in a['name'])
+        assert approval['start_day'] == 0, f'{name} is no longer lodged at the outset'
+
+
+def test_peso_gates_the_diesel_it_licenses_and_nothing_else(plan):
+    """It blocked the whole commissioning stage, so a diesel-storage licence gated L1 factory
+    acceptance testing. Narrowed to the genset and fuel systems it actually covers."""
+    output, by_id, blocked = plan
+    peso = next(a for a in output['activities'] if 'PESO' in a['name'])
+    gated = [by_id[t]['name'] for t in blocked[peso['id']]]
+
+    assert gated, 'the PESO licence gates nothing at all'
+    for name in gated:
+        assert any(word in name.lower() for word in ('generator', 'hsd', 'fuel')), (
+            f'PESO gates "{name}", which is not diesel storage or a fuel system'
+        )
+    assert not any('factory acceptance' in n.lower() for n in gated), (
+        'a diesel licence is still gating L1 factory acceptance testing'
+    )

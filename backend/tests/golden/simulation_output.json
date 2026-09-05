@@ -1605,6 +1605,12 @@
           "kind": "fragnet",
           "lag": 0,
           "type": "FS"
+        },
+        {
+          "id": "stat.path-nm-peso-hsd",
+          "kind": "statutory",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": false,
@@ -1683,6 +1689,12 @@
           "kind": "fragnet",
           "lag": 10,
           "type": "SS"
+        },
+        {
+          "id": "stat.path-nm-peso-hsd",
+          "kind": "statutory",
+          "lag": 0,
+          "type": "FS"
         }
       ],
       "safety_flag": true,
@@ -2066,12 +2078,6 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
-        },
-        {
-          "id": "stat.path-nm-peso-hsd",
-          "kind": "statutory",
-          "lag": 0,
-          "type": "FS"
         }
       ],
       "safety_flag": false,
@@ -2115,12 +2121,6 @@
         {
           "id": "gate.power-installed",
           "kind": "cross_stage_gate",
-          "lag": 0,
-          "type": "FS"
-        },
-        {
-          "id": "stat.path-nm-peso-hsd",
-          "kind": "statutory",
           "lag": 0,
           "type": "FS"
         }
@@ -2168,12 +2168,6 @@
           "kind": "cross_stage_gate",
           "lag": 0,
           "type": "FS"
-        },
-        {
-          "id": "stat.path-nm-peso-hsd",
-          "kind": "statutory",
-          "lag": 0,
-          "type": "FS"
         }
       ],
       "safety_flag": false,
@@ -2217,12 +2211,6 @@
         {
           "id": "gate.power-installed",
           "kind": "cross_stage_gate",
-          "lag": 0,
-          "type": "FS"
-        },
-        {
-          "id": "stat.path-nm-peso-hsd",
-          "kind": "statutory",
           "lag": 0,
           "type": "FS"
         }
@@ -2270,12 +2258,6 @@
         {
           "id": "gate.power-installed",
           "kind": "cross_stage_gate",
-          "lag": 0,
-          "type": "FS"
-        },
-        {
-          "id": "stat.path-nm-peso-hsd",
-          "kind": "statutory",
           "lag": 0,
           "type": "FS"
         }
@@ -2354,12 +2336,6 @@
         {
           "id": "gate.power-installed",
           "kind": "cross_stage_gate",
-          "lag": 0,
-          "type": "FS"
-        },
-        {
-          "id": "stat.path-nm-peso-hsd",
-          "kind": "statutory",
           "lag": 0,
           "type": "FS"
         }
@@ -3545,7 +3521,7 @@
         "from": "stat.path-nm-peso-hsd",
         "kind": "statutory",
         "lag": 0,
-        "to": "commissioning.frag.commissioning.ladder.e10",
+        "to": "mep_power.frag.mep.power_train.c65",
         "type": "FS",
         "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
       },
@@ -3553,39 +3529,7 @@
         "from": "stat.path-nm-peso-hsd",
         "kind": "statutory",
         "lag": 0,
-        "to": "commissioning.frag.commissioning.ladder.e20",
-        "type": "FS",
-        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
-      },
-      {
-        "from": "stat.path-nm-peso-hsd",
-        "kind": "statutory",
-        "lag": 0,
-        "to": "commissioning.frag.commissioning.ladder.e30",
-        "type": "FS",
-        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
-      },
-      {
-        "from": "stat.path-nm-peso-hsd",
-        "kind": "statutory",
-        "lag": 0,
-        "to": "commissioning.frag.commissioning.ladder.e40",
-        "type": "FS",
-        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
-      },
-      {
-        "from": "stat.path-nm-peso-hsd",
-        "kind": "statutory",
-        "lag": 0,
-        "to": "commissioning.frag.commissioning.ladder.e50",
-        "type": "FS",
-        "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
-      },
-      {
-        "from": "stat.path-nm-peso-hsd",
-        "kind": "statutory",
-        "lag": 0,
-        "to": "commissioning.frag.commissioning.ladder.e60",
+        "to": "mep_power.frag.mep.power_train.c67",
         "type": "FS",
         "why": "PESO licence for HSD (diesel) storage (Petroleum and Explosives Safety Organisation (PESO)) must be in hand first. Statutory pathway, held as versioned compliance data (path.nm.peso_hsd) and confirmed with the client's compliance team, not assumed."
       },
@@ -5837,7 +5781,7 @@
       "approval": "PESO licence for HSD (diesel) storage",
       "authority": "Petroleum and Explosives Safety Organisation (PESO)",
       "blocks": [
-        "commissioning"
+        "genset_fuel_systems"
       ],
       "compliance_approved": false,
       "confidence": 0.5,
@@ -5845,7 +5789,7 @@
       "hard_constraint": "",
       "id": "path.nm.peso_hsd",
       "provenance": {
-        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. PESO licence for bulk HSD storage serving the generators; layout approval then licence.",
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. PESO licence for bulk HSD storage serving the generators; layout approval then licence. BLOCKS NARROWED FOR REVIEW: was [\"commissioning\"], which held the entire commissioning stage behind a diesel-storage licence and so gated L1 factory acceptance testing. A PESO licence covers bulk HSD storage and the fuel system, so it now blocks \"genset_fuel_systems\" - the generator installation and the bulk storage tank. This is a DATA CORRECTION and wants a compliance reviewer: if the client reads PESO as gating any commissioning that runs the gensets under load, the L5 integrated systems test belongs in this list too.",
         "origin": "industry_estimate",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
         "verification_status": "unverified",

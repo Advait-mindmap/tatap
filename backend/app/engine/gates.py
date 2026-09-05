@@ -44,6 +44,40 @@ class GateRule:
     #: When true, only the consumer activities that declare a matching material_link are gated,
     #: rather than every activity in the consumer stages.
     per_material_link: bool = False
+    #: PARTIAL RELEASE. (fragnet_id, activity_id) pairs the milestone hangs off, instead of every
+    #: activity in the producer stage.
+    #:
+    #: Whole-stage finish-to-start is the conservative reading and it was the right place to
+    #: start, but it charges the programme for work the consumer does not actually wait for. Two
+    #: real examples, both of which this exists to fix: envelope was waiting for fireproofing to
+    #: steel, which is interior work that overlaps cladding; and fit-out was waiting for
+    #: envelope water-tightness CLOSE-OUT, when what fit-out actually needs is a hall that is
+    #: roofed and clad.
+    #:
+    #: Naming the milestone rather than inventing a lag is deliberate. "Fit-out follows
+    #: weather-tightness" is a construction fact that survives a change in durations; "fit-out
+    #: starts sixty days into envelope" is a number that silently goes wrong the moment a
+    #: duration changes. If the named activities are not in the plan - a different fragnet was
+    #: selected for that stage - the gate falls back to the whole stage and says so.
+    producer_activities: Tuple[Tuple[str, str], ...] = ()
+    #: Zone kind to stage the release across, e.g. 'data_hall'.
+    #:
+    #: Set together with `producer_activities`, this turns the release from finish-to-start into
+    #: start-to-start with a lead of (producer duration / number of those zones): the consumer
+    #: may begin once the FIRST zone is done rather than the last. Cladding forty days across
+    #: seven data halls releases fit-out after about six, which is what hall-by-hall working
+    #: actually means.
+    #:
+    #: The divisor is read from the plan's own zones - which the engine already derives from IT
+    #: load, tier and topology - rather than being a constant. A seven-hall campus and a
+    #: single-hall build get different answers for the same reason a planner would give them
+    #: different answers.
+    #:
+    #: HONESTLY AN APPROXIMATION, in both directions: it lets ALL the consumer work start at the
+    #: first zone, where a true per-zone model would start each hall's fit-out at its own hall's
+    #: cladding. Waiting for the last hall (what this replaces) was wrong the other way, and by
+    #: more.
+    release_per_zone_kind: str = ''
 
 
 #: The declarative gate table. Add a row here, not a code path.
@@ -139,10 +173,27 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
         ),
     ),
     GateRule(
-        id='superstructure_complete',
-        label='Superstructure complete - frame available for envelope and MEP',
+        id='superstructure_frame_up',
+        label='Structural frame up - building available for envelope',
         producer_stage='superstructure',
-        consumer_stages=('envelope', 'mep_power', 'mep_cooling'),
+        consumer_stages=('envelope',),
+        kind='predecessor_stage',
+        producer_activities=(('frag.superstructure.steel', 'b50'),),
+        why=(
+            'INTRODUCED FOR REVIEW. Cladding and blockwork hang off the frame, so the frame must '
+            'be up first - but "the frame" means the steel and the slab, not the whole '
+            'superstructure package. The last activity in that package is fireproofing to steel, '
+            'which is interior work that in practice runs while the envelope is being clad. '
+            'Gating envelope on the composite slab pour rather than on fireproofing takes the '
+            'artificial 32 days out of the chain that whole-stage finish-to-start was charging '
+            'for work the envelope does not wait on.'
+        ),
+    ),
+    GateRule(
+        id='superstructure_complete',
+        label='Superstructure complete - frame available for MEP',
+        producer_stage='superstructure',
+        consumer_stages=('mep_power', 'mep_cooling'),
         kind='predecessor_stage',
         why=(
             'INTRODUCED FOR REVIEW. Cladding and blockwork hang off the frame, and MEP first fix '
@@ -164,16 +215,29 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
         ),
     ),
     GateRule(
-        id='envelope_complete',
-        label='Envelope complete - building weather-tight',
+        id='envelope_weathertight',
+        label='Building weather-tight - halls available for fit-out',
         producer_stage='envelope',
         consumer_stages=('fit_out',),
         kind='predecessor_stage',
+        producer_activities=(
+            ('frag.envelope.shell', 'd20'),  # roof waterproofing and insulation
+            ('frag.envelope.shell', 'd30'),  # external cladding and rainscreen
+        ),
+        release_per_zone_kind='data_hall',
         why=(
             'INTRODUCED FOR REVIEW. Raised floor, containment and structured cabling do not go '
-            'into a building that is open to the weather; water-tightness is the practical gate '
-            'on interior fit-out. Conservative: a real job takes partial weather-tightness hall '
-            'by hall and starts fit-out in the enclosed part.'
+            'into a building open to the weather - but what fit-out waits for is a ROOFED AND '
+            'CLAD hall, not the envelope package finished. The previous version waited for '
+            'fire-stopping to penetrations and water-tightness close-out as well, which added '
+            '50 days that no hall actually waits for, and made fit-out the false long pole of '
+            'the whole programme.\n'
+            '\n'
+            'STILL AN APPROXIMATION. A real job encloses one hall and starts fitting it out '
+            'while the next is still being clad; this gates ALL fit-out on the LAST hall being '
+            'roofed and clad, because the fragnets are whole-building and there is no per-zone '
+            'sub-network to hang a per-hall release off. So it remains conservative, just no '
+            'longer conservative about the wrong thing.'
         ),
     ),
     GateRule(
@@ -252,6 +316,39 @@ PATHWAY_BLOCK_ALIASES: Dict[str, Tuple[Tuple[str, ...], ...]] = {
     # The final fire NOC gates the occupancy certificate, not the whole handover stage:
     # "occupancy cannot precede the final fire NOC" (section 5). Approval chains to approval.
     'occupancy': (('statutory', 'path.nm.occupancy_certificate'),),
+    # PESO licenses BULK DIESEL STORAGE. Its library entry blocked the whole commissioning
+    # stage, so it gated L1 factory acceptance testing - which has nothing to do with diesel.
+    # Narrowed to the genset and fuel systems it actually licenses.
+    'genset_fuel_systems': (
+        ('fragnet', 'frag.mep.power_train', 'c65'),  # diesel generator set installation
+        ('fragnet', 'frag.mep.power_train', 'c67'),  # bulk HSD storage and fuel system
+    ),
+}
+
+
+#: When an approval can be APPLIED FOR, as (fragnet_id, activity_id).
+#:
+#: The pathway library records how long an approval takes and what it blocks. It does not record
+#: when it is lodged, and modelling every approval as starting on day zero made the late ones
+#: inert: CEIG is eight weeks, so from day zero it cleared on day 56 against an energisation on
+#: day 520 - a hard edge in the graph that could never bind. The approval was expressed and
+#: meaningless, which is worse than absent because it looks handled.
+#:
+#: An approval that inspects installed work cannot be lodged before that work exists. This says
+#: which activity has to be far enough along, and the approval's duration then runs from there,
+#: so the eight weeks land where they actually fall.
+#:
+#: Approvals NOT listed here keep the day-zero start, which is right for the ones lodged off
+#: drawings at the outset - environmental clearance, consent to establish, building sanction.
+PATHWAY_LODGEMENT_AFTER: Dict[str, Tuple[str, str]] = {
+    # The electrical inspector inspects an installation. Lodged once the HV/MV switchgear is in
+    # - drawings go with the application and the inspection follows completion, so this is the
+    # application point rather than the inspection point.
+    'path.nm.ceig_energisation': ('frag.mep.power_train', 'c30'),
+    # Occupancy is applied for against a building that is finished and commissioned.
+    'path.nm.occupancy_certificate': ('frag.commissioning.ladder', 'e50'),
+    # The final fire NOC follows the fire systems being tested, not the start of the job.
+    'path.nm.fire_noc_final': ('frag.fire_bms.detection_suppression', 'e60'),
 }
 
 

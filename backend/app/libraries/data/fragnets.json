@@ -1059,8 +1059,8 @@
         {
           "from": "f20",
           "to": "f30",
-          "type": "FS",
-          "lag": 0
+          "type": "SS",
+          "lag": 12
         },
         {
           "from": "f10",
@@ -1071,8 +1071,8 @@
         {
           "from": "f30",
           "to": "f50",
-          "type": "FS",
-          "lag": 0
+          "type": "SS",
+          "lag": 18
         },
         {
           "from": "f40",
@@ -1083,8 +1083,8 @@
         {
           "from": "f50",
           "to": "f60",
-          "type": "FS",
-          "lag": 0
+          "type": "SS",
+          "lag": 15
         }
       ],
       "hold_points": [
@@ -1104,7 +1104,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (containment, structured cabling) and the TIA-942 gate are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 120 days on the longest path (raised floor -> containment -> backbone -> horizontal -> certification). JUDGEMENTS TO CHALLENGE: racks are placed after the raised floor and in parallel with the backbone, which assumes the floor carries the racks - a slab-mounted rack layout would reorder this; the SS+10 from floor to containment assumes containment follows the floor gang across the hall. NOT MODELLED: no material link to a long-lead item, because racks and cabling are not in equipment_lead_times.json - on a real project client-supplied racks are frequently the constraint here and their absence understates this stage. Also not modelled: fit-out is one whole-building package, so a hall-by-hall handover sequence is not represented.",
+        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (containment, structured cabling) and the TIA-942 gate are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 120 days on the longest path (raised floor -> containment -> backbone -> horizontal -> certification). JUDGEMENTS TO CHALLENGE: racks are placed after the raised floor and in parallel with the backbone, which assumes the floor carries the racks - a slab-mounted rack layout would reorder this; the SS+10 from floor to containment assumes containment follows the floor gang across the hall. NOT MODELLED: no material link to a long-lead item, because racks and cabling are not in equipment_lead_times.json - on a real project client-supplied racks are frequently the constraint here and their absence understates this stage. Also not modelled: fit-out is one whole-building package, so a hall-by-hall handover sequence is not represented. --- LOGIC REVISED FOR REVIEW: three finish-to-start links became start-to-start with a lead (f20->f30, f30->f50, f50->f60). Every activity in this package is per-hall except the backbone risers, so modelling them as one whole-building chain charged the programme for work that in reality runs concurrently across halls: horizontal cabling in the first hall does not wait for the backbone to reach the last one, and certification follows each hall rather than the building. THE THREE LEADS ARE ESTIMATES, set at roughly half the predecessor's duration, which is the crudest possible reading of 'about half the halls are ready'. They are the least defensible numbers in this entry and the first thing to replace with a per-zone sub-network.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }

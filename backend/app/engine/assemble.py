@@ -19,6 +19,7 @@ from backend.app.engine.gates import (
     CROSS_STAGE_GATES,
     DELIVERY_GATE,
     PATHWAY_BLOCK_ALIASES,
+    PATHWAY_LODGEMENT_AFTER,
     GateRule,
     cross_stage_gate_id,
     delivery_gate_id,
@@ -278,8 +279,13 @@ def assemble(
                 ))
 
     # ---------------------------------------------------------------- cross-stage gates
+    zone_counts: Dict[str, int] = {}
+    for zone in generate_zones(brief, tier_lib):
+        kind = str(zone.get('kind') or '')
+        zone_counts[kind] = zone_counts.get(kind, 0) + 1
     gate_activities, gate_edges, gate_warnings = _build_cross_stage_gates(
-        ordered, stage_activity_ids, link_target, fragnet_lib, lead_lib
+        ordered, stage_activity_ids, link_target, fragnet_lib, lead_lib,
+        by_id={a.id: a for a in activities}, zone_counts=zone_counts,
     )
     activities.extend(gate_activities)
     edges.extend(gate_edges)
@@ -471,6 +477,27 @@ def _build_statutory_activities(
             unverified_dependencies=[pathway_id],
         ))
 
+        # When it can be lodged. Without this the approval starts on day zero and a late one
+        # can never bind - see PATHWAY_LODGEMENT_AFTER.
+        lodgement = PATHWAY_LODGEMENT_AFTER.get(pathway_id)
+        if lodgement:
+            after = link_target.get(lodgement)
+            if after:
+                edges.append(AssembledEdge(
+                    from_id=after, to_id=ident, type='FS', lag=0, kind='statutory',
+                    why=(
+                        f'{approval} cannot be applied for before the work it approves exists. '
+                        f'Lodged once {lodgement[1]} of {lodgement[0]} is complete; the '
+                        'approval duration runs from there.'
+                    ),
+                ))
+            else:
+                warnings.append(
+                    f'{approval} is lodged after {lodgement[1]} of {lodgement[0]}, which this '
+                    'plan did not instance, so it reverts to starting at project start and will '
+                    'almost certainly not bind. Its duration is in the plan but its risk is not.'
+                )
+
         for token in entry.get('blocks', []) or []:
             targets: List[str] = []
             if token in stage_activity_ids:
@@ -520,6 +547,8 @@ def _build_cross_stage_gates(
     link_target: Dict[Tuple[str, str], str],
     fragnet_lib: Sequence[Dict[str, Any]],
     lead_lib: Sequence[Dict[str, Any]] = (),
+    by_id: Optional[Dict[str, AssembledActivity]] = None,
+    zone_counts: Optional[Dict[str, int]] = None,
 ) -> Tuple[List[AssembledActivity], List[AssembledEdge], List[str]]:
     """Emit gate milestones and their edges from the declarative rules.
 
@@ -531,6 +560,8 @@ def _build_cross_stage_gates(
     edges: List[AssembledEdge] = []
     warnings: List[str] = []
     stages_present = {r.stage for r in ordered}
+    by_id = by_id or {}
+    zone_counts = zone_counts or {}
 
     def emit_gate(ident: str, label: str, stage: str, rule: GateRule,
                   anchored: bool) -> AssembledActivity:
@@ -553,14 +584,61 @@ def _build_cross_stage_gates(
         if rule.producer_stage not in stages_present:
             continue
         ident = cross_stage_gate_id(rule)
-        producers = sorted(stage_activity_ids.get(rule.producer_stage, []))
+        # Partial release: hang the milestone off named activities where the rule names them,
+        # and fall back to the whole stage when they are not in this plan - a different fragnet
+        # may have been selected, and silently gating on nothing would drop the constraint.
+        producers: List[str] = []
+        if rule.producer_activities:
+            producers = sorted(
+                target for target in (
+                    link_target.get(pair) for pair in rule.producer_activities
+                ) if target
+            )
+            if not producers:
+                warnings.append(
+                    f'Gate {ident} ({rule.label}) names {len(rule.producer_activities)} '
+                    'activities to release from, none of which are in this plan, so it falls '
+                    f'back to waiting for all of "{rule.producer_stage}". That is more '
+                    'conservative than intended; the named activities belong to a fragnet this '
+                    'run did not select.'
+                )
+        if not producers:
+            producers = sorted(stage_activity_ids.get(rule.producer_stage, []))
         activities.append(emit_gate(ident, rule.label, rule.producer_stage, rule, bool(producers)))
 
+        # Staged release: the milestone may be reached when the first zone's worth of the
+        # producing work is done, not the last. Expressed as SS with a lead rather than as a
+        # shorter duration, so the producing activity keeps its real length.
+        zone_count = zone_counts.get(rule.release_per_zone_kind, 0)
+        staged = bool(rule.producer_activities) and zone_count > 1
+        if rule.release_per_zone_kind and zone_count <= 1:
+            warnings.append(
+                f'Gate {ident} ({rule.label}) stages its release across '
+                f'"{rule.release_per_zone_kind}" zones, of which this plan has {zone_count}. '
+                'With one zone or none there is nothing to stage, so it waits for the whole '
+                'activity - correct for a single-hall build, and worth knowing.'
+            )
+
         for producer_id in producers:
-            edges.append(AssembledEdge(
-                from_id=producer_id, to_id=ident, type='FS', lag=0,
-                kind='cross_stage_gate', why=rule.why,
-            ))
+            if staged:
+                producer = by_id.get(producer_id)
+                duration = int(getattr(producer, 'duration_days', 0) or 0)
+                # ceil, so a release is never modelled as instantaneous.
+                lead = -(-duration // zone_count) if duration else 0
+                edges.append(AssembledEdge(
+                    from_id=producer_id, to_id=ident, type='SS', lag=lead,
+                    kind='cross_stage_gate',
+                    why=(
+                        f'{rule.why} Released after the first of {zone_count} '
+                        f'{rule.release_per_zone_kind} zones ({lead} of {duration} days), '
+                        'rather than after the last.'
+                    ),
+                ))
+            else:
+                edges.append(AssembledEdge(
+                    from_id=producer_id, to_id=ident, type='FS', lag=0,
+                    kind='cross_stage_gate', why=rule.why,
+                ))
         if not producers:
             # Say WHICH of the two reasons it is. They have different remedies: one is a library
             # gap for whoever maintains the libraries, the other is a planning answer about this

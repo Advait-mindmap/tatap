@@ -95,14 +95,14 @@
       "typical_weeks": 22,
       "applies_when": "Bulk diesel storage for generators",
       "blocks": [
-        "commissioning"
+        "genset_fuel_systems"
       ],
       "provenance": {
         "origin": "industry_estimate",
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. PESO licence for bulk HSD storage serving the generators; layout approval then licence.",
+        "note": "Authority and approval type from docs/DOMAIN_KNOWLEDGE.md#5. DURATION IS AN ESTIMATE. PESO licence for bulk HSD storage serving the generators; layout approval then licence. BLOCKS NARROWED FOR REVIEW: was [\"commissioning\"], which held the entire commissioning stage behind a diesel-storage licence and so gated L1 factory acceptance testing. A PESO licence covers bulk HSD storage and the fuel system, so it now blocks \"genset_fuel_systems\" - the generator installation and the bulk storage tank. This is a DATA CORRECTION and wants a compliance reviewer: if the client reads PESO as gating any commissioning that runs the gensets under load, the L5 integrated systems test belongs in this list too.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#5",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
