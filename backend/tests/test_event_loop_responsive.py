@@ -40,11 +40,26 @@ pytest.importorskip('websockets')
 
 #: How long a stage "reasons" for. Long enough that a blocked loop is unambiguous, short enough
 #: that the test stays quick. Base44 stages take longer than this in production.
-STAGE_SECONDS = 3.0
+STAGE_SECONDS = 4.0
 
-#: A health check must return in well under a stage. Generous against CI scheduling noise while
-#: still being far below STAGE_SECONDS - the bug made this take the full stage or longer.
-HEALTH_BUDGET = 1.5
+#: How many health round trips must complete inside one reasoning window.
+#:
+#: COUNTING round trips rather than timing one. The first version asserted a latency budget of
+#: 1.5s and passed locally three times out of three, then failed on the CI runner - the same
+#: measurement-dependent trap this repo has hit before with hover and fit-view tests. A shared
+#: runner can make any single HTTP call slow, so a latency threshold measures the runner as much
+#: as the code.
+#:
+#: A count does not have that problem, because the two states are qualitatively different rather
+#: than quantitatively: with the loop blocked, NOTHING completes until the stage ends, so the
+#: window yields at most one. With it free, each round trip is milliseconds, so even a runner
+#: ten times slower than this laptop yields dozens. Four is far above the blocked case and far
+#: below the free one.
+MIN_PROBES_IN_WINDOW = 4
+
+#: If the service cannot answer this quickly when completely idle, the environment is too slow
+#: for the measurement to mean anything and the test says so instead of reporting a red.
+IDLE_SANITY = 1.0
 
 
 def _free_port() -> int:
@@ -135,25 +150,33 @@ def test_health_answers_while_a_run_is_reasoning(server):
     from websockets.sync.client import connect
 
     idle = _health(server)
-    assert idle < HEALTH_BUDGET, f'the service was already slow when idle ({idle:.2f}s)'
+    if idle >= IDLE_SANITY:
+        pytest.skip(
+            f'the service needs {idle:.2f}s to answer /health when idle, so this machine '
+            'cannot distinguish a blocked loop from a slow one'
+        )
 
     with connect(f'ws://{server}/ws/simulate', open_timeout=20) as ws:
         ws.send('{"action": "start", "brief": {"project_name": "Loop", "city": "Chennai"}}')
 
-        # The first stage is now sleeping for STAGE_SECONDS. Probe health throughout it: under
-        # the old code every one of these waited for the stage to finish.
+        # The first stage is now sleeping for STAGE_SECONDS. Count how many health round trips
+        # complete inside it. Blocked, the first one does not return until the stage ends and
+        # the count is at most one; free, each takes milliseconds.
+        window = STAGE_SECONDS * 0.7
+        deadline = time.time() + window
+        completed = 0
         worst = 0.0
-        probes = 0
-        deadline = time.time() + STAGE_SECONDS * 0.8
         while time.time() < deadline:
-            worst = max(worst, _health(server))
-            probes += 1
-            time.sleep(0.2)
+            worst = max(worst, _health(server, timeout=STAGE_SECONDS * 2))
+            completed += 1
 
-        assert probes >= 3, 'not enough probes landed inside the reasoning window'
-        assert worst < HEALTH_BUDGET, (
-            f'/health took {worst:.2f}s while a stage was reasoning ({STAGE_SECONDS}s). '
-            'The event loop is blocked: one run is making the whole service unavailable.'
+        print(f'\n  idle {idle * 1000:.0f}ms | {completed} health round trips completed in a '
+              f'{window:.1f}s reasoning window | slowest {worst * 1000:.0f}ms')
+
+        assert completed >= MIN_PROBES_IN_WINDOW, (
+            f'only {completed} health round trip(s) completed during a {window:.1f}s window '
+            f'while a stage was reasoning (slowest {worst:.2f}s). The event loop is blocked: '
+            'one run is making the whole service unavailable to everyone.'
         )
 
         # And the run itself still works - the fix must not have broken streaming.
@@ -171,12 +194,14 @@ def test_a_second_client_is_served_while_the_first_is_reasoning(server):
         time.sleep(0.4)  # let the first stage get into its blocking call
 
         started = time.perf_counter()
-        with connect(f'ws://{server}/ws/simulate', open_timeout=10) as second:
+        with connect(f'ws://{server}/ws/simulate', open_timeout=int(STAGE_SECONDS * 3)) as second:
             # Attaching to a run that does not exist is a cheap round trip that still requires
             # the loop to be alive.
             second.send('{"action": "attach", "run_id": "run-does-not-exist"}')
-            second.recv(timeout=10)
+            second.recv(timeout=STAGE_SECONDS * 3)
         elapsed = time.perf_counter() - started
+        print(f'\n  second client served in {elapsed * 1000:.0f}ms while the first was '
+              f'reasoning ({STAGE_SECONDS}s stage)')
 
         # Let the first run settle before dropping its socket. Walking away mid-stage leaves
         # the server finishing the walk on its own, and it then writes the run into the shared
@@ -185,6 +210,10 @@ def test_a_second_client_is_served_while_the_first_is_reasoning(server):
         # worse than the thing being tested.
         _drain(first)
 
-    assert elapsed < HEALTH_BUDGET, (
-        f'a second client waited {elapsed:.2f}s to be served while the first was reasoning'
+    # Relative to the blocking duration, not an absolute budget: blocked, this waits out the
+    # remainder of the stage; free, it is milliseconds. Half a stage separates the two by a mile
+    # in either direction, so runner speed does not decide the outcome.
+    assert elapsed < STAGE_SECONDS * 0.5, (
+        f'a second client waited {elapsed:.2f}s to be served while the first was reasoning '
+        f'(stage is {STAGE_SECONDS}s). The loop is blocked.'
     )
