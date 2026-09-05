@@ -391,6 +391,7 @@ def build_stage_reasoning(
     # tests the model's OWN stated confidence, not the unverified-data cap: a capped confidence
     # is a data-quality problem for admin to verify, not a fork for a planner to decide, and
     # conflating them would halt every branch on seed data while asking an unanswerable question.
+    low_confidence: List[Tuple[str, float]] = []
     for selection, id_attr in (
         (packages, 'fragnet_id'), (gates, 'gate_id'), (long_lead, 'lead_id')
     ):
@@ -398,22 +399,71 @@ def build_stage_reasoning(
             if element.confidence >= threshold:
                 continue
             ident = getattr(element, id_attr)
-            dyn_id = f'dyn.low_confidence.{ident}'
-            if dyn_id in raised:
+            if f'dyn.low_confidence.{ident}' in raised:
                 continue
-            decision_points.append(RaisedDecisionPoint(
-                decision_point_id=dyn_id,
-                question=f'Does {ident} apply to the {stage} stage on this project?',
-                why_stuck=(
-                    f'The reasoner stated confidence {element.confidence:.2f}, below the '
-                    f'{threshold:.2f} threshold. It is asked rather than assumed.'
-                ),
-                options=['Yes, it applies', 'No, exclude it', 'Applies with modification'],
-                impact='Determines whether this package is instanced into the plan.',
-                blocking=True,
-                detection='dynamic',
-            ))
-            raised.add(dyn_id)
+            low_confidence.append((ident, element.confidence))
+
+    if len(low_confidence) == 1:
+        # One item: ask about it directly. Batching a single thing only makes the question vaguer.
+        ident, confidence = low_confidence[0]
+        dyn_id = f'dyn.low_confidence.{ident}'
+        decision_points.append(RaisedDecisionPoint(
+            decision_point_id=dyn_id,
+            question=f'Does {ident} apply to the {stage} stage on this project?',
+            why_stuck=(
+                f'The reasoner stated confidence {confidence:.2f}, below the '
+                f'{threshold:.2f} threshold. It is asked rather than assumed.'
+            ),
+            options=['Yes, it applies', 'No, exclude it', 'Applies with modification'],
+            impact='Determines whether this package is instanced into the plan.',
+            blocking=True,
+            detection='dynamic',
+        ))
+        raised.add(dyn_id)
+
+    elif low_confidence:
+        # BATCHED. Every one of these asks the same question for the same reason - the reasoner
+        # was not confident, because the library entry behind it is an unverified estimate - and
+        # a planner answers them the same way. Asked one at a time, a real run stopped fifteen to
+        # twenty times to collect one repeated answer, which trains the reader to click through
+        # the prompts and defeats the point of stopping at all.
+        #
+        # This changes only HOW OFTEN the run interrupts. Each item still gets its own trail
+        # entry, its own stated and capped confidence and its own Tier-2 flag, recorded by
+        # record_trail above and untouched by anything here.
+        #
+        # The id is scoped to the stage. A single shared id would land in the run's answers map
+        # after the first stage, and every later stage's batch would look already-answered and
+        # skip silently - the plan would proceed on unverified data without asking.
+        dyn_id = f'dyn.low_confidence.batch.{stage}'
+        items = sorted(low_confidence)
+        listing = '\n'.join(f'  - {ident} (stated {conf:.2f})' for ident, conf in items)
+        decision_points.append(RaisedDecisionPoint(
+            decision_point_id=dyn_id,
+            question=(
+                f'{len(items)} selections for the {stage} stage rest on low-confidence '
+                'reasoning. Proceed with the estimates, or stop and obtain real data?'
+            ),
+            why_stuck=(
+                f'Each of these was stated below the {threshold:.2f} confidence threshold, so '
+                'none is assumed:\n'
+                f'{listing}\n'
+                'They share one cause - the library entry behind each is an unverified estimate '
+                '- so they are asked once rather than one at a time.'
+            ),
+            options=['Proceed with the estimates', 'Stop and obtain real data'],
+            impact=(
+                f'Applies to all {len(items)} items. Either way each keeps its own reasoning '
+                'trail entry, its capped confidence and its Tier-2 flag; this decides only '
+                'whether the plan is built on them now.'
+            ),
+            blocking=True,
+            detection='dynamic',
+        ))
+        raised.add(dyn_id)
+        for ident, _ in items:
+            # Recorded as raised so a later pass over the same stage does not re-ask per item.
+            raised.add(f'dyn.low_confidence.{ident}')
 
     # ---- grounding warnings ---------------------------------------------------------
     if not grounded:

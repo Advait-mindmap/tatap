@@ -239,6 +239,7 @@ export default function App() {
       autoFit={run.status !== 'idle'}
       linkedZone={linkedZone}
       onHoverZone={setLinkedZone}
+      streaming={run.status === 'running'}
     />
   )
 
@@ -268,30 +269,42 @@ export default function App() {
     <div className="app" data-linked-zone={linkedZone ?? ''}>
       {run.status !== 'idle' && (
         <div className="view-mode-toggle" data-testid="view-mode-toggle">
+          <span className="view-toggle-label">View</span>
+          <div className="view-segmented" role="tablist" aria-label="View mode">
           <button
             className={`view-btn ${viewMode === '2d' ? 'active' : ''}`}
             onClick={() => setViewMode('2d')}
+            role="tab"
+            aria-selected={viewMode === '2d'}
             data-testid="view-2d-button"
             title="2D Process Flow"
           >
-            📊 2D Flow
+            <span className="view-btn-glyph" aria-hidden="true">📊</span>
+            <span className="view-btn-text">2D Flow</span>
           </button>
           <button
             className={`view-btn ${viewMode === '3d' ? 'active' : ''}`}
             onClick={() => setViewMode('3d')}
+            role="tab"
+            aria-selected={viewMode === '3d'}
             data-testid="view-3d-button"
             title="3D Build Model"
           >
-            🏗️ 3D Model
+            <span className="view-btn-glyph" aria-hidden="true">🏗️</span>
+            <span className="view-btn-text">3D Model</span>
           </button>
           <button
             className={`view-btn ${viewMode === 'split' ? 'active' : ''}`}
             onClick={() => setViewMode('split')}
+            role="tab"
+            aria-selected={viewMode === 'split'}
             data-testid="view-split-button"
             title="Both views, linked by hover"
           >
-            🔗 Linked
+            <span className="view-btn-glyph" aria-hidden="true">🔗</span>
+            <span className="view-btn-text">Linked</span>
           </button>
+          </div>
         </div>
       )}
 

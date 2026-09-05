@@ -51,19 +51,34 @@ body {
 .app { display: flex; flex-direction: column; height: 100%; }
 
 /* ---------------------------------------------------------------- view mode toggle */
+/* The view switch. It was three small buttons that read as toolbar chrome, and people missed
+   the 3D model entirely. A labelled segmented control says "these are the views" rather than
+   "here are some buttons", and the active segment is unambiguous. */
 .view-mode-toggle {
-  display: flex; gap: 0.5rem; align-items: center; padding: 0.5rem 1rem;
+  display: flex; gap: 0.75rem; align-items: center; padding: 0.55rem 1rem;
   border-bottom: 1px solid var(--line); background: var(--panel);
 }
+.view-toggle-label {
+  font-size: 10.5px; font-weight: 650; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted);
+}
+.view-segmented {
+  display: inline-flex; padding: 3px; gap: 3px;
+  background: #050b18; border: 1px solid var(--line); border-radius: 9px;
+}
 .view-btn {
-  padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line);
-  background: rgba(148,163,184,0.08); color: var(--muted); cursor: pointer;
-  font: 12px inherit; transition: all 120ms;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 16px; border-radius: 7px; border: 1px solid transparent;
+  background: transparent; color: var(--muted); cursor: pointer;
+  font: 13px inherit; font-weight: 550; transition: background 120ms, color 120ms;
 }
-.view-btn:hover { background: rgba(148,163,184,0.15); }
+.view-btn-glyph { font-size: 13px; line-height: 1; }
+.view-btn:hover { background: rgba(148,163,184,0.12); color: var(--text); }
 .view-btn.active {
-  background: #1d4ed8; border-color: #2563eb; color: var(--text); font-weight: 600;
+  background: #4f46e5; border-color: #6366f1; color: #fff; font-weight: 650;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.12) inset;
 }
+.view-btn.active:hover { background: #4f46e5; color: #fff; }
 
 /* ---------------------------------------------------------------- 3D view layout */
 .view-3d-wrapper {
@@ -431,4 +446,70 @@ button.option:hover { background: rgba(251,113,133,0.2); border-color: var(--ala
 }
 .scrubber-provisional {
   color: #fbbf24; font-size: 11px; font-weight: 600;
+}
+
+/* --- intake: the front door --------------------------------------------------------------
+   It was a heading, a paragraph and a bare textarea on a flat ground - no hierarchy, and no
+   indication of what the tool does before you commit a brief to it. Still dark, still
+   technical: a labelled input surface, a hero that states the three steps, and one obvious
+   primary action. */
+.intake .screen-inner { max-width: 820px; }
+
+.intake-hero {
+  padding-bottom: 1.4rem; margin-bottom: 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.intake-eyebrow {
+  font-size: 10.5px; letter-spacing: 0.18em; color: #6366f1;
+  margin-bottom: 0.55rem;
+}
+.intake h1 {
+  font-size: 30px; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 0.6rem;
+}
+.intake .lede { font-size: 14px; max-width: 62ch; margin-bottom: 1.1rem; }
+
+.intake-steps {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 0.5rem 1.6rem;
+}
+.intake-steps li {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 12px; color: var(--muted);
+}
+.intake-step-n {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(99, 102, 241, 0.18); border: 1px solid rgba(99, 102, 241, 0.5);
+  color: #c7d2fe; font-size: 10px; flex: none;
+}
+
+.intake-panel {
+  border: 1px solid var(--line); border-radius: 12px;
+  background: rgba(148, 163, 184, 0.035);
+  padding: 0.9rem 1rem 1rem;
+}
+.intake-panel-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 0.55rem;
+}
+.intake-label {
+  font-size: 12px; font-weight: 650; color: var(--text);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+.intake-panel textarea {
+  background: #050b18; border-color: #1e293b; padding: 1rem;
+  font-size: 13.5px; line-height: 1.7;
+}
+.intake-panel textarea:focus {
+  border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+}
+.intake-actions { margin-top: 0.85rem; align-items: center; }
+.intake .primary {
+  padding: 9px 18px; font-size: 13px; font-weight: 650; border-radius: 8px;
+}
+.intake .ghost { padding: 9px 14px; font-size: 12.5px; border-radius: 8px; }
+/* Says the governance figures are one stage behind, rather than letting them read as current. */
+.badge-stale {
+  border-color: #64748b; background: rgba(100, 116, 139, 0.16); color: #cbd5e1;
+  font-style: italic;
 }

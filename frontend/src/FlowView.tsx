@@ -58,6 +58,15 @@ export interface FlowViewProps {
   /** Fired when the cursor rests on a node that belongs to a zone, to drive the 3D model. */
   onHoverZone?: (zoneId: string | null) => void
   /**
+   * True while the walk is still running, so `quality` is from the LAST settle point.
+   *
+   * The governance numbers only arrive with the authoritative SimulationOutput, which lands at
+   * a halt or at completion. Mid-stage they describe the plan as it was one stage ago, and the
+   * badges said so with no hedge - a reader watching a run saw counts that did not match the
+   * graph in front of them.
+   */
+  streaming?: boolean
+  /**
    * Canvas only: no legend column, no trail panel.
    *
    * In the linked view this pane holds half the window, and the three-column layout squeezed
@@ -95,6 +104,7 @@ function FlowViewInner({
   linkedZone = null,
   onHoverZone,
   compact = false,
+  streaming = false,
 }: FlowViewProps) {
   const reactFlow = useReactFlow();
   // True once React Flow has measured every node. Until then it marks them `visibility: hidden`
@@ -309,6 +319,9 @@ function FlowViewInner({
     setSelected(target.id);
   }, [forkNodes, reactFlow]);
 
+  // Is there a governance report at all yet? `quality` is {} until the first settle point.
+  const hasQuality = Object.keys(quality).length > 0;
+
   const openForks = flow.nodes.filter(
     (n) => n.kind === "decision_point" && n.status === "open",
   ).length;
@@ -328,7 +341,19 @@ function FlowViewInner({
           <span className="badge mono">
             {flow.nodes.length} nodes · {flow.edges.length} edges
           </span>
-          {Boolean(quality.export_blocked) && (
+          {/* Governance badges render only once there IS a quality report. Before the first
+              settle point `quality` is {}, and `!quality.governance_complete` is therefore
+              true - so the bar used to announce "Governance incomplete - 0 on unverified data"
+              having been told nothing at all. An absent measurement is not a finding. */}
+          {hasQuality && streaming && (
+            <span className="badge badge-stale" data-testid="badge-as-of" title={
+              'The governance figures come from the authoritative output, which arrives when ' +
+              'the run settles. They describe the plan as of the last completed stage.'
+            }>
+              as of last stage
+            </span>
+          )}
+          {hasQuality && Boolean(quality.export_blocked) && (
             <span
               className="badge badge-alarm"
               data-testid="badge-export-blocked"
@@ -355,7 +380,7 @@ function FlowViewInner({
               ⌖ {forkNodes.length} decision{forkNodes.length === 1 ? "" : "s"}
             </button>
           )}
-          {!quality.governance_complete && (
+          {hasQuality && !quality.governance_complete && (
             <span className="badge badge-warn">
               Governance incomplete · {String(quality.tier_2_count ?? 0)} on
               unverified data

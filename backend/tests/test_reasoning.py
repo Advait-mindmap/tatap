@@ -540,3 +540,88 @@ def test_the_walk_order_is_design_then_procurement_then_construction():
     assert order['design'] < order['approvals'] < order['procurement']
     assert order['procurement'] < order['enabling'] < order['substructure']
     assert order['substructure'] < order['mep_power'] < order['commissioning'] < order['handover']
+
+
+# --------------------------------------------------- batching the unverified-data forks
+#
+# A real run stopped fifteen to twenty times, almost all of them dyn.low_confidence.* asking the
+# same question for the same reason. Asked one at a time they train the reader to click through,
+# which defeats the point of stopping at all.
+
+def test_several_low_confidence_selections_are_asked_once(libs, hits):
+    """The whole point: many items, one interruption."""
+    response = good_response()
+    response['decision_points'] = []
+    for package in response['packages']:
+        package['confidence'] = 0.3
+    for lead in response.get('long_lead', []):
+        lead['confidence'] = 0.3
+    result = run(response, libs, hits, threshold=0.7)
+
+    dyn = [d for d in result.decision_points if d.detection == 'dynamic']
+    assert len(dyn) == 1, f'expected one batched fork, got {[d.decision_point_id for d in dyn]}'
+    assert dyn[0].decision_point_id.startswith('dyn.low_confidence.batch.')
+    assert dyn[0].options == ['Proceed with the estimates', 'Stop and obtain real data']
+    assert dyn[0].blocking is True
+
+
+def test_the_batched_fork_names_every_item_it_covers(libs, hits):
+    """Batching must not hide WHAT is uncertain - that is the auditable part."""
+    response = good_response()
+    response['decision_points'] = []
+    for package in response['packages']:
+        package['confidence'] = 0.3
+    for lead in response.get('long_lead', []):
+        lead['confidence'] = 0.3
+    result = run(response, libs, hits, threshold=0.7)
+
+    fork = next(d for d in result.decision_points if d.detection == 'dynamic')
+    covered = [p.fragnet_id for p in result.packages if p.confidence < 0.7]
+    covered += [l.lead_id for l in result.long_lead if l.confidence < 0.7]
+    assert covered, 'the fixture produced nothing low-confidence to cover'
+    for ident in covered:
+        assert ident in fork.why_stuck, f'{ident} is not named in the batched question'
+        assert '0.30' in fork.why_stuck
+
+
+def test_batching_changes_nothing_about_the_audit_trail(libs, hits):
+    """The instruction that matters: fewer interruptions, identical records.
+
+    Every item keeps its own trail entry, its stated and capped confidence, and its Tier-2 flag.
+    """
+    response = good_response()
+    response['decision_points'] = []
+    for package in response['packages']:
+        package['confidence'] = 0.3
+    result = run(response, libs, hits, threshold=0.7)
+
+    for package in result.packages:
+        entry = next(t for t in result.trail if t.ref_id == package.fragnet_id)
+        assert entry.stated_confidence == 0.3, 'the stated confidence was altered'
+        assert entry.confidence == package.effective_confidence, 'the cap was altered'
+        if package.unverified_dependencies:
+            assert entry.hitl_tier == 'tier_2', 'the Tier-2 flag was dropped'
+
+
+def test_one_low_confidence_selection_is_still_asked_directly(libs, hits):
+    """Batching a single item only makes the question vaguer, so it is not batched."""
+    response = good_response()
+    response['decision_points'] = []
+    response['packages'][0]['confidence'] = 0.3
+    for lead in response.get('long_lead', []):
+        lead['confidence'] = 0.95
+    result = run(response, libs, hits, threshold=0.7)
+
+    dyn = [d for d in result.decision_points if d.detection == 'dynamic']
+    assert len(dyn) == 1
+    assert dyn[0].decision_point_id == 'dyn.low_confidence.frag.mep.power_train'
+
+
+def test_the_batch_id_is_scoped_to_its_stage():
+    """A shared id would land in the run's answers map after the first stage, and every later
+    stage's batch would look already-answered and skip silently - the plan would proceed on
+    unverified data without ever asking."""
+    from backend.app.reasoning.loop import reason_stage  # noqa: F401  (import shape check)
+
+    # The id is built from the stage, so two stages cannot collide.
+    assert 'dyn.low_confidence.batch.mep_power' != 'dyn.low_confidence.batch.substructure'

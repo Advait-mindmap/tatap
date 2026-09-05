@@ -54,16 +54,33 @@ export function IntakeScreen({ onExtracted }: Props) {
   }
 
   return (
-    <div className="screen" data-testid="intake-screen">
+    <div className="screen intake" data-testid="intake-screen">
       <div className="screen-inner">
-        <h1>Start a data centre plan</h1>
-        <p className="lede">
-          Paste the brief — an email, an RFP extract, a basis-of-design note. Intake reads it into
-          a structured brief, cites where each field came from, and asks about anything it cannot
-          find. Nothing is assumed.
-        </p>
+        <header className="intake-hero">
+          <div className="intake-eyebrow mono">DC BUILD PLANNER</div>
+          <h1>Start a data centre plan</h1>
+          <p className="lede">
+            Paste the brief — an email, an RFP extract, a basis-of-design note. Intake reads it
+            into a structured brief, cites where each field came from, and asks about anything it
+            cannot find. Nothing is assumed.
+          </p>
+          {/* What the thing actually does, in the order it does it. A reader who has never seen
+              this should not have to press a button to find out. */}
+          <ol className="intake-steps">
+            <li><span className="intake-step-n mono">1</span> Read the brief, cite every field</li>
+            <li><span className="intake-step-n mono">2</span> Simulate the build, stop at real decisions</li>
+            <li><span className="intake-step-n mono">3</span> Draw it in 2D and 3D, export to P6</li>
+          </ol>
+        </header>
+
+        <section className="intake-panel">
+          <div className="intake-panel-head">
+            <label className="intake-label" htmlFor="brief-input">The brief</label>
+            <span className="muted small">plain text, or load a .md / .txt file</span>
+          </div>
 
         <textarea
+          id="brief-input"
           data-testid="brief-input"
           value={text}
           onChange={(event) => setText(event.target.value)}
@@ -76,7 +93,7 @@ export function IntakeScreen({ onExtracted }: Props) {
           spellCheck={false}
         />
 
-        <div className="row">
+        <div className="row intake-actions">
           <button
             className="primary"
             onClick={submit}
@@ -104,6 +121,7 @@ export function IntakeScreen({ onExtracted }: Props) {
           <span className="grow" />
           {text.trim() && <span className="muted small">{text.trim().length} characters</span>}
         </div>
+        </section>
 
         {error && (
           <div className="notice notice-error" data-testid="intake-error">
