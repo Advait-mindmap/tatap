@@ -343,6 +343,13 @@ def _build_cross_stage_gates(
         consumers = [s for s in rule.consumer_stages if s in stages_present]
         if not consumers:
             continue
+        # A gate whose producing stage was never walked is a phantom constraint: nothing can
+        # ever satisfy it, and it would hold its consumers behind a milestone representing work
+        # nobody planned. An unanchored gate is legitimate only for a stage that WAS walked and
+        # instanced nothing - design and procurement before their fragnets existed - which is
+        # the case the rule below preserves.
+        if rule.producer_stage not in stages_present:
+            continue
         ident = cross_stage_gate_id(rule)
         producers = sorted(stage_activity_ids.get(rule.producer_stage, []))
         activities.append(emit_gate(ident, rule.label, rule.producer_stage, rule, bool(producers)))
@@ -353,11 +360,23 @@ def _build_cross_stage_gates(
                 kind='cross_stage_gate', why=rule.why,
             ))
         if not producers:
+            # Say WHICH of the two reasons it is. They have different remedies: one is a library
+            # gap for whoever maintains the libraries, the other is a planning answer about this
+            # project. The old message asserted the first unconditionally, which was wrong as
+            # soon as a stage could be walked, covered by the library, and still empty because
+            # the planner put it out of scope.
+            covered = any(f.get('stage') == rule.producer_stage for f in fragnet_lib)
+            reason = (
+                f'the stage instanced nothing although the library covers it - most likely it '
+                f'was answered out of scope on this project'
+                if covered else
+                f'frag.{rule.producer_stage}.* does not exist yet'
+            )
             warnings.append(
                 f'Gate {ident} ({rule.label}) has no producing activities: stage '
-                f'"{rule.producer_stage}" instanced nothing, because frag.{rule.producer_stage}.* '
-                'does not exist yet. The gate still constrains its consumers, and will anchor '
-                'automatically once that fragnet is added.'
+                f'"{rule.producer_stage}" instanced nothing, because {reason}. The gate still '
+                'constrains its consumers, and anchors automatically once that stage produces '
+                'work.'
             )
 
         for consumer_stage in consumers:

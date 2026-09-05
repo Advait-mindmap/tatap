@@ -82,6 +82,86 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
             'strict - a partial-release gate would model it better.'
         ),
     ),
+    # ---- the physical build sequence -------------------------------------------------
+    #
+    # Added after an audit found every construction stage starting on the same day: with only
+    # ifc_construction in place, design release freed substructure, superstructure, envelope and
+    # fit-out all at once, so the programme had steel erection beginning before the foundations
+    # were poured and raised floor going in before the building was weather-tight. Any planner
+    # would catch that on sight.
+    #
+    # These four rules are whole-stage finish-to-start, which is the CONSERVATIVE reading. A real
+    # programme overlaps them by zone - steel starts on the foundations that are cured while the
+    # rest are still being poured - so the dates these produce are later than a well-run job
+    # would achieve. That is the right direction to be wrong in for a bid, but it is still wrong:
+    # modelling the overlap properly needs per-zone sub-networks, which do not exist yet. Until
+    # they do, the sequence is at least real.
+    GateRule(
+        id='substructure_complete',
+        label='Substructure complete - foundations available for erection',
+        producer_stage='substructure',
+        consumer_stages=('superstructure',),
+        kind='predecessor_stage',
+        why=(
+            'INTRODUCED FOR REVIEW. You cannot erect a frame on foundations that do not exist. '
+            'Without this rule superstructure started on the same day as substructure. Whole-'
+            'stage FS is conservative: erection normally begins on the first cured pour rather '
+            'than the last, which a per-zone model would capture and this does not.'
+        ),
+    ),
+    GateRule(
+        id='superstructure_complete',
+        label='Superstructure complete - frame available for envelope',
+        producer_stage='superstructure',
+        consumer_stages=('envelope',),
+        kind='predecessor_stage',
+        why=(
+            'INTRODUCED FOR REVIEW. Cladding and blockwork hang off the frame, so the frame must '
+            'be up first. Conservative in the same way as substructure_complete: envelope '
+            'normally follows the erection gang around the building rather than waiting for '
+            'topping out, and fireproofing to steel often overlaps the envelope entirely.'
+        ),
+    ),
+    GateRule(
+        id='envelope_complete',
+        label='Envelope complete - building weather-tight',
+        producer_stage='envelope',
+        consumer_stages=('fit_out',),
+        kind='predecessor_stage',
+        why=(
+            'INTRODUCED FOR REVIEW. Raised floor, containment and structured cabling do not go '
+            'into a building that is open to the weather; water-tightness is the practical gate '
+            'on interior fit-out. Conservative: a real job takes partial weather-tightness hall '
+            'by hall and starts fit-out in the enclosed part.'
+        ),
+    ),
+    GateRule(
+        id='fire_installed',
+        label='Fire detection and suppression installed - ready for commissioning',
+        producer_stage='fire_bms',
+        consumer_stages=('commissioning',),
+        kind='readiness',
+        why=(
+            'INTRODUCED FOR REVIEW. The counterpart to power_installed and cooling_installed, '
+            'and the more serious omission of the three: an L5 integrated systems test runs the '
+            'facility under load, and running a data hall under load with no detection or '
+            'suppression in place is not something a commissioning agent would sign. '
+            'DOMAIN_KNOWLEDGE.md §5 also ties occupancy to the final fire NOC.'
+        ),
+    ),
+    GateRule(
+        id='fit_out_complete',
+        label='Fit-out complete - halls ready for commissioning',
+        producer_stage='fit_out',
+        consumer_stages=('commissioning',),
+        kind='readiness',
+        why=(
+            'INTRODUCED FOR REVIEW. L4/L5 commissioning exercises the halls as they will be '
+            'operated, which presupposes the containment, racks and structured cabling are in. '
+            'Without this the schedule allowed integrated systems testing to complete in a hall '
+            'that had no cabling in it.'
+        ),
+    ),
     GateRule(
         id='power_installed',
         label='Power train installed - ready for commissioning',

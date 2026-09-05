@@ -194,11 +194,22 @@ def test_ifc_gate_exists_and_gates_procurement(result):
     assert rule.producer_stage == 'design' and 'procurement' in rule.consumer_stages
 
 
-def test_ifc_gate_is_emitted_even_though_design_has_no_fragnets(result):
-    """The constraint is carried today, with a warning naming why it is unanchored."""
+def test_ifc_gate_is_emitted_even_though_design_instanced_nothing(result):
+    """The constraint is carried whether or not the producing stage produced anything.
+
+    The warning must name WHICH of the two reasons applies, because they have different
+    remedies. This fixture selects no design package even though frag.design.engineering now
+    exists, so the honest reading is "walked, covered, produced nothing" - not the library gap
+    the message used to assert unconditionally.
+    """
     incoming = [e for e in result.edges if e.to_id == 'gate.ifc-issued']
     assert incoming == [], 'design instanced nothing, so the gate has no predecessor yet'
-    assert any('frag.design.* does not exist yet' in w for w in result.warnings)
+    warning = next(w for w in result.warnings if 'gate.ifc-issued' in w)
+    assert 'the library covers it' in warning
+    assert 'does not exist yet' not in warning, (
+        'the library does cover design now; saying otherwise sends the reader to fix the wrong '
+        'thing'
+    )
 
 
 def test_ifc_gate_anchors_automatically_once_a_design_fragnet_exists():
