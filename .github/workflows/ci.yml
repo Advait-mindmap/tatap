@@ -78,7 +78,24 @@ jobs:
         # stub answers instantly, and only a slow provider exposes it.
         # The `live` tests hit the real Base44 gateway and spend credits; they are
         # deselected here and skip themselves anyway without BASE44_* secrets.
-        run: python -m pytest -m "not live" -q
+        #
+        # Failures are echoed as ::error:: annotations, the way the Playwright steps already do
+        # it. GitHub requires authentication to read job LOGS but annotations are public, and
+        # the backend job was the one place a red run said nothing but "exit code 1" - which
+        # cost a full round trip of guessing on a failure that reproduced on no local machine.
+        # Diagnosing CI should not depend on privileged access.
+        run: |
+          set -o pipefail
+          python -m pytest -m "not live" -q --tb=short 2>&1 | tee pytest-output.txt && exit 0
+          status=$?
+          echo "::error::Backend suite failed. Failing tests:"
+          grep -E '^(FAILED|ERROR) ' pytest-output.txt | while IFS= read -r line; do
+            echo "::error::$line"
+          done
+          # The tail carries the assertion text for the first failure, which is usually the
+          # whole story.
+          tail -n 40 pytest-output.txt | sed 's/^/::notice::/'
+          exit $status
 
   # Guards the 2D flow view the same way the two jobs above guard the backend. Worth its own
   # job because the defects this catches are invisible to a typecheck: the two bugs found when
