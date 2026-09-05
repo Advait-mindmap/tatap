@@ -368,3 +368,65 @@ def test_peso_gates_the_diesel_it_licenses_and_nothing_else(plan):
     assert not any('factory acceptance' in n.lower() for n in gated), (
         'a diesel licence is still gating L1 factory acceptance testing'
     )
+
+
+def test_the_ist_stays_downstream_of_the_diesel_licence(plan):
+    """PESO blocks storage only, and this is what makes that safe.
+
+    The L5 integrated systems test runs the gensets under load on stored diesel, so it must not
+    be possible to schedule it before the diesel may legally be stored. The obvious way to
+    guarantee that is a direct PESO -> IST edge, but PESO licenses STORING petroleum rather than
+    testing on it, and listing the IST in its `blocks` would misstate the licence in compliance
+    data. It would also change nothing: the constraint already reaches the IST through the fuel
+    system, and the IST is already Tier-1 and export-blocking via safety.ist_under_load.
+
+    What a direct edge WOULD have bought is protection against someone reordering the plan so
+    the storage stops being upstream of the test, silently dropping the chain. That is what this
+    test buys instead, without putting a link in the exported programme that is not a real
+    driver.
+
+    Mutation-checked, and the result corrected a claim this docstring first made. The property
+    does NOT rest on the c67 -> c70 logic link alone: cutting that link leaves it holding,
+    because the whole-stage `power_installed` gate hangs off every mep_power activity including
+    the storage. Narrowing that gate to c70 alone also leaves it holding, via the logic link.
+    Both routes have to be cut before this fails - which it then does. So the assertion is
+    written as reachability by ANY route rather than against one named edge, because that is
+    what actually has to be true, and it has teeth: removing PESO's block on the storage fails
+    it immediately.
+    """
+    output, _, _ = plan
+    predecessors = {
+        a['id']: {p['id'] for p in (a.get('predecessors') or [])}
+        for a in output['activities']
+    }
+
+    def reaches(source: str, target: str) -> bool:
+        seen, stack = set(), [target]
+        while stack:
+            current = stack.pop()
+            if current == source:
+                return True
+            for parent in predecessors.get(current, ()):
+                if parent not in seen:
+                    seen.add(parent)
+                    stack.append(parent)
+        return False
+
+    peso = next(a for a in output['activities'] if 'PESO' in a['name'])
+    storage = named(output, 'HSD storage tank')
+    ist = named(output, 'L5 integrated systems test')
+    black_building = named(output, 'Black-building')
+
+    assert reaches(peso['id'], storage['id']), 'PESO no longer gates the bulk storage it licenses'
+    assert reaches(storage['id'], ist['id']), (
+        'the L5 integrated systems test is no longer downstream of the bulk diesel storage — '
+        'the plan now allows testing under load before the diesel may legally be stored'
+    )
+    assert reaches(peso['id'], ist['id'])
+    assert reaches(peso['id'], black_building['id']), (
+        'black-building testing runs on the generators and must stay downstream of the licence'
+    )
+
+    # And the governance that makes the direct edge unnecessary is actually present.
+    assert ist['hitl_tier'] == 'tier_1' and ist['blocks_export'] is True
+    assert black_building['hitl_tier'] == 'tier_1' and black_building['blocks_export'] is True
