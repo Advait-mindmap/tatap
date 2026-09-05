@@ -92,9 +92,10 @@ jobs:
           grep -E '^(FAILED|ERROR) ' pytest-output.txt | while IFS= read -r line; do
             echo "::error::$line"
           done
-          # The tail carries the assertion text for the first failure, which is usually the
-          # whole story.
-          tail -n 40 pytest-output.txt | sed 's/^/::notice::/'
+          # The FAILURES section, not the tail: `-q` puts tracebacks above the warnings
+          # summary, so a plain tail returns forty lines of DeprecationWarning and none of the
+          # assertion. sed prints from the FAILURES banner to the short summary.
+          sed -n '/=== FAILURES ===/,/short test summary/p' pytest-output.txt             | head -n 80 | sed 's/^/::notice::/'
           exit $status
 
   # Guards the 2D flow view the same way the two jobs above guard the backend. Worth its own
