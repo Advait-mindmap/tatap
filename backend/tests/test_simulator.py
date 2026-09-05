@@ -17,6 +17,7 @@ from typing import Dict, List
 
 import pytest
 from fastapi.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 from backend.app.main import app
 from backend.app.reasoning.stages import STAGES
@@ -525,6 +526,14 @@ def test_ws_stop_closes_and_drops_the_run(monkeypatch):
         while ws.receive_json()['type'] != SIMULATION_COMPLETED:
             pass
         ws.send_json({'action': 'stop'})
+        # Wait for the server to act on it. `stop` makes the server drop the run and close the
+        # connection, so the close IS the acknowledgement - and reading until it arrives is the
+        # difference between asserting the contract and racing it. Leaving the `with` block
+        # immediately closes from the client side instead, and on a slower machine the socket
+        # was gone before the server read the message: CI failed here with `assert 1 == 0` while
+        # every local run passed.
+        with pytest.raises(WebSocketDisconnect):
+            ws.receive_json()
     assert len(registry) == 0
 
 

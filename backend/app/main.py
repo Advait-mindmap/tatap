@@ -195,20 +195,28 @@ async def ws_simulate(websocket: WebSocket) -> None:
         except CapExceeded as exc:
             # The run keeps its state and stays stored, so it can be resumed tomorrow rather
             # than having to be re-reasoned from the brief.
-            registry.save(simulator)
             await fail(exc.detail)
             return
         except CapUnavailable as exc:
-            registry.save(simulator)
             await fail(f'Usage metering is unavailable, so the run was stopped: {exc}')
             return
-        # Deliberately NOT off the loop. The blocker was the per-stage LLM call, measured in
-        # seconds; this is one indexed write, measured in milliseconds. Offloading it added an
-        # await point after the final event, and a client that sends {"action": "stop"} and
-        # closes immediately then won the race - the socket shut before the server came back to
-        # read it, so the run was never dropped. Trading a guaranteed correctness regression for
-        # an unmeasurable latency gain is a bad trade.
-        registry.save(simulator)
+        finally:
+            # IN `finally`, and synchronous.
+            #
+            # `finally` because the checkpoint must survive the client vanishing. Awaiting the
+            # generator off the loop means there is now a suspension point between the last
+            # event being sent and the walk being written down, and a client that drops in that
+            # window used to take the checkpoint with it: CI caught a halted run coming back
+            # from storage with no pending decisions, so a reconnect was told the run had merely
+            # started and the fork it stopped on was gone. Durable runs is the one feature that
+            # must not lose a race.
+            #
+            # Synchronous because the blocker this whole change is about was the per-stage LLM
+            # call, measured in seconds; this is one indexed write, measured in milliseconds.
+            # Offloading it too added a second suspension point after the final event, and a
+            # client that sends {"action": "stop"} and closes immediately then won that race, so
+            # the run was never dropped.
+            registry.save(simulator)
 
     try:
         while True:
