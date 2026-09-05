@@ -209,31 +209,70 @@ test('dragging the scrubber shows the model at three different points in the bui
   expect(rfsCount).toMatch(/0 in progress/)
 })
 
-test('zones change state rather than merely appearing', async ({ page }) => {
+test('zones pass through not-started, in-progress and complete', async ({ page }) => {
   await open4D(page)
 
+  const count = async () => (await page.getByTestId('built-count').textContent()) ?? ''
+  const inProgress = (text: string) => Number(text.match(/(\d+) in progress/)?.[1] ?? 0)
+  const complete = (text: string) => Number(text.match(/(\d+) complete/)?.[1] ?? 0)
+
+  // --- day 0: the site is empty.
+  //
+  // This assertion was impossible until the construction stages were sequenced. Every stage
+  // used to start on day 0, so something was always already under way and a zone was never
+  // "not started" - the reason the pure state-machine test below exists at all. Now enabling
+  // waits on design and substructure waits on enabling, so day 0 really is bare ground.
   await page.getByTestId('scrubber-start').click()
   await page.waitForTimeout(700)
-  const start = (await page.getByTestId('built-count').textContent()) ?? ''
+  const start = await count()
+  expect(complete(start), 'something is already complete on day 0').toBe(0)
+  expect(inProgress(start), 'something is already under way on day 0').toBe(0)
 
+  // --- somewhere in the middle: work is under way but not finished.
+  //
+  // Scanned rather than guessed at a single fraction: which fraction has work in progress
+  // depends on the shape of the programme, and hard-coding one makes the test a hostage to
+  // library durations. What matters is that SOME point in the build is mid-flight.
+  let mid = ''
+  let midFraction = 0
+  for (const fraction of [0.3, 0.4, 0.5, 0.6, 0.2, 0.7, 0.8]) {
+    await dragTo(page, fraction)
+    await page.waitForTimeout(500)
+    const now = await count()
+    if (inProgress(now) > 0) {
+      mid = now
+      midFraction = fraction
+      break
+    }
+  }
+  expect(mid, 'no point in the whole programme has a zone under construction').not.toBe('')
+
+  // --- RFS: built, and nothing left running.
   await page.getByTestId('scrubber-rfs').click()
   await page.waitForTimeout(700)
-  const end = (await page.getByTestId('built-count').textContent()) ?? ''
+  const end = await count()
+  expect(complete(end), 'nothing was complete at RFS').toBeGreaterThan(0)
+  expect(inProgress(end), 'work is still in progress at RFS').toBe(0)
 
-  // The distinction the spec asks for: a zone is not simply present or absent, it is in a
-  // state. At the start the site is under construction; at RFS it is built.
-  expect(start, 'nothing was in progress at the start of the build').toMatch(/[1-9]\d* in progress/)
-  expect(end, 'nothing was complete at RFS').toMatch(/[1-9]\d* complete/)
-  expect(start).not.toBe(end)
+  console.log(`day 0: "${start}"  |  ${midFraction} of the way: "${mid}"  |  RFS: "${end}"`)
+
+  // Three genuinely different states, which is the distinction the spec asks for: a zone is not
+  // simply present or absent, it is in a state that changes as the build proceeds.
+  expect(new Set([start, mid, end]).size, 'the model reads the same at all three points').toBe(3)
 })
+
 
 // ---------------------------------------------------------------- the model, without a browser
 
 test('a zone is absent, then under construction, then built', () => {
-  // Pure check of the state machine the 4D view renders. Worth having separately because the
-  // current plan does not exercise the first transition: every stage in it starts on day 0
-  // (see the note in the suite header), so nothing is ever "not started". The logic that makes
-  // a zone appear is implemented and tested here even though this data cannot show it.
+  // Pure check of the state machine the 4D view renders, kept separate from the browser test
+  // because it pins the boundaries exactly - the day a zone starts and the day it completes -
+  // which pixel comparison cannot.
+  //
+  // It used to carry a note saying the real plan could not exercise the first transition,
+  // because every stage started on day 0 and nothing was ever "not started". That stopped being
+  // true when the construction stages were sequenced, and the browser test above now asserts
+  // the same three states end to end.
   const span = { fromDay: 10, toDay: 40, source: 'stage' as const }
 
   expect(zoneStateAt(span, 0)).toBe('not_started')
