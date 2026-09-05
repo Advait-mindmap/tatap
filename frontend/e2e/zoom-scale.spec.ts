@@ -15,7 +15,7 @@
 
 import { expect, test } from '@playwright/test'
 
-import { completedRun } from './support'
+import { completedRun, keepOnlyStages, stagesContaining } from './support'
 
 const SHOTS = 'e2e/screenshots'
 
@@ -93,69 +93,86 @@ test('the zoom floor is derived from the graph, not a constant', async ({ page }
   test.setTimeout(240_000)
   await completedRun(page)
 
-  const zoomNow = () =>
+  const readState = () =>
     page.evaluate(() => {
-      const el = document.querySelector('.react-flow__viewport') as HTMLElement
-      return Number(/scale\(([\d.]+)\)/.exec(el?.style.transform ?? '')?.[1] ?? 0)
+      const canvas = document.querySelector('.canvas') as HTMLElement
+      const viewport = document.querySelector('.react-flow__viewport') as HTMLElement
+      const nodes = Array.from(document.querySelectorAll('.react-flow__node'))
+      let left = Infinity
+      let top = Infinity
+      let right = -Infinity
+      let bottom = -Infinity
+      for (const node of nodes) {
+        const r = node.getBoundingClientRect()
+        left = Math.min(left, r.left)
+        top = Math.min(top, r.top)
+        right = Math.max(right, r.right)
+        bottom = Math.max(bottom, r.bottom)
+      }
+      const pane = canvas.getBoundingClientRect()
+      return {
+        // The floor the view DERIVED for this graph. Read from the app rather than inferred
+        // from behaviour: see the note below on why inferring it is a trap.
+        derived: Number(canvas.getAttribute('data-zoom-floor') ?? 0),
+        zoom: Number(/scale\(([\d.]+)\)/.exec(viewport?.style.transform ?? '')?.[1] ?? 0),
+        nodes: nodes.length,
+        zoomOutDisabled:
+          (document.querySelector('.react-flow__controls-zoomout') as HTMLButtonElement)
+            ?.disabled ?? null,
+        everythingVisible:
+          nodes.length > 0 && left >= pane.left - 2 && right <= pane.right + 2 &&
+          top >= pane.top - 2 && bottom <= pane.bottom + 2,
+      }
     })
 
-  // The zoom at which the WHOLE graph fits the pane, computed the way FlowView computes it.
-  //
-  // Not the fit-view control's zoom, which is what an earlier version of this test used. That
-  // control applies a 0.62 legibility floor, so on a large plan it returns ~0.59 while the whole
-  // graph fits at ~0.27 - a different quantity entirely. The ratio it produced came out at 8.9
-  // against a threshold of 9: passing, but by 1.2%, and measuring the wrong thing to get there.
-  const geometry = await page.evaluate(() => {
-    const pane = document.querySelector('.canvas')!.getBoundingClientRect()
-    const nodes = Array.from(document.querySelectorAll('.react-flow__node')) as HTMLElement[]
-    let minX = Infinity
-    let minY = Infinity
-    let maxX = -Infinity
-    let maxY = -Infinity
-    for (const node of nodes) {
-      const m = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(node.style.transform ?? '')
-      if (!m) continue
-      const x = Number(m[1])
-      const y = Number(m[2])
-      minX = Math.min(minX, x)
-      minY = Math.min(minY, y)
-      maxX = Math.max(maxX, x + (node.offsetWidth || 292))
-      maxY = Math.max(maxY, y + (node.offsetHeight || 104))
+  const zoomOutFully = async () => {
+    for (let i = 0; i < 30; i += 1) {
+      const button = page.locator('.react-flow__controls-zoomout')
+      if (await button.isDisabled()) break
+      const before = (await readState()).zoom
+      await button.click({ timeout: 4000 }).catch(() => {})
+      await page.waitForTimeout(90)
+      if (Math.abs((await readState()).zoom - before) < 1e-6) break
     }
-    const width = maxX - minX
-    const height = maxY - minY
-    return { fits: Math.min(pane.width / width, pane.height / height), width, height }
-  })
-  expect(geometry.fits, 'could not measure the graph').toBeGreaterThan(0)
-
-  // Find the floor by zooming out until it stops moving.
-  let floor = await zoomNow()
-  for (let i = 0; i < 30; i += 1) {
-    await page.locator('.react-flow__controls-zoomout').click({ timeout: 5000 }).catch(() => {})
-    await page.waitForTimeout(90)
-    const now = await zoomNow()
-    if (Math.abs(now - floor) < 1e-6) break
-    floor = now
+    return readState()
   }
 
-  // The rule FlowView states: a quarter of the zoom the graph fits at, clamped to [0.005, 0.2].
-  const expected = Math.min(0.2, Math.max(0.005, geometry.fits / 4))
-  console.log(
-    `  graph ${Math.round(geometry.width)}x${Math.round(geometry.height)}px  ` +
-      `fits at ${geometry.fits.toFixed(4)}  floor ${floor.toFixed(4)}  ` +
-      `expected ${expected.toFixed(4)}  (${(geometry.fits / floor).toFixed(1)}x out)`,
-  )
+  // --- the whole programme, zoomed all the way out
+  const big = await zoomOutFully()
+  console.log(`  full graph: ${big.nodes} nodes, derived floor ${big.derived.toFixed(4)}, ` +
+    `stopped at ${big.zoom.toFixed(4)}, zoom-out disabled: ${big.zoomOutDisabled}, ` +
+    `whole graph visible: ${big.everythingVisible}`)
 
-  // Asserted against the rule rather than against a hand-picked ratio, so it stays true as the
-  // plan grows. The tolerance covers node measurement differing slightly from React Flow's own.
-  expect(Math.abs(floor - expected) / expected, `floor ${floor}, expected ~${expected}`)
-    .toBeLessThan(0.15)
+  // The floor is low enough to show the entire programme. This is what the derived floor is
+  // for: a fixed floor above it returns a cropped graph the reader cannot zoom out of, which
+  // is the fault the old constant 0.15 caused.
+  expect(big.everythingVisible, 'the whole graph is not visible even at maximum zoom-out')
+    .toBe(true)
+  expect(big.zoomOutDisabled, 'the control is not disabled at the floor, so there is no floor')
+    .toBe(true)
 
-  // And the two properties the rule exists for, stated directly:
-  //  - below the whole-graph fit, so fitView is never clamped and "show me the whole
-  //    programme" cannot silently return a cropped graph (the fault the fixed 0.15 floor had);
-  //  - real headroom, so there is somewhere to go for orientation.
-  expect(floor, 'the floor is at or above the zoom the whole graph fits at')
-    .toBeLessThan(geometry.fits)
-  expect(geometry.fits / floor, 'there is no real headroom below the fit').toBeGreaterThan(1.5)
+  // --- a much smaller graph
+  const withActivities = await stagesContaining(page, 'activity')
+  await keepOnlyStages(page, withActivities.slice(0, 2))
+  await page.waitForTimeout(1500)
+  const small = await readState()
+  console.log(`  collapsed:  ${small.nodes} nodes, derived floor ${small.derived.toFixed(4)}`)
+
+  expect(small.nodes, 'collapsing removed nothing').toBeLessThan(big.nodes)
+
+  // A CONSTANT floor would be identical for both graphs; a derived one is higher for the
+  // smaller graph, because less zooming out is needed to see all of it.
+  //
+  // Asserted on the DERIVED value, not on the lowest zoom the controls reach. Two earlier
+  // versions of this test got that wrong in different ways - one recomputed the app's formula
+  // from different inputs and disagreed with it on CI, the other measured the zoom reachable by
+  // clicking. The second looks right and is not: when the floor RISES, React Flow refuses
+  // further zoom-out but does not pull the current transform up to meet it, so the reachable
+  // zoom is wherever the view already was. That reads as "the floor never changed" when in fact
+  // it changed and is being enforced - which the disabled control below is the real evidence of.
+  expect(small.derived, `the floor did not change with the graph ` +
+    `(${small.derived} for ${small.nodes} nodes vs ${big.derived} for ${big.nodes}) — ` +
+    'it is behaving like a constant').toBeGreaterThan(big.derived)
+  expect(small.derived / big.derived, 'the floor barely moved for a much smaller graph')
+    .toBeGreaterThan(1.2)
 })

@@ -333,6 +333,7 @@ function FlowViewInner({
 
     // Only react to a real change. Writing state on every render would refit forever.
     setZoomFloor((current) => (Math.abs(current - next) / next > 0.02 ? next : current));
+
   }, [nodes, nodesInitialized, signature]);
 
   /**
@@ -524,7 +525,15 @@ function FlowViewInner({
           </section>
         </nav>}
 
-        <main className="canvas" data-testid="canvas" ref={canvasRef}>
+        <main
+          className="canvas"
+          data-testid="canvas"
+          ref={canvasRef}
+          // Exposed so a test can see the DERIVED floor, not just the zoom the controls
+          // happen to stop at. Without it a floor that never recomputes and a floor that
+          // recomputes to the same value are indistinguishable from outside.
+          data-zoom-floor={zoomFloor}
+        >
           <HighlightContext.Provider value={highlightState}>
             <ReactFlow
               nodes={nodes}
