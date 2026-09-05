@@ -111,15 +111,27 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
     ),
     GateRule(
         id='superstructure_complete',
-        label='Superstructure complete - frame available for envelope',
+        label='Superstructure complete - frame available for envelope and MEP',
         producer_stage='superstructure',
-        consumer_stages=('envelope',),
+        consumer_stages=('envelope', 'mep_power', 'mep_cooling'),
         kind='predecessor_stage',
         why=(
-            'INTRODUCED FOR REVIEW. Cladding and blockwork hang off the frame, so the frame must '
-            'be up first. Conservative in the same way as substructure_complete: envelope '
-            'normally follows the erection gang around the building rather than waiting for '
-            'topping out, and fireproofing to steel often overlaps the envelope entirely.'
+            'INTRODUCED FOR REVIEW. Cladding and blockwork hang off the frame, and MEP first fix '
+            'is installed into it - containment, cable tray, pipework and plant plinths all need '
+            'structure to fix to. Without this the transformer and chiller installations began '
+            'on the same day as the foundations.\n'
+            '\n'
+            'This one costs schedule, which is the point: mep_power can no longer start until '
+            'the frame is up, and on a 12 MW N+1 brief that is what makes the power train the '
+            'critical path rather than an artefact of everything starting at once.\n'
+            '\n'
+            'Conservative in the same way as substructure_complete: envelope normally follows '
+            'the erection gang around the building rather than waiting for topping out, MEP '
+            'first fix commonly starts in the zones already framed, and fireproofing to steel '
+            'often overlaps the envelope entirely. NOT MODELLED: the part of MEP that genuinely '
+            'is independent of the frame - external substation and yard works, and the off-site '
+            'manufacture the delivery gates already cover - is held back here with the rest, so '
+            'this overstates the constraint on those.'
         ),
     ),
     GateRule(

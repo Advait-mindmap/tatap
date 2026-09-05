@@ -328,6 +328,8 @@ def test_each_sequencing_gate_actually_reaches_the_activities(full_walk):
     expected = {
         'superstructure': 'gate.substructure-complete',
         'envelope': 'gate.superstructure-complete',
+        'mep_power': 'gate.superstructure-complete',
+        'mep_cooling': 'gate.superstructure-complete',
         'fit_out': 'gate.envelope-complete',
     }
     for stage, gate in expected.items():
@@ -365,3 +367,41 @@ def test_the_critical_path_is_still_procurement_led(full_walk):
         'critical path is no longer procurement-led'
     )
     assert output['rfs_day'] > mep_end
+
+
+def test_mep_waits_for_the_frame_but_delivery_still_drives_its_finish(full_walk):
+    """Both halves matter, and they are easy to confuse.
+
+    Gating MEP on the frame moves when the power train can START - plinths and pad preparation
+    need structure to fix to. It does NOT move when the power train FINISHES, because the
+    32-week transformer lands long after the frame is up, and everything from placement onward
+    hangs off that delivery.
+
+    So sequencing MEP does not change RFS on the briefs this library can produce, and that is
+    the correct result rather than a missing effect: DOMAIN_KNOWLEDGE.md section 4 says long-lead
+    plant drives RFS, and this is that claim being true. The test pins both halves so a future
+    change cannot quietly break either - if the frame ever became the binding constraint, the
+    plan would have stopped being procurement-led and someone should notice.
+    """
+    output, activities, _ = full_walk
+
+    frame_end = stage_span(activities, 'superstructure')[1]
+    mep_start, mep_end = stage_span(activities, 'mep_power')
+
+    # The gate binds the start.
+    assert mep_start >= frame_end, (
+        f'mep_power starts on day {mep_start}, before the frame is up on day {frame_end}'
+    )
+
+    # Delivery binds the finish.
+    delivery = next(
+        a for a in output['activities'] if a['id'] == 'gate.delivery-lead-transformer-hv'
+    )
+    assert delivery['finish_day'] > frame_end, (
+        f"the transformer lands on day {delivery['finish_day']}, before the frame is up on "
+        f'{frame_end} — the frame is now the binding constraint and the plan is no longer '
+        'procurement-led'
+    )
+    assert mep_end > delivery['finish_day'], (
+        'the power train finishes before its transformer arrives'
+    )
