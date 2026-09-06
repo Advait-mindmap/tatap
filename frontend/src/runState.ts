@@ -223,7 +223,13 @@ export function reduceEvent(state: RunState, event: SimulationEvent): RunState {
       return {
         ...next,
         openDecisions: next.openDecisions.filter((d) => d.id !== p.decision_point_id),
-        answered: [...next.answered, { id: p.decision_point_id, answer: p.answer }],
+        // Deduped: answer() records the answer optimistically so a paused client cannot be
+        // offered the same fork twice, and the server's confirmation then arrives for it.
+        answered: next.answered.some((a) => a.id === p.decision_point_id)
+          ? next.answered.map((a) =>
+              a.id === p.decision_point_id ? { id: a.id, answer: p.answer } : a,
+            )
+          : [...next.answered, { id: p.decision_point_id, answer: p.answer }],
         nodes: next.nodes.map((n) =>
           n.id === `decision.${p.decision_point_id}`
             ? { ...n, status: 'resolved' as const, answer: p.answer }
@@ -270,9 +276,24 @@ export function reduceEvent(state: RunState, event: SimulationEvent): RunState {
     case 'simulation_halted':
     case 'simulation_completed': {
       const output = (p.output ?? null) as SimulationOutput | null
+      // Never re-offer something already answered.
+      //
+      // A halted event is HISTORY: it says what was open when the server sent it. While the
+      // reader is paused or stepping, the client is deliberately behind, so adopting an old
+      // halt's fork list can resurrect a fork that has since been answered. Clicking it again
+      // is rejected with "not an open decision on this run", which ends the run - which is
+      // exactly what happened to live-3d.spec, where stepping keeps the client behind on
+      // purpose. The optimistic prune used to hide this by accident; reconciling has to handle
+      // it deliberately.
+      const alreadyAnswered = new Set(next.answered.map((a) => a.id))
       const reconciled = output
         ? output.flow.nodes
-            .filter((n) => n.kind === 'decision_point' && n.status === 'open')
+            .filter(
+              (n) =>
+                n.kind === 'decision_point' &&
+                n.status === 'open' &&
+                !alreadyAnswered.has(n.id.replace(/^decision\./, '')),
+            )
             .map((n) => {
               const id = n.id.replace(/^decision\./, '')
               const known = next.openDecisions.find((d) => d.id === id)

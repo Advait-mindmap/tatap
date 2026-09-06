@@ -37,7 +37,16 @@ def _decision_nodes(
     rather than disappearing once answered.
     """
     nodes: List[Dict[str, Any]] = []
-    for decision_id, payload in sorted(pending.items()):
+    # A fork that has been ANSWERED but not yet popped is in both maps: `pending_decisions`
+    # keeps its entry until run() emits decision_resolved. Emitting it from both produced two
+    # nodes with the same id - one open, one resolved - and the open one was a lie. It is what
+    # the "N open decision point(s)" badge counted while the run was actually waiting on
+    # nothing, and a client that offers it as a card gets the run killed: answering a fork the
+    # server has already resolved is rejected with "not an open decision on this run".
+    #
+    # Resolved wins, because an answer is a fact and a stale pending entry is bookkeeping.
+    still_open = {k: v for k, v in pending.items() if k not in resolved}
+    for decision_id, payload in sorted(still_open.items()):
         nodes.append({
             'id': f'decision.{decision_id}',
             'kind': 'decision_point',

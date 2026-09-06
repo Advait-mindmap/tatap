@@ -267,3 +267,34 @@ def test_dcma_summary_declares_what_it_did_not_check(output):
     assert 'float' in dcma['checks_not_run']
     assert 'critical_path_length_index' in dcma['checks_not_run']
     assert 'Partial' in dcma['note']
+
+
+def test_an_answered_fork_is_not_also_reported_as_open():
+    """A fork is open or resolved, never both.
+
+    `pending_decisions` keeps its entry until run() emits decision_resolved, so between
+    answering a fork and resuming the walk it sits in BOTH maps. Emitting it from both produced
+    two nodes with the same id - one open, one resolved.
+
+    That stale open node is what the "N open decision point(s)" badge counted while the run was
+    waiting on nothing, and it is worse than cosmetic: a client that reads the output to decide
+    which forks to offer will offer the answered one, and answering a resolved fork is rejected
+    with "not an open decision on this run", which ends the run.
+    """
+    from backend.app.simulator.output import _decision_nodes
+
+    pending = {
+        'dp.answered': {'stage': 'procurement', 'question': 'Already answered?'},
+        'dp.still_open': {'stage': 'procurement', 'question': 'Still waiting?'},
+    }
+    resolved = {'dp.answered': {'stage': 'procurement', 'question': 'Already answered?',
+                                'answer': 'yes'}}
+
+    nodes = _decision_nodes(resolved, pending)
+    ids = [n['id'] for n in nodes]
+    assert len(ids) == len(set(ids)), f'the same fork appears twice: {ids}'
+
+    by_id = {n['id']: n for n in nodes}
+    assert by_id['decision.dp.answered']['status'] == 'resolved'
+    assert by_id['decision.dp.still_open']['status'] == 'open'
+    assert [n['id'] for n in nodes if n['status'] == 'open'] == ['decision.dp.still_open']

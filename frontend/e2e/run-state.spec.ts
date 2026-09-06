@@ -201,3 +201,68 @@ test('answering the last fork lets the run continue', () => {
   expect(after.status).toBe('running')
   expect(after.openDecisions).toEqual([])
 })
+
+test('a fork the user already answered is never re-offered by a stale halt', () => {
+  // The regression the reconciliation introduced, and the reason live-3d died with
+  // "dp.x is not an open decision on this run. Open: []".
+  //
+  // A halted event is HISTORY - it says what was open when the server sent it. A client that is
+  // paused or stepping is deliberately behind, so adopting an old halt can resurrect a fork the
+  // user has since answered. Clicking it again ends the run.
+  const halted = drive([
+    event('decision_needed', 'enabling', {
+      id: 'dp.greenfield_brownfield',
+      question: 'Greenfield or brownfield?',
+      why_stuck: 'The brief is ambiguous',
+      options: ['Greenfield', 'Brownfield'],
+      impact: 'Changes enabling works',
+      blocking: true,
+    }),
+    event('simulation_halted', 'enabling', {
+      run_id: 'run-test',
+      pending: ['dp.greenfield_brownfield'],
+      output: outputWith([forkNode('dp.greenfield_brownfield', 'open')]),
+    }),
+  ])
+  expect(halted.openDecisions).toHaveLength(1)
+
+  // The user answers. App.answer() records it optimistically, which is what this simulates.
+  const answeredLocally: RunState = {
+    ...halted,
+    status: 'running',
+    openDecisions: [],
+    answered: [{ id: 'dp.greenfield_brownfield', answer: 'Greenfield' }],
+  }
+
+  // A halt from BEFORE that answer now drains - the client was paused, so it is behind.
+  const afterStaleHalt = reduceEvent(
+    answeredLocally,
+    event('simulation_halted', 'enabling', {
+      run_id: 'run-test',
+      pending: ['dp.greenfield_brownfield'],
+      output: outputWith([forkNode('dp.greenfield_brownfield', 'open')]),
+    }),
+  )
+
+  expect(
+    afterStaleHalt.openDecisions.map((d) => d.id),
+    'a stale halt re-offered a fork the user had already answered — answering it again kills ' +
+      'the run',
+  ).toEqual([])
+})
+
+test('the server confirming an answer does not duplicate it', () => {
+  const state: RunState = {
+    ...INITIAL_RUN,
+    answered: [{ id: 'dp.ofe', answer: 'Owner-furnished' }],
+  }
+  const after = reduceEvent(
+    state,
+    event('decision_resolved', 'procurement', {
+      decision_point_id: 'dp.ofe',
+      answer: 'Owner-furnished',
+    }),
+  )
+  expect(after.answered).toHaveLength(1)
+  expect(after.answered[0]).toEqual({ id: 'dp.ofe', answer: 'Owner-furnished' })
+})

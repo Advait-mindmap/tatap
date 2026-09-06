@@ -148,6 +148,13 @@ export default function App() {
         ...current,
         status: remaining.length ? 'halted' : 'running',
         openDecisions: remaining,
+        // Recorded here, not only when the server confirms. An authoritative halt that arrives
+        // (or is drained) later still lists this fork as open, because it was open when the
+        // server sent it - and re-offering an answered fork gets the run killed. This is the
+        // client remembering what it has already said.
+        answered: current.answered.some((a) => a.id === decisionPointId)
+          ? current.answered
+          : [...current.answered, { id: decisionPointId, answer: value }],
       }
     })
     socket.current?.answer(decisionPointId, value)
