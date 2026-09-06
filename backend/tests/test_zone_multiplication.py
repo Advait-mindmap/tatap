@@ -112,15 +112,21 @@ def test_a_zone_bearing_fragnet_is_instanced_once_per_zone(result, fragnet_id, k
     instanced = [a for a in result.activities
                  if a.source_fragnet == fragnet_id and a.type == 'task']
     for spec in frag['activities']:
-        matching = [a for a in instanced if a.name.split(' - ')[0] == spec['name']]
+        # An activity decomposed into execution steps is present AS those steps, which carry
+        # its name as their prefix. Multiplication and decomposition compose: each step is
+        # instanced in each zone.
+        steps = len(spec.get('steps') or []) or 1
+        matching = [a for a in instanced if a.name.split(' - ')[0].startswith(spec['name'])]
         if spec.get('zone_scope') == 'project':
-            assert len(matching) == 1, (
-                f'{spec["id"]} is project-wide and was instanced {len(matching)} times'
+            assert len(matching) == steps, (
+                f'{spec["id"]} is project-wide and was instanced {len(matching)} times, '
+                f'expected {steps}'
             )
         else:
-            assert sorted(a.zone_id for a in matching) == zones, (
+            assert sorted({a.zone_id for a in matching}) == zones, (
                 f'{spec["id"]} was not instanced in every {kind}'
             )
+            assert len(matching) == steps * len(zones)
 
 
 def test_work_that_happens_once_is_never_multiplied(result):

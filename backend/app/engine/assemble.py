@@ -124,6 +124,59 @@ def _selection_governance(selection: Any) -> Tuple[float, List[str], str]:
     return confidence, unverified, tier
 
 
+def _expand_steps(activities):
+    """Flatten a fragnet's activities, replacing any that declare `steps` with those steps.
+
+    Tier 4. A library activity like "Transformer placement and alignment, 8 days" is a
+    DELIVERABLE, not a thing a foreman can sequence: it hides a rigging study, an offload, a
+    levelling, a grouting and a set of pre-energisation tests, which happen in that order and
+    need different trades and different plant on site.
+
+    The parent is REPLACED rather than kept alongside its steps, because keeping both would
+    double-count the duration. Its identity survives in `parent`, which is what the WBS groups on
+    and what a gate or a statutory lodgement naming the parent still resolves through.
+
+    Returns (flattened specs, {parent id: [step ids in order]}).
+    """
+    flat = []
+    children = {}
+    for spec in activities or []:
+        steps = spec.get('steps') or []
+        if not steps:
+            flat.append(dict(spec, parent=None))
+            continue
+        for step in steps:
+            ident = f'{spec["id"]}-{step["id"]}'
+            children.setdefault(spec['id'], []).append(ident)
+            flat.append({
+                **step,
+                'id': ident,
+                'parent': spec['id'],
+                'parent_name': spec['name'],
+                # Inherited from the deliverable: a step is done on the same calendar, in the
+                # same zone, and under the same review tier as the work it is part of.
+                'calendar': step.get('calendar') or spec.get('calendar'),
+                'zone_scope': spec.get('zone_scope'),
+                'hitl_tier': step.get('hitl_tier') or spec.get('hitl_tier'),
+                'safety_flag': step.get('safety_flag', spec.get('safety_flag')),
+            })
+    return flat, children
+
+
+#: Which end of a decomposed activity a logic link attaches to.
+#:
+#: Once an 8-day activity is six steps, "c20 -> c30 finish-to-start" has to mean the LAST step of
+#: c20 to the FIRST step of c30. Reading the relationship type is not a nicety: attaching both
+#: ends to the first step turns a finish-to-start into a start-to-start and quietly overlaps two
+#: activities that must not overlap.
+_LINK_END = {
+    'FS': ('last', 'first'),
+    'SS': ('first', 'first'),
+    'FF': ('last', 'last'),
+    'SF': ('first', 'last'),
+}
+
+
 def _zone_named(name, zone):
     """An activity's name, said with the zone it happens in.
 
@@ -211,6 +264,10 @@ def assemble(
     # must skip them: filing the campus cabling backbone under hall 1 is not a smaller error
     # than filing it nowhere, it is a wrong one, and the 4D model would draw it inside a hall.
     campus_wide: set = set()
+    # (fragnet_id, activity_id) -> the instanced ids that START and FINISH it. For an activity
+    # decomposed into steps the two differ, which is what lets a finish-to-start link attach to
+    # the last step and a start-to-start to the first.
+    first_of: Dict[Tuple[str, str], List[str]] = {}
     # (fragnet_id, fragnet_activity_id) -> instanced id, for material-link resolution.
     link_target: Dict[Tuple[str, str], List[str]] = {}
     delivery_modes = {k.lower(): v for k, v in (brief.get('delivery_mode_by_discipline') or {}).items()}
@@ -267,8 +324,9 @@ def assemble(
                     return [(0, None)]
                 return list(enumerate(zone_instances, start=1))
 
+            specs, step_children = _expand_steps(fragnet.get('activities'))
             activity_index = -1
-            for spec in fragnet.get('activities', []) or []:
+            for spec in specs:
                 for zone_index, zone in zones_for(spec):
                     activity_index += 1
                     ident = activity_id(stage, fragnet['id'], spec['id'], zone_index)
@@ -278,12 +336,21 @@ def assemble(
                     explicit_safety = bool(spec.get('safety_flag'))
                     is_safety = explicit_safety or bool(safety_matches)
                     hitl = spec.get('hitl_tier') or ('tier_1' if safety_matches else tier)
-                    holds = holds_by_activity.get(spec['id'], [])
+                    # A hold declared against the deliverable belongs after its LAST step: a
+                    # pre-energisation inspection is not passed halfway through the install.
+                    last_step = (step_children.get(spec.get('parent') or '') or [None])[-1]
+                    holds = list(holds_by_activity.get(spec['id'], []))
+                    if spec.get('parent') and spec['id'] == last_step:
+                        holds += holds_by_activity.get(spec['parent'], [])
 
                     activities.append(AssembledActivity(
                         id=ident,
                         wbs_id=wbs_id(stage_idx, stage, package_index, activity_index),
-                        name=_zone_named(spec['name'], zone),
+                        name=_zone_named(
+                            f'{spec["parent_name"]}: {spec["name"]}'
+                            if spec.get('parent') else spec['name'],
+                            zone,
+                        ),
                         type='task',
                         duration_days=int(spec.get('duration_days') or 0),
                         calendar=spec.get('calendar') or '6day',
@@ -306,6 +373,17 @@ def assemble(
                     if zone_instances and zone is None:
                         campus_wide.add(ident)
                     link_target.setdefault((fragnet['id'], spec['id']), []).append(ident)
+                    first_of.setdefault((fragnet['id'], spec['id']), []).append(ident)
+                    parent = spec.get('parent')
+                    if parent:
+                        siblings = step_children.get(parent) or []
+                        # The deliverable STARTS when its first step does and FINISHES when its
+                        # last does. A gate or a statutory lodgement naming the parent keeps
+                        # working, and keeps meaning what it meant.
+                        if spec['id'] == siblings[0]:
+                            first_of.setdefault((fragnet['id'], parent), []).append(ident)
+                        if spec['id'] == siblings[-1]:
+                            link_target.setdefault((fragnet['id'], parent), []).append(ident)
                     stage_activity_ids.setdefault(stage, []).append(ident)
 
                     trail.append(TrailEntry(
@@ -333,6 +411,9 @@ def assemble(
                             duration_days=0,
                             dept_code=hold.get('role') or 'qaqc',
                             stage=stage,
+                            # The hold belongs where its work is. Left to the zone fallback,
+                            # every room's pre-energisation inspection was filed in room 01.
+                            zone_id=(zone or {}).get('id'),
                             predecessors=[{'id': ident, 'type': 'FS', 'lag': 0}],
                             hitl_tier=hitl,
                             blocks_export=hitl == 'tier_1',
@@ -347,12 +428,28 @@ def assemble(
                             why=f'Quality hold point owned by {hold.get("role", "qaqc")}.',
                         ))
 
+            # Steps run in series inside their deliverable. Anything richer - an overlap, a
+            # crew constraint - would be a second layer of invention on top of the durations.
+            for parent, children in sorted(step_children.items()):
+                for earlier, later in zip(children, children[1:]):
+                    for source, target in _pair_by_zone(
+                        link_target.get((fragnet['id'], earlier), []),
+                        first_of.get((fragnet['id'], later), []),
+                    ):
+                        edges.append(AssembledEdge(
+                            from_id=source, to_id=target, type='FS', lag=0, kind='fragnet',
+                            why=f'Execution step order within {parent} ({fragnet["id"]}).',
+                        ))
+
             for link in sorted(
                 fragnet.get('logic', []) or [], key=lambda l: (l['from'], l['to'])
             ):
+                from_end, to_end = _LINK_END.get(link.get('type', 'FS'), ('last', 'first'))
                 pairs = _pair_by_zone(
-                    link_target.get((fragnet['id'], link['from']), []),
-                    link_target.get((fragnet['id'], link['to']), []),
+                    (link_target if from_end == 'last' else first_of)
+                    .get((fragnet['id'], link['from']), []),
+                    (link_target if to_end == 'last' else first_of)
+                    .get((fragnet['id'], link['to']), []),
                 )
                 for source, target in pairs:
                     edges.append(AssembledEdge(
@@ -365,7 +462,7 @@ def assemble(
     zone_counts = {kind: len(members) for kind, members in zones_by_kind.items()}
     gate_activities, gate_edges, gate_warnings = _build_cross_stage_gates(
         ordered, stage_activity_ids, link_target, fragnet_lib, lead_lib,
-        by_id={a.id: a for a in activities}, zone_counts=zone_counts,
+        by_id={a.id: a for a in activities}, zone_counts=zone_counts, first_of=first_of,
     )
     activities.extend(gate_activities)
     edges.extend(gate_edges)
@@ -661,6 +758,7 @@ def _build_cross_stage_gates(
     lead_lib: Sequence[Dict[str, Any]] = (),
     by_id: Optional[Dict[str, AssembledActivity]] = None,
     zone_counts: Optional[Dict[str, int]] = None,
+    first_of: Optional[Dict[Tuple[str, str], List[str]]] = None,
 ) -> Tuple[List[AssembledActivity], List[AssembledEdge], List[str]]:
     """Emit gate milestones and their edges from the declarative rules.
 
@@ -674,6 +772,9 @@ def _build_cross_stage_gates(
     stages_present = {r.stage for r in ordered}
     by_id = by_id or {}
     zone_counts = zone_counts or {}
+    # Where an activity was not decomposed its start and finish are the same instance, so
+    # falling back to `link_target` keeps every existing caller correct.
+    first_of = first_of if first_of is not None else link_target
 
     def emit_gate(ident: str, label: str, stage: str, rule: GateRule,
                   anchored: bool, zone: str = '') -> AssembledActivity:
@@ -854,10 +955,13 @@ def _build_cross_stage_gates(
     }
     links = material_link_index(fragnet_lib)
     for lead_id, pairs in links.items():
+        # `first_of`, not `link_target`: plant is needed when the work STARTS. With an activity
+        # decomposed into steps the two differ, and gating the finish would let the offload begin
+        # before the transformer had landed.
         targets = sorted({
             instanced
             for frag_id, act_id in pairs
-            for instanced in link_target.get((frag_id, act_id), [])
+            for instanced in first_of.get((frag_id, act_id), [])
         })
         if not targets:
             continue

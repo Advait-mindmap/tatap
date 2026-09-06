@@ -621,19 +621,133 @@
           "id": "c20",
           "name": "Transformer placement and alignment",
           "duration_days": 8,
-          "calendar": "6day"
+          "calendar": "6day",
+          "steps": [
+            {
+              "id": "s10",
+              "name": "Rigging study and lifting method statement approval",
+              "duration_days": 2
+            },
+            {
+              "id": "s20",
+              "name": "Offload from trailer and move to plinth",
+              "duration_days": 1,
+              "requires_delivery_of": "lead.transformer_hv"
+            },
+            {
+              "id": "s30",
+              "name": "Set on plinth, level and align to survey marks",
+              "duration_days": 2
+            },
+            {
+              "id": "s40",
+              "name": "Anti-vibration mounts and grouting",
+              "duration_days": 1
+            },
+            {
+              "id": "s50",
+              "name": "Oil level / nitrogen blanket check and top-up",
+              "duration_days": 1
+            },
+            {
+              "id": "s60",
+              "name": "Pre-energisation IR, ratio and polarity tests",
+              "duration_days": 1
+            }
+          ]
         },
         {
           "id": "c30",
           "name": "HV/MV switchgear installation",
           "duration_days": 30,
-          "calendar": "6day"
+          "calendar": "6day",
+          "steps": [
+            {
+              "id": "s10",
+              "name": "Setting out and base frame installation",
+              "duration_days": 4
+            },
+            {
+              "id": "s20",
+              "name": "Panel offload, positioning and mechanical coupling",
+              "duration_days": 5,
+              "requires_delivery_of": "lead.hv_switchgear"
+            },
+            {
+              "id": "s30",
+              "name": "Busbar jointing and torque verification",
+              "duration_days": 5
+            },
+            {
+              "id": "s40",
+              "name": "Earthing and bonding to the earth mat",
+              "duration_days": 3
+            },
+            {
+              "id": "s50",
+              "name": "Protection relay and control wiring",
+              "duration_days": 6
+            },
+            {
+              "id": "s60",
+              "name": "Secondary injection and protection-scheme testing",
+              "duration_days": 5
+            },
+            {
+              "id": "s70",
+              "name": "Panel cleaning, labelling and final dressing",
+              "duration_days": 2
+            }
+          ]
         },
         {
           "id": "c40",
           "name": "LV panel and UPS installation",
           "duration_days": 35,
-          "calendar": "6day"
+          "calendar": "6day",
+          "steps": [
+            {
+              "id": "s10",
+              "name": "LV panel positioning and fixing",
+              "duration_days": 5
+            },
+            {
+              "id": "s20",
+              "name": "LV busbar interconnection and torque check",
+              "duration_days": 4
+            },
+            {
+              "id": "s30",
+              "name": "UPS module placement and mechanical fixing",
+              "duration_days": 4,
+              "requires_delivery_of": "lead.ups"
+            },
+            {
+              "id": "s40",
+              "name": "Battery rack assembly",
+              "duration_days": 4
+            },
+            {
+              "id": "s50",
+              "name": "Battery string installation and inter-cell links",
+              "duration_days": 6
+            },
+            {
+              "id": "s60",
+              "name": "DC connections, polarity and IR verification",
+              "duration_days": 4
+            },
+            {
+              "id": "s70",
+              "name": "UPS control wiring and parallel-bus configuration",
+              "duration_days": 4
+            },
+            {
+              "id": "s80",
+              "name": "Initial power-up and battery capacity / burn-in test",
+              "duration_days": 4
+            }
+          ]
         },
         {
           "id": "c50",
@@ -748,15 +862,15 @@
       ],
       "material_links": [
         {
-          "activity": "c20",
+          "activity": "c20-s20",
           "requires_delivery_of": "lead.transformer_hv"
         },
         {
-          "activity": "c30",
+          "activity": "c30-s20",
           "requires_delivery_of": "lead.hv_switchgear"
         },
         {
-          "activity": "c40",
+          "activity": "c40-s30",
           "requires_delivery_of": "lead.ups"
         },
         {
@@ -773,7 +887,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Transformer-to-UPS installation and test. Switchgear and UPS install dominate; the sequence is gated by delivery, not by labour. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates. --- EXTENDED FOR REVIEW (three additions). c65 DIESEL GENERATOR SET INSTALLATION: lead.generator was in equipment_lead_times at 30 weeks with drives_rfs=true and was consumed by nothing, so the gensets never appeared in any programme and their lead time constrained nothing. It now carries a material link. Owner-furnished gensets (dp.ofe) change WHO procures, not the lead time, so the delivery gate applies either way. c67 BULK HSD STORAGE: the fuel system path.nm.peso_hsd licenses had no activity to gate; PESO is a safety approval for bulk diesel and its absence was a real hole. c70 HV/MV ENERGISATION: the package previously ended at cable termination, so there was no energisation step at all - which meant DOMAIN_KNOWLEDGE.md#5 (\"energisation cannot precede CEIG approval\") had nothing to attach to, and safety.hv_energisation, a Tier-1 entry that BLOCKS EXPORT, matched no activity in any plan ever produced. THREE DURATIONS AND FIVE LOGIC LINKS ARE ESTIMATES. JUDGEMENTS TO CHALLENGE: 15 days for energisation assumes a single energisation event, where a 2N facility energises each path separately; the SS+10 from genset to fuel system assumes one contractor; and c65 hangs off c10 (plinth and pad preparation), which assumes the genset pads are poured with the transformer pads.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.",
+        "note": "Transformer-to-UPS installation and test. Switchgear and UPS install dominate; the sequence is gated by delivery, not by labour. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates. --- EXTENDED FOR REVIEW (three additions). c65 DIESEL GENERATOR SET INSTALLATION: lead.generator was in equipment_lead_times at 30 weeks with drives_rfs=true and was consumed by nothing, so the gensets never appeared in any programme and their lead time constrained nothing. It now carries a material link. Owner-furnished gensets (dp.ofe) change WHO procures, not the lead time, so the delivery gate applies either way. c67 BULK HSD STORAGE: the fuel system path.nm.peso_hsd licenses had no activity to gate; PESO is a safety approval for bulk diesel and its absence was a real hole. c70 HV/MV ENERGISATION: the package previously ended at cable termination, so there was no energisation step at all - which meant DOMAIN_KNOWLEDGE.md#5 (\"energisation cannot precede CEIG approval\") had nothing to attach to, and safety.hv_energisation, a Tier-1 entry that BLOCKS EXPORT, matched no activity in any plan ever produced. THREE DURATIONS AND FIVE LOGIC LINKS ARE ESTIMATES. JUDGEMENTS TO CHALLENGE: 15 days for energisation assumes a single energisation event, where a 2N facility energises each path separately; the SS+10 from genset to fuel system assumes one contractor; and c65 hangs off c10 (plinth and pad preparation), which assumes the genset pads are poured with the transformer pads.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.\n\n--- INVENTED FOR REVIEW - every step below is mine, not transcribed. The PARENT activity and its duration are unchanged; the steps are a decomposition of it, and their durations sum exactly to it (enforced by test_execution_steps.py). So the step DURATIONS move no date: had they summed to anything else, the whole programme would have shifted on the strength of numbers I made up, and that shift would be indistinguishable from a real re-forecast. Re-pointing the material links DOES move dates, deliberately and in the direction of realism - see below - and that is the only thing here that does. Treat the SEQUENCE as the reviewable claim - it is the order these works are actually done in - and the individual day splits as unverified. A planner correcting them should keep the sum, or change the parent duration deliberately.\n\nThe decomposition also makes one thing MORE correct rather than merely finer: a delivery now gates only the step that needs the plant. The rigging study for a transformer can be done while the transformer is still in the factory; the offload cannot. Before this, the whole eight-day activity waited on delivery.\n\nMEASURED: decomposing these three deliverables moved RFS from 863 to 840 on the Navi Mumbai brief. Every day of that comes from the delivery re-pointing, not from the step durations. The switchgear base frames, the LV panel positioning and the rigging study no longer wait in a factory queue they were never actually in.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }

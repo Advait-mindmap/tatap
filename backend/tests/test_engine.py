@@ -160,23 +160,32 @@ def test_every_selected_fragnet_activity_is_instanced(result):
     instanced = [a for a in result.activities if a.source_fragnet == 'frag.mep.power_train'
                  and a.type == 'task']
 
-    # The fragnet repeats per electrical room, so the count is per-zone specs x rooms plus the
-    # specs that happen once. Asserting a bare equality against the library would now be
-    # asserting that zone multiplication did NOT happen.
+    # The fragnet repeats per electrical room AND some of its activities are decomposed into
+    # execution steps, so the count is (steps or 1) x rooms for the repeated work, plus the same
+    # for the work that happens once. Asserting a bare equality against the library would now be
+    # asserting that neither multiplication nor decomposition happened.
     rooms = len({a.zone_id for a in instanced if a.zone_id})
+    assert rooms > 1, 'this brief produced one electrical room, so this proves nothing'
+
+    def leaves(spec):
+        return len(spec.get('steps') or []) or 1
+
     per_zone = [s for s in frag['activities'] if s.get('zone_scope') != 'project']
     once = [s for s in frag['activities'] if s.get('zone_scope') == 'project']
-    assert rooms > 1, 'this brief produced one electrical room, so this proves nothing'
-    assert len(instanced) == len(per_zone) * rooms + len(once)
+    expected = sum(leaves(s) for s in per_zone) * rooms + sum(leaves(s) for s in once)
+    assert len(instanced) == expected
 
-    # Every library activity reached the plan, and the repeated ones reached every room.
+    # Every library activity reached the plan, and the repeated ones reached every room. A
+    # decomposed activity is present as its steps, which carry its name as their prefix.
     for spec in per_zone:
         matching = [a for a in instanced if a.name.startswith(spec['name'])]
         assert len({a.zone_id for a in matching}) == rooms, (
             f'{spec["id"]} was not instanced in every electrical room'
         )
+        assert len(matching) == leaves(spec) * rooms
     for spec in once:
-        assert sum(a.name == spec['name'] for a in instanced) == 1, (
+        matching = [a for a in instanced if a.name.startswith(spec['name'])]
+        assert len(matching) == leaves(spec), (
             f'{spec["id"]} is project-wide and must be instanced exactly once'
         )
 
@@ -203,10 +212,16 @@ def test_fragnet_logic_is_wired_with_type_and_lag(result):
         parts = ident.split('.')
         return parts[-2] if zone_index_of(ident) else parts[-1]
 
+    def deliverable_of(ident):
+        # `c20-s10` is a step OF `c20`. A link declared between deliverables is wired between
+        # their steps, so the comparison has to be made at the deliverable level.
+        return spec_of(ident).split('-')[0]
+
     wired = [
         e for e in result.edges
         if e.kind == 'fragnet'
-        and spec_of(e.from_id) == link['from'] and spec_of(e.to_id) == link['to']
+        and deliverable_of(e.from_id) == link['from']
+        and deliverable_of(e.to_id) == link['to']
     ]
     assert wired, f'{link["from"]}->{link["to"]} was not wired at all'
     for edge in wired:
@@ -314,7 +329,9 @@ def test_delivery_gates_tie_construction_to_delivery(result):
 def test_delivery_gates_are_derived_from_library_material_links():
     """Declared as data, so a fragnet added later is picked up with no code change."""
     index = material_link_index(load_library('fragnets')['entries'])
-    assert index['lead.transformer_hv'] == [('frag.mep.power_train', 'c20')]
+    # The link names the STEP that consumes the plant, not the whole deliverable: the rigging
+    # study for a transformer happens while the transformer is still in the factory.
+    assert index['lead.transformer_hv'] == [('frag.mep.power_train', 'c20-s20')]
     assert 'lead.chiller' in index
 
 
