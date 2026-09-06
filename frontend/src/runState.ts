@@ -232,8 +232,19 @@ export function reduceEvent(state: RunState, event: SimulationEvent): RunState {
       }
 
     // The backend recorded an answer but is still waiting on other forks at this stage.
-    case 'decision_recorded':
-      return { ...next, status: next.openDecisions.length ? 'halted' : 'running' }
+    //
+    // `pending` is the server's list of what is STILL OPEN, so it decides both the status and
+    // which cards remain - rather than the client's own list, which `answer()` has already
+    // pruned optimistically and which can therefore disagree.
+    case 'decision_recorded': {
+      const pending = (p.pending as string[] | undefined) ?? null
+      if (!pending) return { ...next, status: next.openDecisions.length ? 'halted' : 'running' }
+      return {
+        ...next,
+        status: pending.length ? 'halted' : 'running',
+        openDecisions: next.openDecisions.filter((d) => pending.includes(d.id)),
+      }
+    }
 
     case 'stage_completed':
       return {
@@ -244,15 +255,48 @@ export function reduceEvent(state: RunState, event: SimulationEvent): RunState {
       }
 
     // Both settle points carry the authoritative output. Adopt it wholesale rather than
-    // trusting the graph reconstructed from events.
+    // trusting the graph reconstructed from events - INCLUDING which forks are still open.
+    //
+    // The open forks used to be tracked in two places at once: this list, built from
+    // decision_needed events and pruned optimistically by answer(), and the decision_point
+    // nodes inside the output, which is what the "N open decision point(s)" badge counts. Two
+    // sources for one fact will eventually disagree, and the way they disagree is ugly: the
+    // header says "Stopped - needs your decision" and there is no decision anywhere on the
+    // page, with no way for the reader to go forward.
+    //
+    // Reconciling here makes the card and the badge the same fact. The optimistic prune in
+    // answer() stays - it keeps the UI responsive - but it is now a guess that the next
+    // authoritative message corrects, rather than a parallel truth nothing ever checks.
     case 'simulation_halted':
     case 'simulation_completed': {
       const output = (p.output ?? null) as SimulationOutput | null
+      const reconciled = output
+        ? output.flow.nodes
+            .filter((n) => n.kind === 'decision_point' && n.status === 'open')
+            .map((n) => {
+              const id = n.id.replace(/^decision\./, '')
+              const known = next.openDecisions.find((d) => d.id === id)
+              return {
+                id,
+                stage: n.stage,
+                // Prefer what the event carried, since the node's label is the question
+                // truncated for the canvas; fall back to the node when there is no event -
+                // which is exactly the reconnect case.
+                question: known?.question ?? n.label,
+                why_stuck: known?.why_stuck ?? n.why_stuck ?? '',
+                options: known?.options ?? n.options ?? [],
+                impact: known?.impact ?? n.impact ?? '',
+                blocking: known?.blocking ?? n.blocking ?? true,
+                detection: known?.detection ?? 'curated',
+              }
+            })
+        : next.openDecisions
       return {
         ...next,
         status: event.type === 'simulation_halted' ? 'halted' : 'complete',
         runId: p.run_id ?? output?.project_meta?.run_id ?? next.runId,
         output,
+        openDecisions: reconciled,
         nodes: output ? output.flow.nodes : next.nodes,
         edges: output ? output.flow.edges : next.edges,
       }

@@ -173,3 +173,30 @@ def test_new_ids_do_not_restart_at_one_after_a_process_restart():
     second = RunRegistry(store=RunStore(session_factory=None)).new_id()
     assert first != second
     assert not first.endswith('-1')
+
+
+def test_run_ids_are_unguessable_not_merely_unique():
+    """The id is a capability now.
+
+    A run URL attaches to the run and can answer its decision points, so whoever holds the id
+    can act on the run. That makes guessability the requirement, not just collision resistance -
+    and they are different bars. The id was uuid4 truncated to 48 bits, which is ample against
+    collision and needlessly thin against guessing.
+    """
+    import os
+    import re
+
+    registry = RunRegistry(store=RunStore(session_factory=None))
+    ids = [registry.new_id() for _ in range(200)]
+
+    assert len(set(ids)) == len(ids), 'run ids collided'
+    for run_id in ids:
+        assert re.fullmatch(r'run-[0-9a-f]{32}', run_id), (
+            f'{run_id} is not a full 128-bit uuid4 in hex'
+        )
+
+    # Not a counter, and not sequential in any readable way: consecutive ids must not share a
+    # long prefix, which is what a timestamp or counter would produce.
+    for earlier, later in zip(ids, ids[1:]):
+        shared = len(os.path.commonprefix([earlier[4:], later[4:]]))
+        assert shared < 8, f'consecutive ids share {shared} leading hex characters'

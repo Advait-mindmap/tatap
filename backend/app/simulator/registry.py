@@ -30,13 +30,24 @@ class RunRegistry:
         self._store = store if store is not None else RunStore()
 
     def new_id(self) -> str:
-        """A collision-proof id.
+        """A collision-proof and UNGUESSABLE id.
 
-        Deliberately not a sequential counter any more: a counter restarts at 1 with the
-        process, so the first run after a restart would claim the id of a stored run that is
-        still open and resume someone else's simulation.
+        Deliberately not a sequential counter: a counter restarts at 1 with the process, so the
+        first run after a restart would claim the id of a stored run that is still open and
+        resume someone else's simulation.
+
+        And deliberately not truncated any more. It was `uuid4().hex[:12]` - 48 bits, which is
+        ample against collision (a coin flip needs about 17 million runs) but that is a
+        different question from being unguessable, and the requirement changed when the id went
+        into the address bar. A run URL now attaches to a run AND can answer its decision
+        points, so the id is a capability: whoever holds it can act on that run. 48 bits is
+        impractical to guess against a rate limit, but there is no reason to economise here -
+        the full uuid4 is 128 bits and costs twenty characters in a URL nobody types by hand.
+
+        Existing runs keep the ids they were stored with; `attach` matches exactly, so nothing
+        in flight breaks.
         """
-        return f'run-{uuid.uuid4().hex[:12]}'
+        return f'run-{uuid.uuid4().hex}'
 
     def add(self, simulator: Simulator) -> str:
         self._runs[simulator.state.run_id] = simulator

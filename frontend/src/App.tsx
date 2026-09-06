@@ -39,6 +39,33 @@ export default function App() {
   const [linkedZone, setLinkedZone] = useState<string | null>(null)
   const socket = useRef<SimulationSocket | null>(null)
 
+  /**
+   * The run id in the address bar.
+   *
+   * Runs are durable on the server and `attach` has always existed, but nothing put the id
+   * anywhere a browser could keep it: it lived in React state, so a refresh - or a crash, or
+   * closing the tab, or sending someone the link - lost the only handle to a run that was
+   * sitting on the server waiting to be answered. A halted run with no way back to it is worse
+   * than a lost one, because the work is still there and still paid for.
+   *
+   * `replaceState` rather than `pushState`: this is where you already are, not a new place, and
+   * Back should leave the app rather than walk through a run's history.
+   */
+  const rememberRun = useCallback((runId: string) => {
+    if (!runId) return
+    const url = new URL(window.location.href)
+    if (url.searchParams.get('run') === runId) return
+    url.searchParams.set('run', runId)
+    window.history.replaceState(null, '', url.toString())
+  }, [])
+
+  const forgetRun = useCallback(() => {
+    const url = new URL(window.location.href)
+    if (!url.searchParams.has('run')) return
+    url.searchParams.delete('run')
+    window.history.replaceState(null, '', url.toString())
+  }, [])
+
   // ------------------------------------------------------------------ Task 12: playback
   //
   // Every event goes through one queue, and a timer drains it. That single path is what makes
@@ -100,6 +127,10 @@ export default function App() {
         allEventsRef.current.push(event)
         queueRef.current.push(event)
         setQueued(queueRef.current.length)
+        // Put the id in the URL the moment the server issues it, not when the queue drains -
+        // a run that dies mid-draw is exactly the one worth being able to get back to.
+        const id = (event.payload as { run_id?: string } | undefined)?.run_id
+        if (id) rememberRun(id)
       },
       onError: (message) =>
         setRun((current) =>
@@ -108,7 +139,7 @@ export default function App() {
             : { ...current, status: 'error', error: message },
         ),
     })
-  }, [setPlaying])
+  }, [setPlaying, rememberRun])
 
   const answer = useCallback((decisionPointId: string, value: string) => {
     setRun((current) => {
@@ -143,7 +174,54 @@ export default function App() {
     setPlaying(true)
   }, [setPlaying])
 
+  /**
+   * Reconnect to a run named in the URL.
+   *
+   * Used on load, and by the reconnect button when a socket drops. The backend rebuilds the run
+   * from storage and replays the open forks, so this recovers a halted run whether the tab was
+   * refreshed, the container restarted, or the link came from someone else.
+   */
+  const attachTo = useCallback((runId: string) => {
+    setRun({ ...INITIAL_RUN, status: 'running', runId })
+    setPhase('run')
+    setPlaying(true)
+    replayingRef.current = false
+    queueRef.current = []
+    setQueued(0)
+    allEventsRef.current = []
+
+    socket.current?.close()
+    socket.current = runSimulation(
+      {},
+      {
+        onEvent: (event) => {
+          allEventsRef.current.push(event)
+          queueRef.current.push(event)
+          setQueued(queueRef.current.length)
+        },
+        onError: (message) =>
+          setRun((current) =>
+            current.status === 'complete'
+              ? current
+              : { ...current, status: 'error', error: message },
+          ),
+      },
+      { attachRunId: runId },
+    )
+  }, [setPlaying])
+
+  // On load: if the address bar names a run, go straight to it instead of the intake screen.
+  // Runs outlive the tab that started them, so the tab should not be the only way back.
+  const attachedOnLoad = useRef(false)
+  useEffect(() => {
+    if (attachedOnLoad.current) return
+    attachedOnLoad.current = true
+    const runId = new URLSearchParams(window.location.search).get('run')
+    if (runId) attachTo(runId)
+  }, [attachTo])
+
   const restart = useCallback(() => {
+    forgetRun()
     socket.current?.stop()
     socket.current?.close()
     socket.current = null
@@ -156,7 +234,7 @@ export default function App() {
     queueRef.current = []
     setQueued(0)
     allEventsRef.current = []
-  }, [setPlaying])
+  }, [setPlaying, forgetRun])
 
   if (phase === 'intake') {
     return (
