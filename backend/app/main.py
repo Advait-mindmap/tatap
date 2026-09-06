@@ -7,13 +7,27 @@ from pathlib import Path
 
 from datetime import date, datetime
 
-from fastapi import FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import (
+    FastAPI,
+    File,
+    HTTPException,
+    Query,
+    UploadFile,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend.app.intake import extract_brief
+from backend.app.intake.documents import (
+    SUPPORTED,
+    UnsupportedDocument,
+    describe_support,
+    document_to_text,
+)
 from backend.app.limits import (
     CapExceeded,
     CapUnavailable,
@@ -99,6 +113,57 @@ class IntakeRequest(BaseModel):
     text: str = Field(min_length=1)
     source_ref: str = 'raw_brief'
     attachments: list[str] = Field(default_factory=list)
+
+
+#: Uploads are capped. Not a security boundary - it is a brief, and a brief that needs
+#: megabytes is not a brief - but an unbounded read is an unbounded read.
+MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+
+
+@app.get('/intake/formats')
+def intake_formats() -> Dict[str, Any]:
+    """What the uploader accepts, so the UI does not keep its own divergent copy."""
+    return {'supported': sorted(SUPPORTED), 'descriptions': SUPPORTED}
+
+
+@app.post('/intake/document')
+async def intake_document(file: UploadFile = File(...)) -> Dict[str, Any]:
+    """Extract readable text from an uploaded document.
+
+    Returns the TEXT rather than running intake on it, deliberately: the reader sees what was
+    pulled out of their Word file, in the box, and can correct it before anything is extracted.
+    A document parser that silently fed a half-read RFP into the reasoning would be worse than
+    one that refused the file.
+    """
+    name = file.filename or 'upload'
+
+    problem = describe_support(name)
+    if problem:
+        # 415, not 400: the file was fine, the type is the issue - and the message says which
+        # types are readable, because "unsupported" on its own tells a person nothing.
+        raise HTTPException(status_code=415, detail=problem)
+
+    data = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f'{name} is larger than {MAX_UPLOAD_BYTES // (1024 * 1024)} MB. Paste the '
+                   'relevant part of the brief instead.',
+        )
+    if not data:
+        raise HTTPException(status_code=400, detail=f'{name} is empty.')
+
+    try:
+        text = document_to_text(name, data)
+    except UnsupportedDocument as exc:
+        raise HTTPException(status_code=415, detail=str(exc)) from None
+
+    return {
+        'filename': name,
+        'text': text,
+        'characters': len(text),
+        'lines': text.count(chr(10)) + 1,
+    }
 
 
 @app.post('/intake', response_model=IntakeResult)

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ApiError, extractBrief } from '../api'
+import { ApiError, extractBrief, uploadDocument } from '../api'
 import type { IntakeResult } from '../types'
 
 interface Props {
@@ -16,21 +16,44 @@ export function IntakeScreen({ onExtracted }: Props) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [detail, setDetail] = useState('')
+  const [notice, setNotice] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [dragging, setDragging] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
 
+  /**
+   * Read a dropped or chosen file.
+   *
+   * Everything goes to the server now, including plain text. Word files have to - a .docx is a
+   * zip of XML and the browser cannot read one without a library - and routing .txt the same way
+   * means there is ONE answer to "can this file be read", given by the code that actually reads
+   * it, instead of a regex here that drifts from the server's list.
+   *
+   * The extracted text lands in the box rather than being submitted, so the reader can see what
+   * came out of their document and correct it before anything is extracted from it.
+   */
   async function onFile(file: File) {
-    // Read client-side and send the text. PDFs are not parsed here - the backend's intake takes
-    // text, and pretending to read a PDF by posting its bytes would fail confusingly.
-    if (!/\.(md|txt|markdown|csv|json)$/i.test(file.name)) {
-      setError(
-        `${file.name} is not a text document. Paste the brief instead, or upload .md/.txt — ` +
-          'PDF and DOCX extraction is not implemented yet.',
-      )
-      return
-    }
     setError('')
-    setFileName(file.name)
-    setText(await file.text())
+    setDetail('')
+    setUploading(true)
+    try {
+      const document = await uploadDocument(file)
+      setFileName(document.filename)
+      setText(document.text)
+      setNotice(
+        `Read ${document.characters.toLocaleString()} characters from ${document.filename}. ` +
+          'Check it below before extracting.',
+      )
+    } catch (cause) {
+      const err = cause as ApiError
+      // The server says WHY - "PDF text extraction is not implemented", "that .docx could not be
+      // opened" - so show that rather than a generic failure. Silence was the actual bug here:
+      // an unsupported file used to do nothing at all.
+      setNotice('')
+      setError(err.message || `Could not read ${file.name}.`)
+    } finally {
+      setUploading(false)
+    }
   }
 
   async function submit() {
@@ -73,10 +96,30 @@ export function IntakeScreen({ onExtracted }: Props) {
           </ol>
         </header>
 
-        <section className="intake-panel">
+        <section
+          className={`intake-panel${dragging ? ' is-dragging' : ''}`}
+          data-testid="intake-panel"
+          // Dropping a file used to do NOTHING - no handler, no message, no clue. That is worse
+          // than refusing it, because the reader cannot tell the difference between "rejected"
+          // and "still loading". Same path as the picker, so both give the same answer.
+          onDragOver={(event) => {
+            event.preventDefault()
+            if (!dragging) setDragging(true)
+          }}
+          onDragLeave={(event) => {
+            if (event.currentTarget.contains(event.relatedTarget as Node | null)) return
+            setDragging(false)
+          }}
+          onDrop={(event) => {
+            event.preventDefault()
+            setDragging(false)
+            const file = event.dataTransfer.files?.[0]
+            if (file) void onFile(file)
+          }}
+        >
           <div className="intake-panel-head">
             <label className="intake-label" htmlFor="brief-input">The brief</label>
-            <span className="muted small">plain text, or load a .md / .txt file</span>
+            <span className="muted small">plain text, or load a .docx / .md / .txt file</span>
           </div>
 
         <textarea
@@ -106,7 +149,7 @@ export function IntakeScreen({ onExtracted }: Props) {
           <input
             ref={fileInput}
             type="file"
-            accept=".md,.txt,.markdown,.csv,.json"
+            accept=".md,.txt,.markdown,.csv,.json,.docx,.pdf,.doc,.rtf"
             style={{ display: 'none' }}
             data-testid="file-input"
             onChange={(event) => {
@@ -114,14 +157,25 @@ export function IntakeScreen({ onExtracted }: Props) {
               if (file) void onFile(file)
             }}
           />
-          <button className="ghost" onClick={() => fileInput.current?.click()} disabled={busy}>
-            Load a document…
+          <button
+            className="ghost"
+            onClick={() => fileInput.current?.click()}
+            disabled={busy || uploading}
+            data-testid="load-document"
+          >
+            {uploading ? 'Reading the document…' : 'Load a document…'}
           </button>
           {fileName && <span className="chip mono">{fileName}</span>}
           <span className="grow" />
           {text.trim() && <span className="muted small">{text.trim().length} characters</span>}
         </div>
         </section>
+
+        {notice && !error && (
+          <div className="notice notice-ok small" data-testid="intake-notice">
+            {notice}
+          </div>
+        )}
 
         {error && (
           <div className="notice notice-error" data-testid="intake-error">

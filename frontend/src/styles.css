@@ -560,3 +560,11 @@ button.option:hover { background: rgba(251,113,133,0.2); border-color: var(--ala
 .export-caveat strong {
   color: var(--text);
 }
+
+/* Drag-and-drop target for the brief. The border only appears while a file is over the panel:
+   a permanent dashed box would advertise a feature the page is not otherwise about. */
+.intake-panel.is-dragging {
+  outline: 2px dashed #3b82f6;
+  outline-offset: 4px;
+  background: rgba(59, 130, 246, 0.06);
+}

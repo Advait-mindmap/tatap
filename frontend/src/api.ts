@@ -141,3 +141,52 @@ export function runSimulation(
     close: () => socket.close(),
   }
 }
+
+/** What the server can read. Kept as a fallback only — the list itself comes from the API. */
+export const FALLBACK_FORMATS = ['.csv', '.docx', '.json', '.markdown', '.md', '.txt']
+
+export interface ExtractedDocument {
+  filename: string
+  text: string
+  characters: number
+  lines: number
+}
+
+/**
+ * POST /intake/document — a document in, its readable text out.
+ *
+ * The text comes back rather than a finished brief on purpose: the reader sees what was pulled
+ * out of their Word file, in the box, and can fix it before anything is extracted. A parser that
+ * fed a half-read RFP straight into the reasoning would be worse than one that refused the file.
+ */
+export async function uploadDocument(file: File): Promise<ExtractedDocument> {
+  const body = new FormData()
+  body.append('file', file, file.name)
+
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE}/intake/document`, { method: 'POST', body })
+  } catch (cause) {
+    throw new ApiError(
+      `Could not reach the planner API at ${API_BASE || window.location.origin}.`,
+      0,
+      String(cause),
+    )
+  }
+
+  if (!response.ok) {
+    // The server's refusals are the useful ones - it says WHY a .pdf or a renamed .zip cannot
+    // be read - so surface its words rather than a generic failure.
+    let detail = `The server could not read ${file.name} (${response.status}).`
+    try {
+      const body = await response.json()
+      if (typeof body.detail === 'string') detail = body.detail
+    } catch {
+      /* not JSON; keep the status line */
+    }
+    throw new ApiError(detail, response.status, detail)
+  }
+
+  return (await response.json()) as ExtractedDocument
+}
+
