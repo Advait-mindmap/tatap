@@ -284,6 +284,19 @@ def stage_span(activities, stage):
     return min(r['start_day'] for r in rows), max(r['finish_day'] for r in rows)
 
 
+def gate_family(output, base):
+    """Every activity standing for one gate: the single milestone, or the per-zone family.
+
+    A gate that releases zone-instanced consumers is emitted once per zone (`...z01`..`...z07`),
+    so a test naming the bare id would silently find nothing and pass on an `any()` that never
+    ran. Asking for the family keeps these tests honest whichever form the plan took.
+    """
+    rows = [a for a in output['activities']
+            if a['id'] == base or a['id'].startswith(base + '.z')]
+    assert rows, f'no activity stands for gate {base}'
+    return sorted(rows, key=lambda a: a['id'])
+
+
 def test_construction_stages_are_sequenced_with_controlled_overlap(full_walk):
     """Found by audit: every construction stage started on the same day.
 
@@ -392,7 +405,8 @@ def test_each_sequencing_gate_actually_reaches_the_activities(full_walk):
         rows = activities.get(stage) or []
         assert rows, f'{stage} instanced nothing'
         assert any(
-            p['id'] == gate for r in rows for p in (r.get('predecessors') or [])
+            p['id'] == gate or p['id'].startswith(gate + '.z')
+            for r in rows for p in (r.get('predecessors') or [])
         ), f'{gate} is in the gate table but reaches no {stage} activity'
 
 
@@ -440,11 +454,12 @@ def test_the_critical_path_is_procurement_led(full_walk):
     # And the power train's own finish traces back to the transformer, which is what
     # "procurement-led" means. Without this the assertion above could be satisfied by MEP
     # simply being slow.
-    delivery = next(
-        a for a in output['activities'] if a['id'] == 'gate.delivery-lead-transformer-hv'
-    )
-    assert stage_span(activities, 'mep_power')[1] > delivery['finish_day']
-    assert delivery['finish_day'] > stage_span(activities, 'superstructure')[1], (
+    # The FIRST transformer to land: if even that one arrives after the frame, the plan is
+    # procurement-led. Taking the last would make the claim trivially easier to satisfy.
+    deliveries = gate_family(output, 'gate.delivery-lead-transformer-hv')
+    first_delivery = min(d['finish_day'] for d in deliveries)
+    assert stage_span(activities, 'mep_power')[1] > first_delivery
+    assert first_delivery > stage_span(activities, 'superstructure')[1], (
         'the frame now lands after the transformer, so the power train is structure-led'
     )
 
@@ -474,9 +489,8 @@ def test_mep_waits_for_the_frame_but_delivery_still_drives_its_finish(full_walk)
     )
 
     # Delivery binds the finish.
-    delivery = next(
-        a for a in output['activities'] if a['id'] == 'gate.delivery-lead-transformer-hv'
-    )
+    deliveries = gate_family(output, 'gate.delivery-lead-transformer-hv')
+    delivery = min(deliveries, key=lambda d: d['finish_day'])
     assert delivery['finish_day'] > frame_end, (
         f"the transformer lands on day {delivery['finish_day']}, before the frame is up on "
         f'{frame_end} — the frame is now the binding constraint and the plan is no longer '

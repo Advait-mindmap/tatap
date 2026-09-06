@@ -26,7 +26,7 @@ from backend.app.engine.gates import (
     material_link_index,
     statutory_id,
 )
-from backend.app.engine.ids import activity_id, hold_point_id, trail_ref, wbs_id
+from backend.app.engine.ids import activity_id, zone_index_of, hold_point_id, trail_ref, wbs_id
 from backend.app.engine.schedule import apply_schedule, stage_timeline, zone_timeline
 from backend.app.engine.zones import generate_zones
 from backend.app.libraries import (
@@ -124,6 +124,41 @@ def _selection_governance(selection: Any) -> Tuple[float, List[str], str]:
     return confidence, unverified, tier
 
 
+def _zone_named(name, zone):
+    """An activity's name, said with the zone it happens in.
+
+    Eight rows all reading "Rack and cabinet installation" is a plan nobody can read; the zone is
+    the only thing that distinguishes them, so it belongs in the name and not merely in a field.
+    """
+    return name if not zone else f'{name} - {zone.get("name") or zone.get("id")}'
+
+
+def _pair_by_zone(sources, targets):
+    """Wire one fragnet logic link across the zone instances of its two ends.
+
+    Three cases, and each is a construction fact rather than a convenience:
+
+    * Both ends per-zone: hall 3's cabling follows hall 3's raised floor, and nothing about hall
+      5 is involved. A cartesian join here would be the classic mistake - it would make every
+      hall wait for every other, turning eight parallel fit-outs back into one serial one.
+    * Predecessor project-wide, successor per-zone: the backbone is installed once and releases
+      every hall.
+    * Predecessor per-zone, successor project-wide: the system test waits for ALL the halls,
+      which is what makes it a system test.
+    """
+    by_source = {zone_index_of(s): s for s in sources}
+    by_target = {zone_index_of(t): t for t in targets}
+    pairs = []
+    for zone_index, target in sorted(by_target.items()):
+        if zone_index in by_source:
+            pairs.append((by_source[zone_index], target))
+        elif 0 in by_source:
+            pairs.append((by_source[0], target))
+        else:
+            pairs.extend((source, target) for _, source in sorted(by_source.items()))
+    return sorted(set(pairs))
+
+
 def assemble(
     stage_reasonings: Sequence[StageReasoning],
     brief: Dict[str, Any],
@@ -152,6 +187,15 @@ def assemble(
     site_context = str(brief.get('site_context') or '')
     fragnet_index = {f['id']: f for f in fragnet_lib}
 
+    # The zones are derived once here and used for three separate things: instancing the
+    # zone-bearing fragnets, staging the cross-stage releases hall by hall, and the 4D model.
+    # They were previously derived twice at two different points, which was one edit away from
+    # the plan and the model disagreeing about how many halls there are.
+    zones = generate_zones(brief, tier_lib)
+    zones_by_kind = {}
+    for zone in zones:
+        zones_by_kind.setdefault(str(zone.get('kind') or ''), []).append(zone)
+
     ordered = sorted(
         stage_reasonings, key=lambda r: (STAGE_INDEX.get(r.stage, 99), r.stage)
     )
@@ -163,8 +207,12 @@ def assemble(
     warnings: List[str] = []
     # stage -> ids instanced in it, for cross-stage gating and for anchoring gate milestones.
     stage_activity_ids: Dict[str, List[str]] = {}
+    # Activities in a zone-bearing fragnet that are deliberately NOT per zone. The zone fallback
+    # must skip them: filing the campus cabling backbone under hall 1 is not a smaller error
+    # than filing it nowhere, it is a wrong one, and the 4D model would draw it inside a hall.
+    campus_wide: set = set()
     # (fragnet_id, fragnet_activity_id) -> instanced id, for material-link resolution.
-    link_target: Dict[Tuple[str, str], str] = {}
+    link_target: Dict[Tuple[str, str], List[str]] = {}
     delivery_modes = {k.lower(): v for k, v in (brief.get('delivery_mode_by_discipline') or {}).items()}
 
     for reasoning in ordered:
@@ -192,97 +240,129 @@ def assemble(
             for hold in fragnet.get('hold_points', []) or []:
                 holds_by_activity.setdefault(hold.get('after', ''), []).append(hold)
 
-            for activity_index, spec in enumerate(fragnet.get('activities', []) or []):
-                ident = activity_id(stage, fragnet['id'], spec['id'])
-                safety_matches = match_safety_rules(
-                    spec['name'], safety_lib, site_context=site_context
+            # ---- how many times this fragnet repeats ------------------------------------
+            #
+            # A fragnet describes the work in ONE hall or ONE electrical room. Instancing it
+            # once for a campus with eight of them is the single largest source of thinness in
+            # the plan: eight halls of fit-out arrive as one 30-day bar, and the 4D model shows
+            # every hall completing on the same day because there is only one activity to key
+            # off. `zone_kind` in the library says which zone kind the fragnet repeats across.
+            zone_kind = str(fragnet.get('zone_kind') or '')
+            zone_instances = list(zones_by_kind.get(zone_kind, ())) if zone_kind else []
+            if zone_kind and not zone_instances:
+                warnings.append(
+                    f'{fragnet["id"]} repeats per "{zone_kind}" zone, of which this plan has '
+                    'none, so it was instanced once for the whole project. Check the sizing '
+                    'rules produced the zones this fragnet expects.'
                 )
-                explicit_safety = bool(spec.get('safety_flag'))
-                is_safety = explicit_safety or bool(safety_matches)
-                hitl = spec.get('hitl_tier') or ('tier_1' if safety_matches else tier)
-                holds = holds_by_activity.get(spec['id'], [])
 
-                activities.append(AssembledActivity(
-                    id=ident,
-                    wbs_id=wbs_id(stage_idx, stage, package_index, activity_index),
-                    name=spec['name'],
-                    type='task',
-                    duration_days=int(spec.get('duration_days') or 0),
-                    calendar=spec.get('calendar') or '6day',
-                    dept_code=fragnet.get('dept') or dept,
-                    delivery_mode=delivery_mode,
-                    stage=stage,
-                    zone_id=None,
-                    predecessors=[],
-                    hold_points=sorted(h['name'] for h in holds),
-                    safety_flag=is_safety,
-                    hitl_tier=hitl,
-                    # Tier-1 safety blocks export until signed off (CLAUDE.md rule 5).
-                    blocks_export=hitl == 'tier_1',
-                    trail_ref=trail_ref(ident),
-                    confidence=confidence,
-                    unverified_dependencies=unverified,
-                    source_fragnet=fragnet['id'],
-                    compliance_gates=gate_ids,
-                ))
-                link_target[(fragnet['id'], spec['id'])] = ident
-                stage_activity_ids.setdefault(stage, []).append(ident)
+            def zones_for(spec: Dict[str, Any]) -> List[Tuple[int, Optional[Dict[str, Any]]]]:
+                """The (index, zone) pairs one activity spec is repeated across.
 
-                trail.append(TrailEntry(
-                    ref_id=ident,
-                    stage=stage,
-                    why=(
-                        f'Instanced from {fragnet["id"]} ({fragnet.get("name", "")}), selected '
-                        f'because: {selection.why}'
-                    ),
-                    sources=sorted(selection.sources) + [fragnet['id']],
-                    confidence=confidence,
-                    stated_confidence=selection.confidence,
-                    decided_by='engine',
-                    hitl_tier=hitl,
-                    unverified_dependencies=unverified,
-                ))
+                Index 0 means project-wide: instanced once, no zone suffix. Work that genuinely
+                happens once must never be multiplied - a campus has one bulk fuel farm however
+                many halls it has, and repeating it would invent seven PESO licences.
+                """
+                if not zone_instances or spec.get('zone_scope') == 'project':
+                    return [(0, None)]
+                return list(enumerate(zone_instances, start=1))
 
-                for hold in holds:
-                    hold_ident = hold_point_id(ident, hold['name'])
+            activity_index = -1
+            for spec in fragnet.get('activities', []) or []:
+                for zone_index, zone in zones_for(spec):
+                    activity_index += 1
+                    ident = activity_id(stage, fragnet['id'], spec['id'], zone_index)
+                    safety_matches = match_safety_rules(
+                        spec['name'], safety_lib, site_context=site_context
+                    )
+                    explicit_safety = bool(spec.get('safety_flag'))
+                    is_safety = explicit_safety or bool(safety_matches)
+                    hitl = spec.get('hitl_tier') or ('tier_1' if safety_matches else tier)
+                    holds = holds_by_activity.get(spec['id'], [])
+
                     activities.append(AssembledActivity(
-                        id=hold_ident,
+                        id=ident,
                         wbs_id=wbs_id(stage_idx, stage, package_index, activity_index),
-                        name=f'HOLD: {hold["name"]}',
-                        type='hold_point',
-                        duration_days=0,
-                        dept_code=hold.get('role') or 'qaqc',
+                        name=_zone_named(spec['name'], zone),
+                        type='task',
+                        duration_days=int(spec.get('duration_days') or 0),
+                        calendar=spec.get('calendar') or '6day',
+                        dept_code=fragnet.get('dept') or dept,
+                        delivery_mode=delivery_mode,
                         stage=stage,
-                        predecessors=[{'id': ident, 'type': 'FS', 'lag': 0}],
+                        zone_id=(zone or {}).get('id'),
+                        predecessors=[],
+                        hold_points=sorted(h['name'] for h in holds),
+                        safety_flag=is_safety,
                         hitl_tier=hitl,
+                        # Tier-1 safety blocks export until signed off (CLAUDE.md rule 5).
                         blocks_export=hitl == 'tier_1',
-                        trail_ref=trail_ref(hold_ident),
+                        trail_ref=trail_ref(ident),
                         confidence=confidence,
                         unverified_dependencies=unverified,
                         source_fragnet=fragnet['id'],
                         compliance_gates=gate_ids,
                     ))
-                    edges.append(AssembledEdge(
-                        from_id=ident, to_id=hold_ident, type='FS', lag=0, kind='hold_point',
-                        why=f'Quality hold point owned by {hold.get("role", "qaqc")}.',
+                    if zone_instances and zone is None:
+                        campus_wide.add(ident)
+                    link_target.setdefault((fragnet['id'], spec['id']), []).append(ident)
+                    stage_activity_ids.setdefault(stage, []).append(ident)
+
+                    trail.append(TrailEntry(
+                        ref_id=ident,
+                        stage=stage,
+                        why=(
+                            f'Instanced from {fragnet["id"]} ({fragnet.get("name", "")}), selected '
+                            f'because: {selection.why}'
+                        ),
+                        sources=sorted(selection.sources) + [fragnet['id']],
+                        confidence=confidence,
+                        stated_confidence=selection.confidence,
+                        decided_by='engine',
+                        hitl_tier=hitl,
+                        unverified_dependencies=unverified,
                     ))
+
+                    for hold in holds:
+                        hold_ident = hold_point_id(ident, hold['name'])
+                        activities.append(AssembledActivity(
+                            id=hold_ident,
+                            wbs_id=wbs_id(stage_idx, stage, package_index, activity_index),
+                            name=_zone_named(f'HOLD: {hold["name"]}', zone),
+                            type='hold_point',
+                            duration_days=0,
+                            dept_code=hold.get('role') or 'qaqc',
+                            stage=stage,
+                            predecessors=[{'id': ident, 'type': 'FS', 'lag': 0}],
+                            hitl_tier=hitl,
+                            blocks_export=hitl == 'tier_1',
+                            trail_ref=trail_ref(hold_ident),
+                            confidence=confidence,
+                            unverified_dependencies=unverified,
+                            source_fragnet=fragnet['id'],
+                            compliance_gates=gate_ids,
+                        ))
+                        edges.append(AssembledEdge(
+                            from_id=ident, to_id=hold_ident, type='FS', lag=0, kind='hold_point',
+                            why=f'Quality hold point owned by {hold.get("role", "qaqc")}.',
+                        ))
 
             for link in sorted(
                 fragnet.get('logic', []) or [], key=lambda l: (l['from'], l['to'])
             ):
-                source = activity_id(stage, fragnet['id'], link['from'])
-                target = activity_id(stage, fragnet['id'], link['to'])
-                edges.append(AssembledEdge(
-                    from_id=source, to_id=target,
-                    type=link.get('type', 'FS'), lag=int(link.get('lag') or 0),
-                    kind='fragnet', why=f'Fragnet logic from {fragnet["id"]}.',
-                ))
+                pairs = _pair_by_zone(
+                    link_target.get((fragnet['id'], link['from']), []),
+                    link_target.get((fragnet['id'], link['to']), []),
+                )
+                for source, target in pairs:
+                    edges.append(AssembledEdge(
+                        from_id=source, to_id=target,
+                        type=link.get('type', 'FS'), lag=int(link.get('lag') or 0),
+                        kind='fragnet', why=f'Fragnet logic from {fragnet["id"]}.',
+                    ))
 
     # ---------------------------------------------------------------- cross-stage gates
-    zone_counts: Dict[str, int] = {}
-    for zone in generate_zones(brief, tier_lib):
-        kind = str(zone.get('kind') or '')
-        zone_counts[kind] = zone_counts.get(kind, 0) + 1
+    zone_counts = {kind: len(members) for kind, members in zones_by_kind.items()}
     gate_activities, gate_edges, gate_warnings = _build_cross_stage_gates(
         ordered, stage_activity_ids, link_target, fragnet_lib, lead_lib,
         by_id={a.id: a for a in activities}, zone_counts=zone_counts,
@@ -304,7 +384,7 @@ def assemble(
     trail.extend(stat_trail)
 
     # ---------------------------------------------------------------------- projections
-    _attach_zones(activities)
+    _attach_zones(activities, campus_wide)
     _apply_predecessors(activities, edges)
 
     activities.sort(key=lambda a: (STAGE_INDEX.get(a.stage, 99), a.wbs_id, a.id))
@@ -312,7 +392,6 @@ def assemble(
     trail.sort(key=lambda t: t.ref_id)
 
     commissioning = _commissioning_ladder(activities)
-    zones = generate_zones(brief, tier_lib)
 
     tier1 = [a for a in activities if a.hitl_tier == 'tier_1']
     tier2 = [a for a in activities if a.hitl_tier == 'tier_2']
@@ -386,7 +465,7 @@ def _city_pathway_entries(city):
 def _build_statutory_activities(
     ordered: Sequence[StageReasoning],
     stage_activity_ids: Dict[str, List[str]],
-    link_target: Dict[Tuple[str, str], str],
+    link_target: Dict[Tuple[str, str], List[str]],
     pathway_lib: Sequence[Dict[str, Any]],
 ) -> Tuple[List[AssembledActivity], List[AssembledEdge], List[str], List[TrailEntry]]:
     """Turn the city-pathway approvals the reasoner selected into real activities and edges.
@@ -481,8 +560,10 @@ def _build_statutory_activities(
         # can never bind - see PATHWAY_LODGEMENT_AFTER.
         lodgement = PATHWAY_LODGEMENT_AFTER.get(pathway_id)
         if lodgement:
-            after = link_target.get(lodgement)
-            if after:
+            # Every instance, not the first: a CEIG inspection covers the whole HV
+            # installation, so lodging after one of eight electrical rooms would produce a date
+            # the inspector would not recognise.
+            for after in sorted(link_target.get(lodgement, [])):
                 edges.append(AssembledEdge(
                     from_id=after, to_id=ident, type='FS', lag=0, kind='statutory',
                     why=(
@@ -491,7 +572,7 @@ def _build_statutory_activities(
                         'approval duration runs from there.'
                     ),
                 ))
-            else:
+            if not link_target.get(lodgement):
                 warnings.append(
                     f'{approval} is lodged after {lodgement[1]} of {lodgement[0]}, which this '
                     'plan did not instance, so it reverts to starting at project start and will '
@@ -505,9 +586,7 @@ def _build_statutory_activities(
             elif token in PATHWAY_BLOCK_ALIASES:
                 for alias in PATHWAY_BLOCK_ALIASES[token]:
                     if alias[0] == 'fragnet':
-                        target = link_target.get((alias[1], alias[2]))
-                        if target:
-                            targets.append(target)
+                        targets.extend(link_target.get((alias[1], alias[2]), []))
                     elif alias[0] == 'statutory' and alias[1] in by_pathway_id:
                         targets.append(by_pathway_id[alias[1]])
             if not targets:
@@ -541,10 +620,43 @@ def _build_statutory_activities(
     return activities, edges, warnings, trail
 
 
+def _delivery_gate(ident, lead_id, zone=None):
+    """One "delivery to site" milestone, for the whole project or for one zone."""
+    where = f' - {zone}' if zone else ''
+    return AssembledActivity(
+        id=ident, wbs_id=f'00.dl.{lead_id[-3:]}',
+        name=f'Delivery to site: {lead_id}{where}', type='milestone', duration_days=0,
+        dept_code='procurement', stage=DELIVERY_GATE.producer_stage, zone_id=zone,
+        trail_ref=trail_ref(ident), hitl_tier='tier_3',
+    )
+
+
+def _split_consumers_by_zone(consumer_stages, stage_activity_ids, by_id, zone_kind):
+    """Consumers of a gate, grouped by which zone of `zone_kind` they belong to.
+
+    Returns (per-zone map, the rest). Grouping is on the activity's own `zone_id` rather than on
+    its id suffix: an activity's zone is a fact about the activity, and reading it from the id
+    would tie the gate machinery to the way ids happen to be spelled.
+    """
+    if not zone_kind:
+        return {}, []
+    prefix = 'zone.' + zone_kind.replace('_', '-') + '.'
+    per_zone = {}
+    rest = []
+    for consumer_stage in consumer_stages:
+        for consumer_id in sorted(stage_activity_ids.get(consumer_stage, [])):
+            zone = getattr(by_id.get(consumer_id), 'zone_id', None) or ''
+            if zone.startswith(prefix):
+                per_zone.setdefault(zone, []).append(consumer_id)
+            else:
+                rest.append(consumer_id)
+    return per_zone, rest
+
+
 def _build_cross_stage_gates(
     ordered: Sequence[StageReasoning],
     stage_activity_ids: Dict[str, List[str]],
-    link_target: Dict[Tuple[str, str], str],
+    link_target: Dict[Tuple[str, str], List[str]],
     fragnet_lib: Sequence[Dict[str, Any]],
     lead_lib: Sequence[Dict[str, Any]] = (),
     by_id: Optional[Dict[str, AssembledActivity]] = None,
@@ -564,10 +676,14 @@ def _build_cross_stage_gates(
     zone_counts = zone_counts or {}
 
     def emit_gate(ident: str, label: str, stage: str, rule: GateRule,
-                  anchored: bool) -> AssembledActivity:
+                  anchored: bool, zone: str = '') -> AssembledActivity:
+        # A per-zone gate belongs to the zone it RELEASES, not to the zone of the stage that
+        # produced it. Left to the fallback, every hall's weather-tightness milestone was filed
+        # under the shell, and the 4D model drew eight releases in the wrong place.
         return AssembledActivity(
             id=ident, wbs_id=f'00.{rule.kind[:2]}.{ident[-3:]}', name=label, type='gate',
             duration_days=0, dept_code=STAGE_DEPARTMENT.get(stage, ''), stage=stage,
+            zone_id=zone or None,
             trail_ref=trail_ref(ident), hitl_tier='tier_3',
             unverified_dependencies=[] if anchored else [],
         )
@@ -589,11 +705,11 @@ def _build_cross_stage_gates(
         # may have been selected, and silently gating on nothing would drop the constraint.
         producers: List[str] = []
         if rule.producer_activities:
-            producers = sorted(
-                target for target in (
-                    link_target.get(pair) for pair in rule.producer_activities
-                ) if target
-            )
+            producers = sorted({
+                instanced
+                for pair in rule.producer_activities
+                for instanced in link_target.get(pair, [])
+            })
             if not producers:
                 warnings.append(
                     f'Gate {ident} ({rule.label}) names {len(rule.producer_activities)} '
@@ -604,12 +720,65 @@ def _build_cross_stage_gates(
                 )
         if not producers:
             producers = sorted(stage_activity_ids.get(rule.producer_stage, []))
+
+        # ---- PER-ZONE RELEASE ------------------------------------------------------------
+        #
+        # Where the consumers were instanced per zone, the release is too: hall 3's fit-out
+        # follows hall 3 being weather-tight, not the campus average. One gate per zone, each
+        # released a further slice into the cladding, which is what hall-by-hall working means.
+        #
+        # This replaces an approximation that let ALL the consumer work start once the FIRST
+        # zone was clad. That was better than waiting for the last, and still wrong: it had
+        # eight halls of fit-out beginning on one day.
+        zone_count = zone_counts.get(rule.release_per_zone_kind, 0)
+        per_zone_consumers, project_consumers = _split_consumers_by_zone(
+            consumers, stage_activity_ids, by_id, rule.release_per_zone_kind,
+        )
+        if rule.producer_activities and len(per_zone_consumers) > 1:
+            activities.extend(
+                emit_gate(f'{ident}.z{i:02d}', f'{rule.label} - {zone_id}',
+                          rule.producer_stage, rule, bool(producers), zone=zone_id)
+                for i, zone_id in enumerate(sorted(per_zone_consumers), start=1)
+            )
+            total = len(per_zone_consumers)
+            for i, zone_id in enumerate(sorted(per_zone_consumers), start=1):
+                zone_gate = f'{ident}.z{i:02d}'
+                for producer_id in producers:
+                    duration = int(getattr(by_id.get(producer_id), 'duration_days', 0) or 0)
+                    # Zone i is done i/N of the way through, so the lead grows per zone. ceil,
+                    # so no zone is ever modelled as released instantaneously.
+                    lead = -(-duration * i // total) if duration else 0
+                    edges.append(AssembledEdge(
+                        from_id=producer_id, to_id=zone_gate, type='SS', lag=lead,
+                        kind='cross_stage_gate',
+                        why=(
+                            f'{rule.why} Released for {zone_id}, the {i} of {total} '
+                            f'{rule.release_per_zone_kind} zones done at that point '
+                            f'({lead} of {duration} days).'
+                        ),
+                    ))
+                for consumer_id in sorted(per_zone_consumers[zone_id]):
+                    edges.append(AssembledEdge(
+                        from_id=zone_gate, to_id=consumer_id, type='FS', lag=0,
+                        kind='cross_stage_gate', why=rule.why,
+                    ))
+            # Work that was NOT instanced per zone waits for the last zone. A system-wide test
+            # is not released by one hall being ready, and releasing it early is the error that
+            # would actually mislead a planner.
+            last_gate = f'{ident}.z{len(per_zone_consumers):02d}'
+            for consumer_id in sorted(project_consumers):
+                edges.append(AssembledEdge(
+                    from_id=last_gate, to_id=consumer_id, type='FS', lag=0,
+                    kind='cross_stage_gate',
+                    why=(
+                        f'{rule.why} This work is not instanced per zone, so it waits for the '
+                        f'last of {len(per_zone_consumers)} zones rather than the first.'
+                    ),
+                ))
+            continue
+
         activities.append(emit_gate(ident, rule.label, rule.producer_stage, rule, bool(producers)))
 
-        # Staged release: the milestone may be reached when the first zone's worth of the
-        # producing work is done, not the last. Expressed as SS with a lead rather than as a
-        # shorter duration, so the producing activity keeps its real length.
-        zone_count = zone_counts.get(rule.release_per_zone_kind, 0)
         staged = bool(rule.producer_activities) and zone_count > 1
         if rule.release_per_zone_kind and zone_count <= 1:
             warnings.append(
@@ -675,22 +844,69 @@ def _build_cross_stage_gates(
         for entry in lead_lib
         if entry.get('id') and entry.get('typical_weeks') is not None
     }
+    # Weeks between consecutive units of the same item arriving. Only some items declare one;
+    # without it an item keeps a single arrival gating every consumer, which is the old
+    # behaviour and the conservative one.
+    stagger_days = {
+        entry['id']: int(round(float(entry['delivery_stagger_weeks']) * 7))
+        for entry in lead_lib
+        if entry.get('id') and entry.get('delivery_stagger_weeks') is not None
+    }
     links = material_link_index(fragnet_lib)
     for lead_id, pairs in links.items():
         targets = sorted({
-            link_target[(frag_id, act_id)]
+            instanced
             for frag_id, act_id in pairs
-            if (frag_id, act_id) in link_target
+            for instanced in link_target.get((frag_id, act_id), [])
         })
         if not targets:
             continue
+
+        # ---- STAGED ARRIVAL ---------------------------------------------------------------
+        #
+        # Eight electrical rooms need eight transformers, and a factory ships them in sequence.
+        # Gating all eight rooms behind one arrival milestone said the whole batch lands on one
+        # day, which is why every room's transformer placement started together. Where the
+        # library declares an interval, each zone gets its own arrival.
+        by_zone = {}
+        for target in targets:
+            zone = getattr(by_id.get(target), 'zone_id', None)
+            if zone:
+                by_zone.setdefault(zone, []).append(target)
+        interval = stagger_days.get(lead_id)
+        if interval and len(by_zone) > 1 and len(by_zone) == len(targets):
+            activities.extend(
+                _delivery_gate(f'{delivery_gate_id(lead_id)}.z{i:02d}', lead_id, zone)
+                for i, zone in enumerate(sorted(by_zone), start=1)
+            )
+            for i, zone in enumerate(sorted(by_zone), start=1):
+                zone_gate = f'{delivery_gate_id(lead_id)}.z{i:02d}'
+                offset = (i - 1) * interval
+                for producer_id in sorted(stage_activity_ids.get(DELIVERY_GATE.producer_stage, [])):
+                    edges.append(AssembledEdge(
+                        from_id=producer_id, to_id=zone_gate, type='FS',
+                        lag=(lead_time_days.get(lead_id) or 0) + offset, kind='delivery',
+                        why=(
+                            f'{DELIVERY_GATE.why} Unit {i} of {len(by_zone)} for {zone}, '
+                            f'arriving {offset} days after the first at the library\'s '
+                            f'{interval // 7}-week interval (an unverified estimate).'
+                        ),
+                    ))
+                for target in sorted(by_zone[zone]):
+                    edges.append(AssembledEdge(
+                        from_id=zone_gate, to_id=target, type='FS', lag=0, kind='delivery',
+                        why=DELIVERY_GATE.why,
+                    ))
+            warnings.append(
+                f'{lead_id} is delivered as {len(by_zone)} units staggered '
+                f'{interval // 7} weeks apart. The interval is an industry estimate, not a '
+                'quoted delivery schedule: the ORDER of arrival is sound, the spacing is not '
+                'verified, and it moves the last zone\'s completion.'
+            )
+            continue
+
         ident = delivery_gate_id(lead_id)
-        activities.append(AssembledActivity(
-            id=ident, wbs_id=f'00.dl.{lead_id[-3:]}',
-            name=f'Delivery to site: {lead_id}', type='milestone', duration_days=0,
-            dept_code='procurement', stage=DELIVERY_GATE.producer_stage,
-            trail_ref=trail_ref(ident), hitl_tier='tier_3',
-        ))
+        activities.append(_delivery_gate(ident, lead_id))
         # THE LEAD TIME IS THE LAG. Ordering and arrival are separated by the manufacturing
         # and shipping time the library records; without it the delivery milestone sat on the
         # day the order was placed and a 32-week transformer constrained nothing at all. The
@@ -715,8 +931,21 @@ def _build_cross_stage_gates(
     return activities, edges, warnings
 
 
-def _attach_zones(activities: List[AssembledActivity]) -> None:
+def _attach_zones(
+    activities: List[AssembledActivity], campus_wide: Optional[set] = None,
+) -> None:
+    """Give the 4D model a zone for work that was not instanced per zone.
+
+    This used to run over EVERY activity and hard-write `.01`, silently overwriting real zone ids
+    and collapsing a whole campus onto its first hall. It now only fills a gap, so an activity
+    instanced for a zone keeps that zone, and the fallback survives for the stages that are not
+    zone-bearing.
+    """
+    campus_wide = campus_wide or set()
     for activity in activities:
+        # Already placed, or placed nowhere on purpose.
+        if activity.zone_id or activity.id in campus_wide:
+            continue
         kind = STAGE_ZONE_KIND.get(activity.stage)
         if kind:
             activity.zone_id = f'zone.{kind.replace("_", "-")}.01'

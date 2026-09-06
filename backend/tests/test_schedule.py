@@ -231,23 +231,41 @@ def test_the_transformer_lead_time_actually_delays_its_delivery():
     delivery milestone sat on the day of the PO and a 32-week transformer constrained nothing.
     """
     data = _golden()
-    by_id = {a['id']: a for a in data['activities']}
-    delivery = by_id.get('gate.delivery-lead-transformer-hv')
-    assert delivery, 'no transformer delivery gate in the plan'
+    base = 'gate.delivery-lead-transformer-hv'
+    # A campus needs one transformer per electrical room, so the milestone is a family: unit 1,
+    # unit 2, and so on. Every one of them must clear the lead time; the later ones must also
+    # clear the declared interval between arrivals.
+    deliveries = sorted(
+        (a for a in data['activities']
+         if a['id'] == base or a['id'].startswith(base + '.z')),
+        key=lambda a: a['id'],
+    )
+    assert deliveries, 'no transformer delivery gate in the plan'
 
     procurement_finish = data['stage_timeline']['procurement']['to_day']
-    # 32 weeks x 7 calendar days. Read from the library so the test tracks the data.
+    # Weeks x 7 calendar days. Read from the library so the test tracks the data.
     from backend.app.libraries import load_library
 
-    weeks = next(
-        e['typical_weeks'] for e in load_library('equipment_lead_times')['entries']
+    entry = next(
+        e for e in load_library('equipment_lead_times')['entries']
         if e['id'] == 'lead.transformer_hv'
     )
-    assert delivery['start_day'] >= round(weeks * 7), (
-        f"transformer delivered on day {delivery['start_day']}, sooner than its "
-        f'{weeks}-week lead time allows'
-    )
-    assert delivery['start_day'] <= procurement_finish
+    weeks = entry['typical_weeks']
+    for delivery in deliveries:
+        assert delivery['start_day'] >= round(weeks * 7), (
+            f"{delivery['id']} delivered on day {delivery['start_day']}, sooner than its "
+            f'{weeks}-week lead time allows'
+        )
+    assert deliveries[0]['start_day'] <= procurement_finish
+
+    interval = entry.get('delivery_stagger_weeks')
+    if interval and len(deliveries) > 1:
+        days = [d['start_day'] for d in deliveries]
+        gaps = {later - earlier for earlier, later in zip(days, days[1:])}
+        assert gaps == {round(interval * 7)}, (
+            f'transformers arrive at intervals of {sorted(gaps)} days, not the library\'s '
+            f'{interval} weeks - the staggered delivery schedule is not being applied'
+        )
 
 
 def test_mep_installation_waits_for_the_plant_to_arrive():

@@ -22,7 +22,7 @@ import {
   edgeId,
   EMPTY_HIGHLIGHT,
 } from "./highlight";
-import { COLUMN_WIDTH, ROW_HEIGHT, layout, stageOrder } from "./layout";
+import { COLUMN_WIDTH, ROW_HEIGHT, layout, stageOrder, zoneOrder } from "./layout";
 import { EDGE_STYLES, KIND_ORDER, KIND_STYLES } from "./nodeKinds";
 import type {
   DecisionRecord,
@@ -120,11 +120,13 @@ function FlowViewInner({
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [hiddenStages, setHiddenStages] = useState<Set<string>>(new Set());
+  const [hiddenZones, setHiddenZones] = useState<Set<string>>(new Set());
   const [hiddenKinds, setHiddenKinds] = useState<Set<NodeKind>>(new Set());
 
   const flow = { nodes: flowNodes, edges: flowEdges };
 
   const stages = useMemo(() => stageOrder(flow.nodes), [flow.nodes]);
+  const zones = useMemo(() => zoneOrder(flow.nodes), [flow.nodes]);
   const adjacency = useMemo(() => buildAdjacency(flow.edges), [flow.edges]);
   const highlight = useMemo(
     () => (hovered ? computeHighlight(hovered, adjacency) : EMPTY_HIGHLIGHT),
@@ -134,9 +136,15 @@ function FlowViewInner({
   const visible = useMemo(
     () =>
       flow.nodes.filter(
-        (node) => !hiddenStages.has(node.stage) && !hiddenKinds.has(node.kind),
+        (node) =>
+          !hiddenStages.has(node.stage) &&
+          !hiddenKinds.has(node.kind) &&
+          // A hidden hall hides its own work only. Nodes belonging to no hall — the stage
+          // spine, the gates, the campus-wide work — stay, or hiding halls would silently
+          // remove the programme's backbone along with them.
+          !(node.zone_id && hiddenZones.has(node.zone_id)),
       ),
-    [flow.nodes, hiddenStages, hiddenKinds],
+    [flow.nodes, hiddenStages, hiddenKinds, hiddenZones],
   );
   const visibleIds = useMemo(
     () => new Set(visible.map((n) => n.id)),
@@ -479,6 +487,36 @@ function FlowViewInner({
               })}
             </ul>
           </section>
+
+          {zones.length > 1 && (
+            <section data-testid="zone-filter">
+              <h3>Halls and rooms</h3>
+              <p className="small muted">
+                Each hall is planned separately, so each reads as its own lane.
+                Hide the ones you are not working on — the stage spine and
+                anything campus-wide stays either way.
+              </p>
+              <ul className="legend">
+                {zones.map((zone) => (
+                  <li key={zone}>
+                    <button
+                      className={
+                        hiddenZones.has(zone) ? "legend-item is-off" : "legend-item"
+                      }
+                      onClick={() => setHiddenZones((s) => toggle(s, zone))}
+                    >
+                      <span className="legend-label">
+                        {zone.replace(/^zone\./, "").replace(/[-_]/g, " ")}
+                      </span>
+                      <span className="count mono">
+                        {flow.nodes.filter((n) => n.zone_id === zone).length}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section data-testid="stage-filter">
             <h3>Stages</h3>

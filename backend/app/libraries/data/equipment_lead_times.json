@@ -9,6 +9,7 @@
       "id": "lead.transformer_hv",
       "equipment": "HV/MV power transformer",
       "typical_weeks": 32,
+      "delivery_stagger_weeks": 2,
       "range_weeks": [
         24,
         48
@@ -20,7 +21,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Indian domestic transformer manufacturing is comparatively strong (CG Power, Bharat Bijlee, TBEA, Toshiba T&D), so 33/11kV units run shorter than the 40-60 week figure often quoted for Western markets. CRGO steel is import-dependent and type testing plus utility spec approval extend the tail.",
+        "note": "Indian domestic transformer manufacturing is comparatively strong (CG Power, Bharat Bijlee, TBEA, Toshiba T&D), so 33/11kV units run shorter than the 40-60 week figure often quoted for Western markets. CRGO steel is import-dependent and type testing plus utility spec approval extend the tail.\n\nINVENTED FOR REVIEW - `delivery_stagger_weeks` is my number, not a quoted one. A campus needs one of these per electrical room or per hall, and a factory does not ship eight at once: they arrive in a sequence, and the plan should install them in that sequence rather than pretending the whole batch lands on one day. The lead time above is sourced; this interval is an industry estimate standing in until a real delivery schedule replaces it, and it is what makes hall 8 finish after hall 1. Treat the ORDER as sound and the INTERVAL as unverified. Absent this field an item is gated by a single arrival, which is what every entry here did before and remains the conservative default.",
         "source_ref": "",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -29,6 +30,7 @@
       "id": "lead.hv_switchgear",
       "equipment": "HV/MV switchgear (GIS/AIS panels)",
       "typical_weeks": 30,
+      "delivery_stagger_weeks": 2,
       "range_weeks": [
         24,
         44
@@ -40,7 +42,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "AIS panels are largely domestic; GIS is typically imported (Siemens, Hitachi Energy, Schneider), which sets the upper end.",
+        "note": "AIS panels are largely domestic; GIS is typically imported (Siemens, Hitachi Energy, Schneider), which sets the upper end.\n\nINVENTED FOR REVIEW - `delivery_stagger_weeks` is my number, not a quoted one. A campus needs one of these per electrical room or per hall, and a factory does not ship eight at once: they arrive in a sequence, and the plan should install them in that sequence rather than pretending the whole batch lands on one day. The lead time above is sourced; this interval is an industry estimate standing in until a real delivery schedule replaces it, and it is what makes hall 8 finish after hall 1. Treat the ORDER as sound and the INTERVAL as unverified. Absent this field an item is gated by a single arrival, which is what every entry here did before and remains the conservative default.",
         "source_ref": "",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -69,6 +71,7 @@
       "id": "lead.ups",
       "equipment": "UPS modules and static switches",
       "typical_weeks": 22,
+      "delivery_stagger_weeks": 1,
       "range_weeks": [
         16,
         32
@@ -80,7 +83,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Modular UPS from Vertiv, Schneider and ABB, mostly imported; a shorter lead than the power train ahead of it, so rarely the binding constraint.",
+        "note": "Modular UPS from Vertiv, Schneider and ABB, mostly imported; a shorter lead than the power train ahead of it, so rarely the binding constraint.\n\nINVENTED FOR REVIEW - `delivery_stagger_weeks` is my number, not a quoted one. A campus needs one of these per electrical room or per hall, and a factory does not ship eight at once: they arrive in a sequence, and the plan should install them in that sequence rather than pretending the whole batch lands on one day. The lead time above is sourced; this interval is an industry estimate standing in until a real delivery schedule replaces it, and it is what makes hall 8 finish after hall 1. Treat the ORDER as sound and the INTERVAL as unverified. Absent this field an item is gated by a single arrival, which is what every entry here did before and remains the conservative default.",
         "source_ref": "",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -129,6 +132,7 @@
       "id": "lead.crah",
       "equipment": "CRAH / in-row cooling units",
       "typical_weeks": 18,
+      "delivery_stagger_weeks": 1,
       "range_weeks": [
         12,
         26
@@ -140,7 +144,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Vertiv and Schneider, part-domestic. Unit count scales with hall count, so quantity rather than lead time is usually the constraint.",
+        "note": "Vertiv and Schneider, part-domestic. Unit count scales with hall count, so quantity rather than lead time is usually the constraint.\n\nINVENTED FOR REVIEW - `delivery_stagger_weeks` is my number, not a quoted one. A campus needs one of these per electrical room or per hall, and a factory does not ship eight at once: they arrive in a sequence, and the plan should install them in that sequence rather than pretending the whole batch lands on one day. The lead time above is sourced; this interval is an industry estimate standing in until a real delivery schedule replaces it, and it is what makes hall 8 finish after hall 1. Treat the ORDER as sound and the INTERVAL as unverified. Absent this field an item is gated by a single arrival, which is what every entry here did before and remains the conservative default.",
         "source_ref": "",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -149,6 +153,7 @@
       "id": "lead.gas_suppression",
       "equipment": "Gas fire-suppression system",
       "typical_weeks": 16,
+      "delivery_stagger_weeks": 1,
       "range_weeks": [
         12,
         24
@@ -160,7 +165,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Agent and cylinder supply is routine; the schedule risk sits in the discharge test, which is a Tier-1 safety activity (safety.gas_suppression_discharge).",
+        "note": "Agent and cylinder supply is routine; the schedule risk sits in the discharge test, which is a Tier-1 safety activity (safety.gas_suppression_discharge).\n\nINVENTED FOR REVIEW - `delivery_stagger_weeks` is my number, not a quoted one. A campus needs one of these per electrical room or per hall, and a factory does not ship eight at once: they arrive in a sequence, and the plan should install them in that sequence rather than pretending the whole batch lands on one day. The lead time above is sourced; this interval is an industry estimate standing in until a real delivery schedule replaces it, and it is what makes hall 8 finish after hall 1. Treat the ORDER as sound and the INTERVAL as unverified. Absent this field an item is gated by a single arrival, which is what every entry here did before and remains the conservative default.",
         "source_ref": "",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }

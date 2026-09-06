@@ -597,6 +597,7 @@
       "id": "frag.mep.power_train",
       "name": "MEP - power train (transformer to UPS)",
       "stage": "mep_power",
+      "zone_kind": "electrical_room",
       "dept": "mep",
       "materials": [
         "transformers",
@@ -650,19 +651,25 @@
           "id": "c65",
           "name": "Diesel generator set installation and alignment",
           "duration_days": 25,
-          "calendar": "6day"
+          "calendar": "6day",
+          "zone_scope": "project",
+          "zone_scope_why": "The generator sets sit in the generator yard, of which there is one."
         },
         {
           "id": "c67",
           "name": "Bulk HSD storage tank and fuel system installation",
           "duration_days": 20,
-          "calendar": "6day"
+          "calendar": "6day",
+          "zone_scope": "project",
+          "zone_scope_why": "Bulk HSD storage is one fuel farm. Seven of them would be seven PESO licences."
         },
         {
           "id": "c70",
           "name": "HV/MV energisation and live electrical testing",
           "duration_days": 15,
-          "calendar": "6day"
+          "calendar": "6day",
+          "zone_scope": "project",
+          "zone_scope_why": "HV/MV energisation is a single event on the incoming supply, witnessed once by CEIG. It is not repeated per electrical room."
         }
       ],
       "logic": [
@@ -766,7 +773,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Transformer-to-UPS installation and test. Switchgear and UPS install dominate; the sequence is gated by delivery, not by labour. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates. --- EXTENDED FOR REVIEW (three additions). c65 DIESEL GENERATOR SET INSTALLATION: lead.generator was in equipment_lead_times at 30 weeks with drives_rfs=true and was consumed by nothing, so the gensets never appeared in any programme and their lead time constrained nothing. It now carries a material link. Owner-furnished gensets (dp.ofe) change WHO procures, not the lead time, so the delivery gate applies either way. c67 BULK HSD STORAGE: the fuel system path.nm.peso_hsd licenses had no activity to gate; PESO is a safety approval for bulk diesel and its absence was a real hole. c70 HV/MV ENERGISATION: the package previously ended at cable termination, so there was no energisation step at all - which meant DOMAIN_KNOWLEDGE.md#5 (\"energisation cannot precede CEIG approval\") had nothing to attach to, and safety.hv_energisation, a Tier-1 entry that BLOCKS EXPORT, matched no activity in any plan ever produced. THREE DURATIONS AND FIVE LOGIC LINKS ARE ESTIMATES. JUDGEMENTS TO CHALLENGE: 15 days for energisation assumes a single energisation event, where a 2N facility energises each path separately; the SS+10 from genset to fuel system assumes one contractor; and c65 hangs off c10 (plinth and pad preparation), which assumes the genset pads are poured with the transformer pads.",
+        "note": "Transformer-to-UPS installation and test. Switchgear and UPS install dominate; the sequence is gated by delivery, not by labour. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates. --- EXTENDED FOR REVIEW (three additions). c65 DIESEL GENERATOR SET INSTALLATION: lead.generator was in equipment_lead_times at 30 weeks with drives_rfs=true and was consumed by nothing, so the gensets never appeared in any programme and their lead time constrained nothing. It now carries a material link. Owner-furnished gensets (dp.ofe) change WHO procures, not the lead time, so the delivery gate applies either way. c67 BULK HSD STORAGE: the fuel system path.nm.peso_hsd licenses had no activity to gate; PESO is a safety approval for bulk diesel and its absence was a real hole. c70 HV/MV ENERGISATION: the package previously ended at cable termination, so there was no energisation step at all - which meant DOMAIN_KNOWLEDGE.md#5 (\"energisation cannot precede CEIG approval\") had nothing to attach to, and safety.hv_energisation, a Tier-1 entry that BLOCKS EXPORT, matched no activity in any plan ever produced. THREE DURATIONS AND FIVE LOGIC LINKS ARE ESTIMATES. JUDGEMENTS TO CHALLENGE: 15 days for energisation assumes a single energisation event, where a 2N facility energises each path separately; the SS+10 from genset to fuel system assumes one contractor; and c65 hangs off c10 (plinth and pad preparation), which assumes the genset pads are poured with the transformer pads.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -873,6 +880,7 @@
       "id": "frag.fire_bms.detection_suppression",
       "name": "Fire detection, gas suppression and BMS",
       "stage": "fire_bms",
+      "zone_kind": "data_hall",
       "dept": "fire",
       "materials": [
         "gas suppression",
@@ -901,7 +909,9 @@
           "id": "e30",
           "name": "Pre-action sprinkler pipework to back-of-house",
           "duration_days": 25,
-          "calendar": "6day"
+          "calendar": "6day",
+          "zone_scope": "project",
+          "zone_scope_why": "Pre-action sprinkler pipework is explicitly to BACK-OF-HOUSE, which is not the halls."
         },
         {
           "id": "e40",
@@ -913,13 +923,17 @@
           "id": "e50",
           "name": "BMS head-end integration and graphics",
           "duration_days": 20,
-          "calendar": "6day"
+          "calendar": "6day",
+          "zone_scope": "project",
+          "zone_scope_why": "One BMS head-end serves the campus. Seven head-ends is not a redundancy topology, it is a mistake."
         },
         {
           "id": "e60",
           "name": "Fire alarm cause-and-effect testing",
           "duration_days": 15,
-          "calendar": "6day"
+          "calendar": "6day",
+          "zone_scope": "project",
+          "zone_scope_why": "Fire alarm cause-and-effect is a SYSTEM test across the installation, not a per-hall one. It is also where the fire NOC is lodged from, and a lodgement needs one unambiguous predecessor."
         }
       ],
       "logic": [
@@ -992,7 +1006,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning department (subcontract), materials (suppression, VESDA, BMS) and the two gates (fire NOC, NBC 2016) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SEVEN LOGIC LINKS and the TWO HOLD POINTS are estimates: roughly 73 days on the longest path (detection -> BMS field -> head-end -> cause-and-effect). GROUNDED: the material link from the cylinder banks to lead.gas_suppression is real - the 16-week lead time in equipment_lead_times.json gates that activity, so suppression cannot start before the cylinders land. The safety_ref to safety.gas_suppression_discharge is also real and makes discharge testing a Tier-1 activity requiring sign-off. JUDGEMENTS TO CHALLENGE: cause-and-effect is modelled as one 15-day activity gating the fire NOC, where a real programme often runs it per-zone and re-tests; the three SS overlaps off detection assume one subcontractor sequencing gangs through the building rather than three independent trades. NOT MODELLED: the fire officer witnessing is a hold point, not a statutory pathway activity - the NOC itself lives in the city pathway data.",
+        "note": "INVENTED FOR REVIEW. Stage, owning department (subcontract), materials (suppression, VESDA, BMS) and the two gates (fire NOC, NBC 2016) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SEVEN LOGIC LINKS and the TWO HOLD POINTS are estimates: roughly 73 days on the longest path (detection -> BMS field -> head-end -> cause-and-effect). GROUNDED: the material link from the cylinder banks to lead.gas_suppression is real - the 16-week lead time in equipment_lead_times.json gates that activity, so suppression cannot start before the cylinders land. The safety_ref to safety.gas_suppression_discharge is also real and makes discharge testing a Tier-1 activity requiring sign-off. JUDGEMENTS TO CHALLENGE: cause-and-effect is modelled as one 15-day activity gating the fire NOC, where a real programme often runs it per-zone and re-tests; the three SS overlaps off detection assume one subcontractor sequencing gangs through the building rather than three independent trades. NOT MODELLED: the fire officer witnessing is a hold point, not a statutory pathway activity - the NOC itself lives in the city pathway data.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -1001,6 +1015,7 @@
       "id": "frag.fit_out.cabling",
       "name": "Fit-out - containment, raised floor and structured cabling",
       "stage": "fit_out",
+      "zone_kind": "data_hall",
       "dept": "civil",
       "materials": [
         "containment",
@@ -1028,7 +1043,9 @@
           "id": "f30",
           "name": "Structured cabling backbone (OS2 / OM4)",
           "duration_days": 35,
-          "calendar": "6day"
+          "calendar": "6day",
+          "zone_scope": "project",
+          "zone_scope_why": "A structured cabling BACKBONE is what joins the halls; it is installed once and terminates in each hall. The debatable one in this fragnet - a reviewer may well move it per-hall, and the field is here so that is a data edit, not a code change."
         },
         {
           "id": "f40",
@@ -1104,7 +1121,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (containment, structured cabling) and the TIA-942 gate are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 120 days on the longest path (raised floor -> containment -> backbone -> horizontal -> certification). JUDGEMENTS TO CHALLENGE: racks are placed after the raised floor and in parallel with the backbone, which assumes the floor carries the racks - a slab-mounted rack layout would reorder this; the SS+10 from floor to containment assumes containment follows the floor gang across the hall. NOT MODELLED: no material link to a long-lead item, because racks and cabling are not in equipment_lead_times.json - on a real project client-supplied racks are frequently the constraint here and their absence understates this stage. Also not modelled: fit-out is one whole-building package, so a hall-by-hall handover sequence is not represented. --- LOGIC REVISED FOR REVIEW: three finish-to-start links became start-to-start with a lead (f20->f30, f30->f50, f50->f60). Every activity in this package is per-hall except the backbone risers, so modelling them as one whole-building chain charged the programme for work that in reality runs concurrently across halls: horizontal cabling in the first hall does not wait for the backbone to reach the last one, and certification follows each hall rather than the building. THE THREE LEADS ARE ESTIMATES, set at roughly half the predecessor's duration, which is the crudest possible reading of 'about half the halls are ready'. They are the least defensible numbers in this entry and the first thing to replace with a per-zone sub-network.",
+        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (containment, structured cabling) and the TIA-942 gate are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 120 days on the longest path (raised floor -> containment -> backbone -> horizontal -> certification). JUDGEMENTS TO CHALLENGE: racks are placed after the raised floor and in parallel with the backbone, which assumes the floor carries the racks - a slab-mounted rack layout would reorder this; the SS+10 from floor to containment assumes containment follows the floor gang across the hall. NOT MODELLED: no material link to a long-lead item, because racks and cabling are not in equipment_lead_times.json - on a real project client-supplied racks are frequently the constraint here and their absence understates this stage. Also not modelled: fit-out is one whole-building package, so a hall-by-hall handover sequence is not represented. --- LOGIC REVISED FOR REVIEW: three finish-to-start links became start-to-start with a lead (f20->f30, f30->f50, f50->f60). Every activity in this package is per-hall except the backbone risers, so modelling them as one whole-building chain charged the programme for work that in reality runs concurrently across halls: horizontal cabling in the first hall does not wait for the backbone to reach the last one, and certification follows each hall rather than the building. THE THREE LEADS ARE ESTIMATES, set at roughly half the predecessor's duration, which is the crudest possible reading of 'about half the halls are ready'. They are the least defensible numbers in this entry and the first thing to replace with a per-zone sub-network.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }

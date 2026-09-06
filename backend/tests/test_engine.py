@@ -133,6 +133,7 @@ def test_assembly_is_independent_of_input_stage_order():
 def test_activity_ids_are_derived_not_allocated(result):
     """An allocated (counter or uuid) id would break identity across runs."""
     from backend.app.engine import activity_id
+    from backend.app.engine.ids import zone_index_of
 
     for activity in result.activities:
         # Fragnet-instanced work only. Statutory approvals are real tasks with real durations,
@@ -140,8 +141,13 @@ def test_activity_ids_are_derived_not_allocated(result):
         # (stage, fragnet, spec) triple to derive an id from - theirs is derived from the
         # pathway id instead, which is just as stable across runs.
         if activity.type == 'task' and activity.source_fragnet:
+            # A zone-instanced id carries its zone as a `.zNN` suffix, so the spec id is the
+            # segment before it. Both forms must still be a pure function of their parts.
+            parts = activity.id.split('.')
+            zone_index = zone_index_of(activity.id)
+            spec = parts[-2] if zone_index else parts[-1]
             assert activity.id == activity_id(
-                activity.stage, activity.source_fragnet, activity.id.rsplit('.', 1)[-1]
+                activity.stage, activity.source_fragnet, spec, zone_index
             )
 
 
@@ -153,8 +159,26 @@ def test_every_selected_fragnet_activity_is_instanced(result):
                 if f['id'] == 'frag.mep.power_train')
     instanced = [a for a in result.activities if a.source_fragnet == 'frag.mep.power_train'
                  and a.type == 'task']
-    assert len(instanced) == len(frag['activities'])
-    assert {a.name for a in instanced} == {s['name'] for s in frag['activities']}
+
+    # The fragnet repeats per electrical room, so the count is per-zone specs x rooms plus the
+    # specs that happen once. Asserting a bare equality against the library would now be
+    # asserting that zone multiplication did NOT happen.
+    rooms = len({a.zone_id for a in instanced if a.zone_id})
+    per_zone = [s for s in frag['activities'] if s.get('zone_scope') != 'project']
+    once = [s for s in frag['activities'] if s.get('zone_scope') == 'project']
+    assert rooms > 1, 'this brief produced one electrical room, so this proves nothing'
+    assert len(instanced) == len(per_zone) * rooms + len(once)
+
+    # Every library activity reached the plan, and the repeated ones reached every room.
+    for spec in per_zone:
+        matching = [a for a in instanced if a.name.startswith(spec['name'])]
+        assert len({a.zone_id for a in matching}) == rooms, (
+            f'{spec["id"]} was not instanced in every electrical room'
+        )
+    for spec in once:
+        assert sum(a.name == spec['name'] for a in instanced) == 1, (
+            f'{spec["id"]} is project-wide and must be instanced exactly once'
+        )
 
 
 def test_durations_come_from_the_library_not_invented(result):
@@ -162,21 +186,45 @@ def test_durations_come_from_the_library_not_invented(result):
     expected = {s['name']: s['duration_days'] for s in frag['activities']}
     for activity in result.activities:
         if activity.source_fragnet == 'frag.mep.cooling' and activity.type == 'task':
-            assert activity.duration_days == expected[activity.name]
+            # A zone instance appends " - <zone>" to the name; the duration is the library's
+            # either way, because instancing repeats work rather than resizing it.
+            assert activity.duration_days == expected[activity.name.split(' - ')[0]]
 
 
 def test_fragnet_logic_is_wired_with_type_and_lag(result):
     """SS with a 10-day lag must survive assembly as SS with a 10-day lag."""
+    from backend.app.engine.ids import zone_index_of
+
     frag = next(f for f in load_library('fragnets')['entries']
                 if f['id'] == 'frag.mep.power_train')
     link = next(l for l in frag['logic'] if l['type'] == 'SS' and l['lag'] > 0)
-    edge = next(
+
+    def spec_of(ident):
+        parts = ident.split('.')
+        return parts[-2] if zone_index_of(ident) else parts[-1]
+
+    wired = [
         e for e in result.edges
-        if e.kind == 'fragnet' and e.from_id.endswith(link['from'])
-        and e.to_id.endswith(link['to'])
+        if e.kind == 'fragnet'
+        and spec_of(e.from_id) == link['from'] and spec_of(e.to_id) == link['to']
+    ]
+    assert wired, f'{link["from"]}->{link["to"]} was not wired at all'
+    for edge in wired:
+        assert edge.type == link['type']
+        assert edge.lag == link['lag']
+
+    # And it is wired WITHIN each electrical room, never across two.
+    #
+    # This is the failure mode that would not show up in a count: joining every instance of one
+    # end to every instance of the other yields 49 edges instead of 7, makes each room wait for
+    # all the others, and quietly turns seven parallel power trains back into one serial one.
+    # The dates would still look plausible, which is what makes it worth pinning.
+    assert all(
+        zone_index_of(e.from_id) == zone_index_of(e.to_id) for e in wired
+    ), 'a fragnet link crosses two zones, serialising work that runs in parallel'
+    assert len(wired) == len({zone_index_of(e.from_id) for e in wired}), (
+        'more edges than zones: the two ends were joined cartesian-style'
     )
-    assert edge.type == link['type']
-    assert edge.lag == link['lag']
 
 
 def test_wbs_ids_are_hierarchical_and_stage_ordered(result):
@@ -246,14 +294,21 @@ def test_ifc_gate_anchors_automatically_once_a_design_fragnet_exists():
 
 def test_delivery_gates_tie_construction_to_delivery(result):
     """DOMAIN_KNOWLEDGE.md §4: front-load long lead, tie construction to delivery."""
-    ident = delivery_gate_id('lead.transformer_hv')
-    assert any(a.id == ident and a.type == 'milestone' for a in result.activities)
+    base = delivery_gate_id('lead.transformer_hv')
+    # One milestone per electrical room where the library declares a delivery interval, else a
+    # single one. Either way every one of them must be a milestone that gates real work.
+    gates = [a for a in result.activities
+             if a.id == base or a.id.startswith(base + '.z')]
+    assert gates, 'no delivery milestone for the transformer'
+    assert all(a.type == 'milestone' for a in gates)
 
-    gated = [e.to_id for e in result.edges if e.from_id == ident and e.kind == 'delivery']
-    assert gated, 'the delivery milestone must gate the installing activity'
-    target = next(a for a in result.activities if a.id == gated[0])
-    assert 'transformer' in target.name.lower()
-    assert {'id': ident, 'type': 'FS', 'lag': 0, 'kind': 'delivery'} in target.predecessors
+    for gate in gates:
+        gated = [e.to_id for e in result.edges
+                 if e.from_id == gate.id and e.kind == 'delivery']
+        assert gated, f'{gate.id} gates nothing'
+        target = next(a for a in result.activities if a.id == gated[0])
+        assert 'transformer' in target.name.lower()
+        assert {'id': gate.id, 'type': 'FS', 'lag': 0, 'kind': 'delivery'} in target.predecessors
 
 
 def test_delivery_gates_are_derived_from_library_material_links():
@@ -287,8 +342,10 @@ def test_delivery_gate_anchors_to_procurement_when_it_has_activities():
     stages[1] = StageReasoning(stage='procurement', packages=[pkg('frag.procurement.long_lead')])
 
     res = assemble(stages, BRIEF, libraries=libs)
-    ident = delivery_gate_id('lead.transformer_hv')
-    incoming = [e for e in res.edges if e.to_id == ident and e.kind == 'delivery']
+    base = delivery_gate_id('lead.transformer_hv')
+    incoming = [e for e in res.edges
+                if (e.to_id == base or e.to_id.startswith(base + '.z'))
+                and e.kind == 'delivery']
     assert incoming, 'delivery milestone should now follow the procurement activities'
 
 
@@ -489,5 +546,5 @@ def test_full_chain_design_to_procurement_to_delivery_to_install():
 
     assert any(f.startswith('design.') and t == 'gate.ifc-issued' for f, t in edges)
     assert any(f == 'gate.ifc-issued' and t.startswith('procurement.') for f, t in edges)
-    assert any(f.startswith('procurement.') and t == delivery for f, t in edges)
-    assert any(f == delivery and t.startswith('mep_power.') for f, t in edges)
+    assert any(f.startswith('procurement.') and t.startswith(delivery) for f, t in edges)
+    assert any(f.startswith(delivery) and t.startswith('mep_power.') for f, t in edges)
