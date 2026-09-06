@@ -277,9 +277,20 @@ async def ws_simulate(websocket: WebSocket) -> None:
                             'detection': pending.get('detection', ''),
                         },
                     })
+                # THREE states, not two. A run being reopened is halted, finished, or still
+                # mid-walk, and calling the finished one "started" told the client a completed
+                # plan was a run just beginning: it sat on "Simulating..." forever, and every
+                # view that waits for completion - the P6 export panel among them - never
+                # appeared. `is_complete` already distinguishes them; the wire did not.
+                if simulator.is_halted:
+                    reopened = 'simulation_halted'
+                elif simulator.is_complete:
+                    reopened = 'simulation_completed'
+                else:
+                    reopened = 'simulation_started'
                 await websocket.send_json({
                     'seq': simulator.state.seq,
-                    'type': 'simulation_halted' if simulator.is_halted else 'simulation_started',
+                    'type': reopened,
                     'stage': simulator.state.halted_at or '',
                     'payload': {
                         'run_id': simulator.state.run_id,

@@ -690,3 +690,57 @@ def test_attach_re_raises_only_the_forks_still_open(monkeypatch):
     assert 'dp.ofe' not in raised, 'attach re-raised a fork that was already answered'
     assert raised == ['dp.delivery_mode']
     assert payload['pending'] == ['dp.delivery_mode']
+
+
+def test_attaching_to_a_completed_run_says_it_is_complete(monkeypatch):
+    """Reopening a finished run must not look like one just beginning.
+
+    Attach reported only two states - halted or "started" - so a completed run came back as
+    simulation_started. The client then sat on "Simulating…" forever, and everything gated on
+    completion never appeared, the P6 export panel included. Found by opening a real completed
+    run's URL against production: 0 nodes, no badges, no export.
+    """
+    ws_reasoner(monkeypatch)
+    client = TestClient(app)
+
+    run_id = ''
+    with client.websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'start', 'brief': BRIEF})
+        while True:
+            event = ws.receive_json()
+            run_id = run_id or event['payload'].get('run_id', '')
+            if event['type'] == SIMULATION_COMPLETED:
+                break
+
+    registry.clear()  # a restart, so the reopen goes through storage
+
+    with client.websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'attach', 'run_id': run_id})
+        reopened = ws.receive_json()
+
+    assert reopened['type'] == SIMULATION_COMPLETED, (
+        f"a finished run was reopened as {reopened['type']}"
+    )
+    payload = reopened['payload']
+    assert payload['output']['activities'], 'the reopened run carries no plan'
+    assert payload['pending'] == []
+
+
+def test_attaching_mid_walk_still_reports_started(monkeypatch):
+    """The third state must keep working: a run that is neither halted nor finished."""
+    from backend.app.simulator.events import RunState
+
+    simulator = Simulator(BRIEF, run_id='run-midwalk', stages=WALK)
+    simulator.state = RunState(run_id='run-midwalk', brief=BRIEF, started=True,
+                               completed_stages=['design'])
+    registry.add(simulator)
+    # Neither halted nor finished. Note state.is_complete says otherwise - it cannot see how
+    # many stages the walk has, so one finished stage satisfies it. That is exactly why the
+    # attach path asks the SIMULATOR, which knows.
+    assert not simulator.is_halted
+    assert not simulator.is_complete, 'the simulator thinks a one-stage-in run has finished'
+    assert simulator.state.is_complete, 'the loose state-level check is the one being avoided'
+
+    with TestClient(app).websocket_connect('/ws/simulate') as ws:
+        ws.send_json({'action': 'attach', 'run_id': 'run-midwalk'})
+        assert ws.receive_json()['type'] == SIMULATION_STARTED

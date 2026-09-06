@@ -76,15 +76,27 @@ export function reduceEvent(state: RunState, event: SimulationEvent): RunState {
   const next: RunState = { ...state, events: [...state.events, event] }
 
   switch (event.type) {
-    case 'simulation_started':
+    case 'simulation_started': {
       // Keep the id: it is the only handle on a run that outlives this socket.
+      //
+      // And adopt an output if one came with it. A fresh run carries none, but ATTACH sends
+      // this event to reopen a run mid-walk and includes everything built so far - which was
+      // being thrown away, leaving a recovered run with an empty canvas that never filled,
+      // because attach does not replay the individual activity events.
+      const output = (p.output ?? null) as SimulationOutput | null
       return {
         ...next,
         status: 'running',
         error: '',
         runId: p.run_id ?? next.runId,
         zones: (p.zones as Record<string, unknown>[] | undefined) ?? next.zones,
+        output: output ?? next.output,
+        nodes: output ? output.flow.nodes : next.nodes,
+        edges: output ? output.flow.edges : next.edges,
+        stagesCompleted: (p.completed_stages as string[] | undefined) ?? next.stagesCompleted,
+        stagesStarted: (p.completed_stages as string[] | undefined) ?? next.stagesStarted,
       }
+    }
 
     case 'stage_started':
       return {

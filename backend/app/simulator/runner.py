@@ -323,6 +323,22 @@ class Simulator:
     def is_halted(self) -> bool:
         return self.state.is_halted
 
+    @property
+    def is_complete(self) -> bool:
+        """Every stage of THIS walk is done.
+
+        `RunState.is_complete` cannot answer this: the state knows which stages finished but not
+        how many there were, so a run one stage into a thirteen-stage walk satisfies it. That is
+        harmless where it is used - runs are only persisted at settle points, so a stored run is
+        halted or finished - but it is the wrong question to ask when deciding what to tell a
+        client reopening a run, because an in-memory run really can be mid-walk.
+        """
+        return (
+            not self.state.is_halted
+            and self.state.halted_at is None
+            and set(self.stages).issubset(set(self.state.completed_stages))
+        )
+
 
 def run_to_completion(
     simulator: Simulator, answers: Dict[str, str], max_rounds: int = 20
