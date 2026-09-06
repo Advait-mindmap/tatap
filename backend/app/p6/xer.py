@@ -192,62 +192,155 @@ def task_codes(activities: Sequence[Dict[str, Any]]) -> Dict[str, str]:
     return codes
 
 
+def _zone_label(zone_id: str) -> str:
+    """`zone.electrical-room.01` -> `Electrical room 01`."""
+    parts = str(zone_id or '').split('.')
+    if len(parts) >= 3:
+        return f"{parts[1].replace('-', ' ').replace('_', ' ').capitalize()} {parts[2]}"
+    return str(zone_id or 'Unzoned')
+
+
 def build_wbs(
     output: Dict[str, Any], project_name: str, proj_id: int, obs_id: int,
 ) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
-    """The run's own WBS, projected into P6's node table.
+    """The run's own breakdown structure, as a TREE rather than a single flat level.
 
-    The engine already assigns every activity a three-part WBS code - `stage.package.activity`,
-    e.g. `05.01.003` - plus a `00.*` bucket for the cross-stage gates and long-lead deliveries
-    that belong to no single stage. That code IS the plan's breakdown structure, so the WBS
-    written here is grouped on it rather than on a list of stages invented for the export.
+    The engine assigns every activity a three-part code - `stage.package.activity`, e.g.
+    `05.01.003` - plus a `00.*` bucket for cross-stage gates, long-lead deliveries and statutory
+    approvals. Two of those three levels used to be discarded: the export grouped on
+    `code.split('.')[0]` alone, so a thirteen-stage plan became fourteen WBS nodes and every
+    activity hung directly off its stage. In P6 that is a schedule nobody can navigate.
 
-    Two levels: the project, then one node per distinct code prefix. Returns the nodes and a
-    map from prefix to wbs_id.
+    Levels are now stage -> package -> zone, and a level is created ONLY WHERE IT
+    DISCRIMINATES. A node with a single child is not structure, it is a step the reader has to
+    click through; and P6 is happy to carry tasks at any level, so a stage with one package
+    keeps its activities directly beneath it.
+
+    WHAT THIS DOES NOT FIX, measured rather than assumed. Nesting adds far less than it looks
+    like it should, because the data it nests is thin in two known places: every stage carries
+    exactly ONE package (the fragnet library has one per stage), and every zone reference ends
+    in `.01` (the engine collapses all seven data halls onto the first). So the package level
+    discriminates in one bucket and the zone level in one bucket, and the tree goes from 14
+    nodes to about 20 rather than to the 40-60 a three-level code implies. The structure is now
+    correct and ready; the depth arrives when there are packages and zones to break out.
+
+    Returns the nodes and a map from ACTIVITY ID to the wbs_id it belongs under.
     """
-    activities = output.get('activities') or []
+    activities = list(output.get('activities') or [])
 
-    #: prefix -> (first stage seen under it, lowest start day under it, how many activities)
-    groups: Dict[str, Dict[str, Any]] = {}
+    def stage_of(activity: Dict[str, Any]) -> str:
+        return str(activity.get('wbs_id') or '').split('.')[0] or '99'
+
+    def package_of(activity: Dict[str, Any]) -> str:
+        parts = str(activity.get('wbs_id') or '').split('.')
+        return parts[1] if len(parts) > 1 else ''
+
+    # ---- stage order and naming, taken from the plan rather than a fixed list
+    stage_meta: Dict[str, Dict[str, Any]] = {}
     for activity in activities:
-        code = str(activity.get('wbs_id') or '')
-        prefix = code.split('.')[0] if code else '99'
+        code = stage_of(activity)
         day = int(activity.get('start_day') or 0)
-        group = groups.setdefault(prefix, {'stages': [], 'day': day, 'count': 0})
-        group['day'] = min(group['day'], day)
-        group['count'] += 1
-        stage = str(activity.get('stage') or '')
-        if stage and stage not in group['stages']:
-            group['stages'].append(stage)
+        meta = stage_meta.setdefault(code, {'day': day, 'names': []})
+        meta['day'] = min(meta['day'], day)
+        name = str(activity.get('stage') or '')
+        if name and name not in meta['names']:
+            meta['names'].append(name)
 
-    root_id = proj_id * 100
-    nodes: List[Dict[str, Any]] = [{
-        'wbs_id': root_id, 'proj_id': proj_id, 'obs_id': obs_id, 'seq_num': 0, 'est_wt': 1,
-        'proj_node_flag': 'Y', 'sum_data_flag': 'N', 'status_code': 'WS_Open',
-        'wbs_short_name': (project_name or 'PROJECT')[:20], 'wbs_name': project_name or 'Project',
-        'parent_wbs_id': '', 'ev_user_pct': 0, 'ev_etc_user_value': 0,
-        'ev_compute_type': 'EC_Cmp_pct', 'ev_etc_compute_type': 'EE_Rem_hr',
-    }]
+    nodes: List[Dict[str, Any]] = []
+    assignment: Dict[str, int] = {}
+    next_id = proj_id * 1000
+    root_id = next_id
 
-    by_prefix: Dict[str, int] = {}
-    ordered = sorted(groups.items(), key=lambda kv: (kv[1]['day'], kv[0]))
-    for index, (prefix, group) in enumerate(ordered, start=1):
-        wbs_id = root_id + index
-        by_prefix[prefix] = wbs_id
-        if prefix == '00':
-            # The engine's bucket for work that spans stages: cross-stage gates and the
-            # deliveries whose lead time drives them.
-            name = 'Cross-stage gates and long-lead deliveries'
-        else:
-            name = ' / '.join(s.replace('_', ' ').title() for s in group['stages']) or prefix
+    def add(name: str, short: str, parent: Any, seq: int) -> int:
+        nonlocal next_id
+        next_id += 1
         nodes.append({
-            'wbs_id': wbs_id, 'proj_id': proj_id, 'obs_id': obs_id, 'seq_num': index * 10,
+            'wbs_id': next_id, 'proj_id': proj_id, 'obs_id': obs_id, 'seq_num': seq,
             'est_wt': 1, 'proj_node_flag': 'N', 'sum_data_flag': 'N', 'status_code': 'WS_Open',
-            'wbs_short_name': prefix[:20], 'wbs_name': name[:100],
-            'parent_wbs_id': root_id, 'ev_user_pct': 0, 'ev_etc_user_value': 0,
+            'wbs_short_name': short[:20], 'wbs_name': name[:100], 'parent_wbs_id': parent,
+            'ev_user_pct': 0, 'ev_etc_user_value': 0,
             'ev_compute_type': 'EC_Cmp_pct', 'ev_etc_compute_type': 'EE_Rem_hr',
         })
-    return nodes, by_prefix
+        return next_id
+
+    nodes.append({
+        'wbs_id': root_id, 'proj_id': proj_id, 'obs_id': obs_id, 'seq_num': 0, 'est_wt': 1,
+        'proj_node_flag': 'Y', 'sum_data_flag': 'N', 'status_code': 'WS_Open',
+        'wbs_short_name': (project_name or 'PROJECT')[:20],
+        'wbs_name': project_name or 'Project', 'parent_wbs_id': '',
+        'ev_user_pct': 0, 'ev_etc_user_value': 0,
+        'ev_compute_type': 'EC_Cmp_pct', 'ev_etc_compute_type': 'EE_Rem_hr',
+    })
+
+    # Ordered by the stage CODE, which is the canonical order of the works, not by date.
+    # Sorting by start day put fire_bms (day 95) above enabling (day 210, held behind the
+    # environmental clearance): true about the dates, wrong for a breakdown structure, which a
+    # planner reads as the order of the works. `00` sorts first on its own, which is where the
+    # cross-stage gates, deliveries and approvals belong.
+    ordered_stages = sorted(stage_meta)
+    for stage_index, stage_code in enumerate(ordered_stages, start=1):
+        in_stage = [a for a in activities if stage_of(a) == stage_code]
+        names = stage_meta[stage_code]['names']
+        if stage_code == '00':
+            label = 'Cross-stage gates, deliveries and approvals'
+        else:
+            label = ' / '.join(n.replace('_', ' ').title() for n in names) or stage_code
+        stage_node = add(label, stage_code, root_id, stage_index * 10)
+
+        # ---- package level, only where more than one package exists in this stage
+        packages = sorted({package_of(a) for a in in_stage if package_of(a)})
+        groups: List[Tuple[int, List[Dict[str, Any]]]] = []
+        if len(packages) > 1:
+            for package_index, package in enumerate(packages, start=1):
+                members = [a for a in in_stage if package_of(a) == package]
+                package_node = add(
+                    _package_label(package, members), f'{stage_code}.{package}',
+                    stage_node, package_index * 10,
+                )
+                groups.append((package_node, members))
+        else:
+            groups.append((stage_node, in_stage))
+
+        # ---- zone level, only where more than one zone appears under a parent
+        for parent_node, members in groups:
+            zones = sorted({str(a.get('zone_id')) for a in members if a.get('zone_id')})
+            if len(zones) > 1:
+                zone_nodes = {}
+                for zone_index, zone in enumerate(zones, start=1):
+                    zone_nodes[zone] = add(
+                        _zone_label(zone), zone.split('.')[-2][:20] if '.' in zone else zone,
+                        parent_node, zone_index * 10,
+                    )
+                for activity in members:
+                    zone = str(activity.get('zone_id')) if activity.get('zone_id') else ''
+                    assignment[str(activity.get('id'))] = zone_nodes.get(zone, parent_node)
+            else:
+                for activity in members:
+                    assignment[str(activity.get('id'))] = parent_node
+
+    return nodes, assignment
+
+
+#: The `00.*` bucket codes the KIND of constraint in two letters, the engine building the code as
+#: `00.{kind[:2]}.{n}`. Deriving the name from the members instead collapsed three different kinds
+#: into three sibling nodes all reading "Cross-stage gates", which is worse than a bare code.
+PACKAGE_NAMES = {
+    'de': 'Design release gates',
+    'dl': 'Long-lead deliveries',
+    'pr': 'Predecessor-stage gates',
+    're': 'Readiness gates',
+    'st': 'Statutory approvals',
+}
+
+
+def _package_label(package: str, members: Sequence[Dict[str, Any]]) -> str:
+    """Name a package. The two-letter code alone says nothing to a planner reading it in P6."""
+    if package in PACKAGE_NAMES:
+        return PACKAGE_NAMES[package]
+    fragnets = sorted({str(a.get('source_fragnet')) for a in members if a.get('source_fragnet')})
+    if len(fragnets) == 1:
+        return fragnets[0].replace('frag.', '').replace('.', ' ').replace('_', ' ').title()
+    return f'Package {package}'
 
 
 def export_xer(
@@ -278,7 +371,7 @@ def export_xer(
         return anchor + timedelta(days=int(day or 0))
 
     codes = task_codes(activities)
-    wbs_nodes, wbs_by_prefix = build_wbs(output, project_name, proj_id, obs_id)
+    wbs_nodes, wbs_of_activity = build_wbs(output, project_name, proj_id, obs_id)
     root_wbs = wbs_nodes[0]['wbs_id']
 
     task_ids: Dict[str, int] = {
@@ -353,8 +446,7 @@ def export_xer(
         kind = TASK_TYPE.get(str(activity.get('type') or 'task'), 'TT_Task')
         task_rows.append({
             'task_id': task_ids[ident], 'proj_id': proj_id,
-            'wbs_id': wbs_by_prefix.get(
-                str(activity.get('wbs_id') or '').split('.')[0], root_wbs),
+            'wbs_id': wbs_of_activity.get(ident, root_wbs),
             'clndr_id': clndr_id, 'est_wt': 1, 'phys_complete_pct': 0,
             'rev_fdbk_flag': 'N', 'lock_plan_flag': 'N', 'auto_compute_act_flag': 'Y',
             'complete_pct_type': 'CP_Drtn', 'task_type': kind,

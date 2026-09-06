@@ -274,40 +274,159 @@ def test_milestones_come_back_as_milestones(real_output, row_for):
         assert row['task_type'] == 'TT_Mile', f"{activity['id']} is not a milestone in the file"
 
 
-def test_the_wbs_is_the_engines_own_breakdown(real_output, parsed):
-    """The engine assigns every activity a `stage.package.activity` WBS code. The exported WBS
-    must be that structure, not a list of stages invented at export time."""
+def _wbs_tree(parsed):
+    """(root, node-by-id, children-by-parent-id) from the exported PROJWBS table."""
     nodes = parsed['PROJWBS'].entries()
     roots = [n for n in nodes if n['proj_node_flag']]
     assert len(roots) == 1, 'a P6 project needs exactly one WBS root'
+    children = {}
+    for node in nodes:
+        if not node['proj_node_flag']:
+            children.setdefault(node['parent_wbs_id'], []).append(node)
+    return roots[0], {n['wbs_id']: n for n in nodes}, children
+
+
+def test_the_wbs_is_the_engines_own_breakdown(real_output, parsed):
+    """The engine assigns every activity a `stage.package.activity` WBS code. The exported WBS
+    must be that structure, not a list of stages invented at export time."""
+    root, by_id, children = _wbs_tree(parsed)
 
     prefixes = {
         str(a['wbs_id']).split('.')[0] for a in real_output['activities'] if a.get('wbs_id')
     }
     assert len(prefixes) > 1, 'the run produced a flat WBS, so this proves nothing'
-    short_names = {str(n['wbs_short_name']) for n in nodes if not n['proj_node_flag']}
-    assert short_names == prefixes, f'WBS nodes {short_names} != engine prefixes {prefixes}'
+    top = {str(n['wbs_short_name']) for n in children[root['wbs_id']]}
+    assert top == prefixes, f'top-level WBS {top} != engine stage prefixes {prefixes}'
 
-    # Every node except the root hangs off the root, and every task off a node that exists.
-    wbs_ids = {n['wbs_id'] for n in nodes}
-    for node in nodes:
-        if not node['proj_node_flag']:
-            assert node['parent_wbs_id'] == roots[0]['wbs_id']
+    # Every node reachable from the root, exactly once: a tree, not a forest or a cycle.
+    seen = set()
+    frontier = [root['wbs_id']]
+    while frontier:
+        node_id = frontier.pop()
+        assert node_id not in seen, 'the WBS contains a cycle'
+        seen.add(node_id)
+        frontier.extend(c['wbs_id'] for c in children.get(node_id, []))
+    assert seen == set(by_id), 'some WBS nodes do not hang off the root'
+
     for row in parsed['TASK'].entries():
-        assert row['wbs_id'] in wbs_ids, f"{row['task_code']} points at a missing WBS node"
+        assert row['wbs_id'] in by_id, f"{row['task_code']} points at a missing WBS node"
 
 
-def test_each_activity_lands_under_its_own_wbs_node(real_output, parsed, row_for):
-    node_by_prefix = {
-        str(n['wbs_short_name']): n['wbs_id'] for n in parsed['PROJWBS'].entries()
-        if not n['proj_node_flag']
-    }
+def test_the_wbs_has_depth_below_the_stage(real_output, parsed):
+    """The regression this replaces: the export used to group on `code.split('.')[0]` alone, so
+    a thirteen-stage plan collapsed into fourteen nodes with every activity hanging off its
+    stage. The `package` and `zone` levels the engine already assigns were thrown away."""
+    root, by_id, children = _wbs_tree(parsed)
+
+    below_stage = [
+        n for n in by_id.values()
+        if not n['proj_node_flag'] and n['parent_wbs_id'] != root['wbs_id']
+    ]
+    assert below_stage, 'the WBS is one level deep again - stage nesting was lost'
+
+    # And the tasks reach it. Nodes nobody hangs off are decoration.
+    task_nodes = {r['wbs_id'] for r in parsed['TASK'].entries()}
+    assert task_nodes & {n['wbs_id'] for n in below_stage}, (
+        'nothing is scheduled below the stage level'
+    )
+
+
+def test_a_wbs_level_is_created_only_where_it_discriminates(parsed):
+    """A node with a single child is not structure; it is a step the reader clicks through.
+
+    The engine gives every stage one package and collapses every zone onto `.01`, so most
+    stages have nothing to break out. Where that is so, the activities stay on the stage.
+    """
+    _, by_id, children = _wbs_tree(parsed)
+    for node_id, kids in children.items():
+        assert len(kids) != 1, (
+            f"{by_id[node_id]['wbs_name']} has one child "
+            f"({kids[0]['wbs_name']}), which adds a level without dividing anything"
+        )
+
+
+def test_each_activity_lands_under_its_own_stage(real_output, parsed, row_for):
+    """Wherever nesting puts an activity, its ancestry must lead back to its own stage."""
+    root, by_id, children = _wbs_tree(parsed)
+    stage_node = {str(n['wbs_short_name']): n['wbs_id'] for n in children[root['wbs_id']]}
+
+    def ancestry(node_id):
+        chain = []
+        while node_id in by_id and node_id != root['wbs_id']:
+            chain.append(node_id)
+            node_id = by_id[node_id]['parent_wbs_id']
+        return chain
+
     for activity in real_output['activities']:
         prefix = str(activity['wbs_id']).split('.')[0]
         row = row_for(activity['id'])
-        assert row['wbs_id'] == node_by_prefix[prefix], (
-            f"{activity['id']} (WBS {activity['wbs_id']}) landed under the wrong node"
+        assert stage_node[prefix] in ancestry(row['wbs_id']), (
+            f"{activity['id']} (WBS {activity['wbs_id']}) sits outside stage {prefix}"
         )
+
+
+def test_activities_split_by_zone_land_under_their_own_zone(real_output, parsed, row_for):
+    """Where a parent does hold more than one zone, each activity goes to ITS zone - the whole
+    point of the level. Zone names are read off the node, so this does not restate the code."""
+    _, by_id, _ = _wbs_tree(parsed)
+    checked = 0
+    for activity in real_output['activities']:
+        zone = str(activity.get('zone_id') or '')
+        if not zone:
+            continue
+        node = by_id[row_for(activity['id'])['wbs_id']]
+        # e.g. `zone.electrical-room.01` under a node named `Electrical room 01`
+        kind = zone.split('.')[1].replace('-', ' ') if len(zone.split('.')) > 2 else ''
+        if kind and str(node['wbs_name']).lower().startswith(kind):
+            assert str(node['wbs_name']).endswith(zone.split('.')[-1])
+            checked += 1
+    assert checked, 'no activity was filed under a zone node; the zone level never engaged'
+
+
+def test_no_wbs_node_mixes_two_of_the_engines_packages(real_output, parsed, row_for):
+    """Depth alone is not the point; dividing by the right thing is.
+
+    The engine's middle code segment is the work package. Where a stage holds more than one,
+    the export must separate them - a node holding both the long-lead deliveries and the
+    statutory approvals is a deeper tree that has divided nothing a planner cares about.
+    """
+    package_of = {}
+    for activity in real_output['activities']:
+        parts = str(activity.get('wbs_id') or '').split('.')
+        if len(parts) > 1:
+            package_of[activity['id']] = (parts[0], parts[1])
+    assert len({p for p in package_of.values()}) > len({p[0] for p in package_of.values()}), (
+        'no stage in this run holds more than one package, so this proves nothing'
+    )
+
+    holds = {}
+    for activity in real_output['activities']:
+        if activity['id'] in package_of:
+            holds.setdefault(row_for(activity['id'])['wbs_id'], set()).add(
+                package_of[activity['id']]
+            )
+    for node_id, packages in holds.items():
+        assert len(packages) == 1, f'WBS node {node_id} mixes engine packages {sorted(packages)}'
+
+
+def test_the_stages_are_ordered_as_the_works_run(real_output, parsed):
+    """P6 shows a WBS in seq_num order. That order must be the order of the works.
+
+    Ordering by start date instead reads plausibly and is wrong: fire_bms starts on day 95 and
+    enabling on day 210, held behind the environmental clearance, so a date sort files fire
+    detection above the site works that precede it.
+    """
+    root, _, children = _wbs_tree(parsed)
+    top = sorted(children[root['wbs_id']], key=lambda n: int(n['seq_num']))
+    codes = [str(n['wbs_short_name']) for n in top]
+    assert codes == sorted(codes), f'stages are out of sequence: {codes}'
+
+    days = {}
+    for activity in real_output['activities']:
+        code = str(activity.get('wbs_id') or '').split('.')[0]
+        days[code] = min(days.get(code, 10**9), int(activity.get('start_day') or 0))
+    by_date = [c for c in sorted(days, key=lambda c: (days[c], c))]
+    assert by_date != codes, 'date order and stage order agree here, so this proves nothing'
 
 
 def test_the_project_end_matches_the_computed_rfs(real_output, parsed):
