@@ -216,6 +216,18 @@ jobs:
         if: always()
         run: npx playwright test zoom-scale.spec
 
+      - name: Reducer - open forks are one fact, not two
+        if: always()
+        run: npx playwright test run-state.spec
+
+      - name: Browser tests - a halted run is recoverable by URL
+        if: always()
+        run: npx playwright test run-recovery.spec
+
+      - name: Browser tests - answering fast never orphans the decision card
+        if: always()
+        run: npx playwright test decision-desync.spec
+
       - name: Upload rendered screenshots
         # Always, not just on failure: these are how the rendered flow gets reviewed without
         # anyone opening a browser, which is the point of capturing them at all.
