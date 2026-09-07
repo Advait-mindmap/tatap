@@ -530,8 +530,16 @@ def build_resources(activities, proj_id, calendar_id, currency_id):
             'ot_flag': 'N', 'timesheet_flag': 'N',
             'xfer_complete_day_cnt': 60, 'xfer_notstart_day_cnt': 60,
             'curr_id': currency_id, 'unit_id': '', 'rsrc_type': rsrc_type,
-            # Left as the reference export leaves them. Filling these in would assert levelling
-            # and timesheet behaviour this plan has no basis for.
+            # BLANK, DELIBERATELY, as the reference export leaves them.
+            #
+            # `level_flag` is the one that carries meaning: it tells P6 the resource may be
+            # levelled. Setting it asserts levelling intent, and this resource model cannot
+            # support that claim - one crew per activity for its own duration, no quantities
+            # behind it and no capacity anywhere. Someone who ran levelling against it would get
+            # an answer computed from a placeholder, which is worse than getting none.
+            #
+            # Revisit when R2 lands real crew capacity: with quantities and productivity rates
+            # there is something to level, and 'Y' becomes a statement rather than a guess.
             'rsrc_notes': '', 'load_tasks_flag': '', 'level_flag': '', 'last_checksum': '',
         })
     return rows, by_key

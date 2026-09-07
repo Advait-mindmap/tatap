@@ -791,8 +791,14 @@ def test_no_column_is_invented_beyond_what_the_reference_shows():
     """Every constant we emit that is not derived from the plan matches the reference export.
 
     The three that did not - `load_tasks_flag`, `level_flag`, `has_rsrchours` - were filled with
-    plausible values where a real P6 file leaves them blank. Asserting levelling behaviour on a
-    plan that has no basis for it is exactly the kind of invention this export refuses elsewhere.
+    plausible values where a real P6 file leaves them blank.
+
+    `level_flag` blank is a DECISION, not an oversight, and this test is where it is recorded.
+    Setting it tells P6 the resource may be levelled; R1's model is one crew per activity for its
+    own duration, with no quantities and no capacity behind it, so levelling against it would
+    return an answer computed from a placeholder - worse than returning none. It becomes a real
+    statement only once R2 supplies crew capacity, and this test should be revisited then rather
+    than quietly relaxed.
     """
     from backend.app.p6.xer import build_resources
 
