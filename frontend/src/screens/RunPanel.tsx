@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { ExportPanel } from '../components/ExportPanel'
 import type { OpenDecision, RunStatus } from '../types'
 import type { RunState } from '../runState'
+import { readCoverage, stageLabel } from '../coverage'
 
 interface Props {
   run: RunState
@@ -36,6 +37,7 @@ export function RunPanel({
 }: Props) {
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const decision: OpenDecision | undefined = run.openDecisions[0]
+  const coverage = useMemo(() => readCoverage(run.output), [run.output])
 
   return (
     <section className="run-panel" data-testid="run-panel">
@@ -43,6 +45,34 @@ export function RunPanel({
       <p className={`run-status status-${run.status}`} data-testid="run-status">
         {STATUS_LABEL[run.status]}
       </p>
+
+      {/*
+        A run can say "Simulation complete" with three whole stages unplanned. That is a legitimate
+        outcome - the planner answered "Stop and obtain real data" at a low-confidence fork and
+        "In scope, record the plan as incomplete" at the coverage fork that followed - but nothing
+        SAID so. The only traces were export-blocking flags and an [UNANCHORED] gate name, and a
+        real run reached that state with mep_power, commissioning and procurement empty. The
+        symptom reported back was "the commissioning gate has no predecessors": a reader
+        diagnosing gate wiring when three stages had simply never been planned.
+
+        Directly under the status, because that is the line being contradicted, and persistent -
+        it is a property of the plan, not a notification to dismiss.
+      */}
+      {coverage.unplanned.length > 0 && (
+        <div className="notice notice-error" data-testid="unplanned-banner"
+             data-unplanned-count={coverage.unplanned.length}>
+          <strong>
+            {coverage.unplanned.length} stage{coverage.unplanned.length === 1 ? '' : 's'} not
+            planned: {coverage.unplanned.map(stageLabel).join(', ')}
+            {coverage.exportBlocked ? ' — export blocked' : ''}
+          </strong>
+          <p className="small">
+            {coverage.unplanned.length === 1 ? 'This stage was' : 'These stages were'} walked but
+            produced no work, so the plan is knowingly incomplete. Anything downstream of{' '}
+            {coverage.unplanned.length === 1 ? 'it' : 'them'} rests on nothing.
+          </p>
+        </div>
+      )}
 
       <div className="run-progress">
         <span className="mono small">

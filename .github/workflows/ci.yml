@@ -236,6 +236,10 @@ jobs:
         if: always()
         run: npx playwright test reattach-race.spec
 
+      - name: Browser tests - an incomplete plan says so
+        if: always()
+        run: npx playwright test unplanned-stages.spec
+
       - name: Browser tests - a campus of halls stays readable
         if: always()
         run: npx playwright test zone-lanes.spec

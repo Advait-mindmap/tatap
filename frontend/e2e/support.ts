@@ -42,6 +42,19 @@ export async function apiReachable(): Promise<boolean> {
 }
 
 /** Brief -> extraction -> confirmation. Leaves the app on the confirm screen. */
+/**
+ * A brief whose city HAS a statutory pathway in the library, so approvals instances real work.
+ *
+ * The Chennai brief above does not, which is why its approvals stage completes empty - useful for
+ * testing the unplanned-stage banner, and useless for testing its absence.
+ */
+export const NAVI_MUMBAI_BRIEF = `We are bidding a 20 MW Tier III data centre in Navi Mumbai on a
+greenfield parcel. Topology is N+1 on both the electrical and cooling trains.
+
+Delivery: we self-perform civil and structure. Electrical and mechanical are turnkey packages.
+
+Client wants a single handover. Target ready-for-service is Q4 2028.`
+
 export async function extractBrief(page: Page, brief = CHENNAI_BRIEF): Promise<void> {
   await page.goto('/')
   await expect(page.getByTestId('intake-screen')).toBeVisible()
