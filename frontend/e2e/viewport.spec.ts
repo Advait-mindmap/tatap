@@ -220,21 +220,45 @@ test('there is real headroom below the zoom the plan fits at', async ({ page }) 
   await page.waitForTimeout(1200)
 
   const fitted = await viewport(page)
-  const floor = await page.evaluate(() => {
-    // React Flow renders the pane with its configured bounds; read what the app actually set.
-    const el = document.querySelector('.react-flow') as HTMLElement & { __rf?: unknown }
-    return Number(el?.getAttribute('data-min-zoom') ?? 0)
+  const bounds = await page.evaluate(() => {
+    // Two different numbers, and they came apart once. `data-zoom-floor` is what the component
+    // ASKED for; `data-min-zoom` is what React Flow is ENFORCING. A test that reads only the
+    // first cannot tell a floor that never recomputed from one that recomputed correctly while
+    // something else did the clamping.
+    const el = document.querySelector('.canvas') as HTMLElement
+    return {
+      requested: Number(el?.getAttribute('data-zoom-floor') ?? 0),
+      enforced: Number(el?.getAttribute('data-min-zoom') ?? 0),
+    }
   })
+  expect(bounds.enforced, 'React Flow is enforcing a floor the component never asked for')
+    .toBeCloseTo(bounds.requested, 5)
+  expect(bounds.enforced, 'the floor sits at or above the zoom the plan fits at, so the view '
+    + 'cannot be zoomed out to see the whole programme').toBeLessThan(fitted.zoom)
 
-  // Four clicks must each still move the view. Under the old floor the second one hung on a
-  // disabled button, which is how this surfaced as "zoom does nothing".
+  // Four clicks must each still move the view.
+  //
+  // WAITING ON THE ZOOM, NOT ON A STOPWATCH. A fixed pause here was the actual defect in this
+  // test: repainting a six-hundred-node canvas takes longer than 180ms, so the sample landed
+  // before the frame and read the previous zoom - the click had worked and the assertion said
+  // it had not. Clicks two and three would then "fail" and the fourth time out waiting for a
+  // canvas that was still settling. Poll for the change instead, and give the click room.
   let previous = fitted.zoom
   for (let i = 0; i < 4; i += 1) {
-    await page.locator('.react-flow__controls-zoomout').click({ timeout: 5000 })
-    await page.waitForTimeout(180)
-    const now = (await viewport(page)).zoom
-    expect(now, `zoom-out click ${i + 1} did not reduce zoom (${previous})`).toBeLessThan(previous)
-    previous = now
+    await page.locator('.react-flow__controls-zoomout').click({ timeout: 20_000 })
+    await expect
+      .poll(async () => (await viewport(page)).zoom, {
+        timeout: 15_000,
+        message: `zoom-out click ${i + 1} never reduced zoom below ${previous}`,
+      })
+      .toBeLessThan(previous)
+    previous = (await viewport(page)).zoom
   }
-  console.log('zoom headroom:', fitted.zoom, '->', previous, 'floor attr:', floor)
+
+  // The point of the headroom: four clicks get meaningfully away from the fitted view.
+  expect(previous).toBeLessThan(fitted.zoom / 1.5)
+  console.log(
+    `zoom headroom: ${fitted.zoom} -> ${previous}  (requested floor ${bounds.requested}, ` +
+      `enforced ${bounds.enforced})`,
+  )
 })

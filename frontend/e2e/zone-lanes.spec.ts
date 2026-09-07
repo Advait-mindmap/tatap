@@ -54,6 +54,14 @@ test('a campus of halls reads as lanes, and a hall can be hidden', async ({ page
   test.setTimeout(1_800_000)
   await completedRun(page)
 
+  // The canvas OPENS on one zone of each kind, because fifty-six lanes of hall is a plan nobody
+  // can read. Lanes are what happens when the zones are shown, so show them: this test is about
+  // the layout, and the test below is about the default that hides most of it.
+  const showAll = page.getByTestId('show-all-zones')
+  await expect(showAll, 'a multi-zone plan did not open with zones held back').toBeVisible()
+  await showAll.click()
+  await page.waitForTimeout(600)
+
   const all = await cards(page)
   expect(all.length, 'no cards rendered').toBeGreaterThan(50)
 
@@ -114,4 +122,33 @@ test('a campus of halls reads as lanes, and a hall can be hidden', async ({ page
   expect(after.length).toBe(spineBefore)
   expect(after.some((c) => c.zone === target)).toBe(false)
   expect(after.some((c) => c.stage === before[0].stage)).toBe(true)
+})
+
+
+test('a campus opens on one hall of each kind, not on all of them', async ({ page }) => {
+  test.setTimeout(1_800_000)
+  await completedRun(page)
+
+  const opened = await cards(page)
+  const shown = new Set(opened.map((c) => c.zone).filter(Boolean))
+  console.log(`  opened with ${opened.length} cards across ${shown.size} zones`)
+
+  // One data hall, one electrical room, and whatever single-instance zones exist - not seven of
+  // each. At seven the canvas is sixteen thousand pixels wide and a card is 23px at fit-zoom.
+  expect(shown.size, 'the canvas opened on every zone').toBeLessThanOrEqual(6)
+
+  const filter = page.getByTestId('zone-filter')
+  await expect(filter).toBeVisible()
+  await expect(page.getByTestId('show-all-zones'), 'no way back to the full plan').toBeVisible()
+
+  // Nothing is REMOVED: the filter still lists every zone, so the reader can see what is held
+  // back rather than being shown a partial plan that looks complete.
+  const listed = await filter.getByRole('button').count()
+  expect(listed, 'the filter hides the zones it is hiding').toBeGreaterThan(shown.size)
+
+  await page.getByTestId('show-all-zones').click()
+  await page.waitForTimeout(600)
+  const full = await cards(page)
+  expect(full.length).toBeGreaterThan(opened.length)
+  console.log(`  show-all: ${opened.length} -> ${full.length} cards`)
 })

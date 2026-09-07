@@ -114,6 +114,11 @@ function FlowViewInner({
   // React Flow can only fit once its zoom behaviour is attached and the pane has a size.
   // Watching that in the store is what makes the fit reliable: it is false for the first
   // frames, which is exactly when a finished graph lands.
+  // What React Flow itself is enforcing, as opposed to what we asked for. The two came apart
+  // once - the derived floor read 0.0335 while the controls refused to go below 0.0872 - and
+  // with only the requested value exposed there was no way to tell that from outside.
+  const enforcedMinZoom = useStore((state) => state.minZoom);
+  const enforcedMaxZoom = useStore((state) => state.maxZoom);
   const canFit = useStore(
     (st) => Boolean(st.d3Zoom && st.d3Selection && st.width && st.height),
   );
@@ -625,6 +630,8 @@ function FlowViewInner({
           // happen to stop at. Without it a floor that never recomputes and a floor that
           // recomputes to the same value are indistinguishable from outside.
           data-zoom-floor={zoomFloor}
+          data-min-zoom={enforcedMinZoom}
+          data-max-zoom={enforcedMaxZoom}
         >
           <HighlightContext.Provider value={highlightState}>
             <ReactFlow
