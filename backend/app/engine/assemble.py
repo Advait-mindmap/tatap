@@ -180,6 +180,33 @@ _LINK_END = {
 }
 
 
+#: Canonical package order, read from the library so the vocabulary lives with the data that
+#: uses it. The order is the one a schedule is normally reported in - the works first, roughly as
+#: they happen, then testing, then the commercial and statutory packages.
+DISCIPLINE_ORDER = (
+    'civil', 'structural', 'architectural', 'mechanical', 'electrical', 'fire', 'controls',
+    'testing', 'procurement', 'compliance', 'management',
+)
+
+
+def _discipline_of(spec, fragnet):
+    """The sub-package a leaf belongs to.
+
+    Falls back to the fragnet's department so a library entry written before Tier 3, or added
+    without a discipline, still lands in one package rather than in a blank one.
+    """
+    return str(spec.get('discipline') or fragnet.get('dept') or 'management')
+
+
+def _discipline_rank(name):
+    try:
+        return DISCIPLINE_ORDER.index(name)
+    except ValueError:
+        # Something the canonical list does not know sorts after everything it does, by name,
+        # rather than silently taking position zero.
+        return len(DISCIPLINE_ORDER)
+
+
 def _zone_named(name, zone):
     """An activity's name, said with the zone it happens in.
 
@@ -298,7 +325,29 @@ def assemble(
         gate_ids = sorted(g.gate_id for g in reasoning.gates)
         flags.extend(reasoning.flags)
 
-        for package_index, selection in enumerate(
+        # ---- the sub-packages this stage splits into ------------------------------------
+        #
+        # The package index used to be the index of the SELECTION - which fragnet the activity
+        # came from - and since a stage carries one fragnet it was always 01. The WBS therefore
+        # had a package level that divided nothing. It is now the activity's discipline, so
+        # substructure separates into earthworks, steelfixing, concrete and testing the way it
+        # is actually let.
+        stage_disciplines = sorted(
+            {
+                _discipline_of(spec, fragnet_index[selection.fragnet_id])
+                for selection in reasoning.packages
+                if selection.fragnet_id in fragnet_index
+                for spec in _expand_steps(
+                    fragnet_index[selection.fragnet_id].get('activities'))[0]
+            },
+            key=lambda name: (_discipline_rank(name), name),
+        )
+        package_index_of = {name: index for index, name in enumerate(stage_disciplines)}
+        # Activity numbers run within a package, not within a fragnet, or two disciplines would
+        # share a WBS path.
+        activity_counter: Dict[int, int] = {}
+
+        for _, selection in enumerate(
             sorted(reasoning.packages, key=lambda p: p.fragnet_id)
         ):
             fragnet = fragnet_index.get(selection.fragnet_id)
@@ -342,10 +391,16 @@ def assemble(
                 return list(enumerate(zone_instances, start=1))
 
             specs, step_children = _expand_steps(fragnet.get('activities'))
-            activity_index = -1
+            library_specs = {
+                (fragnet['id'], a['id']): a for a in fragnet.get('activities') or []
+            }
             for spec in specs:
+                discipline = _discipline_of(spec, fragnet)
+                package_index = package_index_of.get(discipline, 0)
+                activity_index = activity_counter.get(package_index, -1)
                 for zone_index, zone in zones_for(spec):
                     activity_index += 1
+                    activity_counter[package_index] = activity_index
                     ident = activity_id(stage, fragnet['id'], spec['id'], zone_index)
                     safety_matches = match_safety_rules(
                         spec['name'], safety_lib, site_context=site_context
@@ -356,9 +411,20 @@ def assemble(
                     # A hold declared against the deliverable belongs after its LAST step: a
                     # pre-energisation inspection is not passed halfway through the install.
                     last_step = (step_children.get(spec.get('parent') or '') or [None])[-1]
-                    holds = list(holds_by_activity.get(spec['id'], []))
+                    # (hold, the package it belongs in). A hold declared on the DELIVERABLE takes
+                    # the deliverable's discipline, not the last step's. "Reinforcement
+                    # inspection" is a structural hold; it hangs off the end of the reinforcement
+                    # package, whose final step happens to be the cast-in earth pits - electrical
+                    # scope - and filing the inspection under electrical would put it where no
+                    # steelfixing engineer would look for it.
+                    holds = [(h, discipline) for h in holds_by_activity.get(spec['id'], [])]
                     if spec.get('parent') and spec['id'] == last_step:
-                        holds += holds_by_activity.get(spec['parent'], [])
+                        parent_spec = library_specs.get((fragnet['id'], spec['parent']), {})
+                        parent_discipline = _discipline_of(parent_spec, fragnet)
+                        holds += [
+                            (h, parent_discipline)
+                            for h in holds_by_activity.get(spec['parent'], [])
+                        ]
 
                     activities.append(AssembledActivity(
                         id=ident,
@@ -376,7 +442,7 @@ def assemble(
                         stage=stage,
                         zone_id=(zone or {}).get('id'),
                         predecessors=[],
-                        hold_points=sorted(h['name'] for h in holds),
+                        hold_points=sorted(h['name'] for h, _ in holds),
                         safety_flag=is_safety,
                         hitl_tier=hitl,
                         # Tier-1 safety blocks export until signed off (CLAUDE.md rule 5).
@@ -385,6 +451,7 @@ def assemble(
                         confidence=confidence,
                         unverified_dependencies=unverified,
                         source_fragnet=fragnet['id'],
+                        discipline=discipline,
                         parent_activity=spec.get('parent'),
                         compliance_gates=gate_ids,
                     ))
@@ -419,15 +486,20 @@ def assemble(
                         unverified_dependencies=unverified,
                     ))
 
-                    for hold in holds:
+                    for hold, hold_discipline in holds:
                         hold_ident = hold_point_id(ident, hold['name'])
                         activities.append(AssembledActivity(
                             id=hold_ident,
-                            wbs_id=wbs_id(stage_idx, stage, package_index, activity_index),
+                            wbs_id=wbs_id(
+                                stage_idx, stage,
+                                package_index_of.get(hold_discipline, package_index),
+                                activity_index,
+                            ),
                             name=_zone_named(f'HOLD: {hold["name"]}', zone),
                             type='hold_point',
                             duration_days=0,
                             dept_code=hold.get('role') or 'qaqc',
+                            discipline=hold_discipline,
                             stage=stage,
                             # The hold belongs where its work is. Left to the zone fallback,
                             # every room's pre-energisation inspection was filed in room 01.

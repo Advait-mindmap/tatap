@@ -20,7 +20,8 @@
           "id": "e10",
           "name": "Basis of design freeze (load, tier, topology)",
           "duration_days": 20,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "management"
         },
         {
           "id": "e20",
@@ -31,35 +32,42 @@
             {
               "id": "s10",
               "name": "Load and capacity model from the brief",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "management"
             },
             {
               "id": "s20",
               "name": "Single-line and cooling schematic development",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "electrical"
             },
             {
               "id": "s30",
               "name": "Space planning and equipment layout",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "architectural"
             },
             {
               "id": "s40",
               "name": "Concept design review with the client",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "management"
             },
             {
               "id": "s50",
               "name": "Concept design freeze and issue",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "management"
             }
-          ]
+          ],
+          "discipline": "management"
         },
         {
           "id": "e30",
           "name": "Equipment schedule issued for procurement",
           "duration_days": 15,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "procurement"
         },
         {
           "id": "e40",
@@ -70,29 +78,35 @@
             {
               "id": "s10",
               "name": "Structural analysis and member sizing",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "structural"
             },
             {
               "id": "s20",
               "name": "MEP system sizing and equipment selection",
-              "duration_days": 12
+              "duration_days": 12,
+              "discipline": "mechanical"
             },
             {
               "id": "s30",
               "name": "Architectural layouts and finishes schedule",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "architectural"
             },
             {
               "id": "s40",
               "name": "Interdisciplinary clash review",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "management"
             },
             {
               "id": "s50",
               "name": "Design coordination and comment resolution",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "management"
             }
-          ]
+          ],
+          "discipline": "management"
         },
         {
           "id": "e50",
@@ -103,24 +117,29 @@
             {
               "id": "s10",
               "name": "Drawing register compilation",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "management"
             },
             {
               "id": "s20",
               "name": "Internal QA and checking",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "management"
             },
             {
               "id": "s30",
               "name": "Client and authority comment incorporation",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "management"
             },
             {
               "id": "s40",
               "name": "IFC stamp and issue to site",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "management"
             }
-          ]
+          ],
+          "discipline": "management"
         }
       ],
       "logic": [
@@ -166,7 +185,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. The stage, owning department and the three gates (basis of design frozen, equipment schedule, IFC drawings issued) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The FIVE ACTIVITIES, their FIVE DURATIONS and the FOUR LOGIC LINKS are estimates sized for a 20-30 MW-class build: roughly 95 days from brief freeze to IFC on the longest path. The SS+10 overlap between concept and detailed design is a judgement about how much concept must settle first. Every number here is a candidate for correction against a real project.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "INVENTED FOR REVIEW. The stage, owning department and the three gates (basis of design frozen, equipment schedule, IFC drawings issued) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The FIVE ACTIVITIES, their FIVE DURATIONS and the FOUR LOGIC LINKS are estimates sized for a 20-30 MW-class build: roughly 95 days from brief freeze to IFC on the longest path. The SS+10 overlap between concept and detailed design is a judgement about how much concept must settle first. Every number here is a candidate for correction against a real project.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -192,19 +211,23 @@
             {
               "id": "s10",
               "name": "Scope split and package boundaries",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "procurement"
             },
             {
               "id": "s20",
               "name": "Technical specification drafting",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "procurement"
             },
             {
               "id": "s30",
               "name": "Commercial terms and tender conditions",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "procurement"
             }
-          ]
+          ],
+          "discipline": "procurement"
         },
         {
           "id": "b20",
@@ -215,24 +238,29 @@
             {
               "id": "s10",
               "name": "Vendor prequalification and shortlist",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "procurement"
             },
             {
               "id": "s20",
               "name": "RFQ issue to shortlisted vendors",
-              "duration_days": 2
+              "duration_days": 2,
+              "discipline": "procurement"
             },
             {
               "id": "s30",
               "name": "Vendor clarification period",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "procurement"
             },
             {
               "id": "s40",
               "name": "Bid submission and receipt",
-              "duration_days": 12
+              "duration_days": 12,
+              "discipline": "procurement"
             }
-          ]
+          ],
+          "discipline": "procurement"
         },
         {
           "id": "b30",
@@ -243,30 +271,36 @@
             {
               "id": "s10",
               "name": "Technical compliance review",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "procurement"
             },
             {
               "id": "s20",
               "name": "Commercial comparison and normalisation",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "procurement"
             },
             {
               "id": "s30",
               "name": "Vendor clarifications and best-and-final offers",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "procurement"
             },
             {
               "id": "s40",
               "name": "Award recommendation report",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "procurement"
             }
-          ]
+          ],
+          "discipline": "procurement"
         },
         {
           "id": "b40",
           "name": "Vendor award and purchase orders placed",
           "duration_days": 10,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "procurement"
         }
       ],
       "logic": [
@@ -301,7 +335,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning department and the three gates (vendor award, L1 FAT, delivery milestones) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The FOUR ACTIVITIES and their DURATIONS are estimates: 75 days from tender preparation to PO placement on a strictly sequential chain. NOT MODELLED: the L1 factory acceptance test is listed as a domain gate but has no activity, because FAT sits just before each item ships and placing one FAT after award would put it months before the plant exists. It belongs inside a per-item delivery sub-network, which does not exist yet.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "INVENTED FOR REVIEW. Stage, owning department and the three gates (vendor award, L1 FAT, delivery milestones) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The FOUR ACTIVITIES and their DURATIONS are estimates: 75 days from tender preparation to PO placement on a strictly sequential chain. NOT MODELLED: the L1 factory acceptance test is listed as a domain gate but has no activity, because FAT sits just before each item ships and placing one FAT after award would put it months before the plant exists. It belongs inside a per-item delivery sub-network, which does not exist yet.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -325,13 +359,15 @@
           "id": "h10",
           "name": "Site clearance, grubbing and level survey",
           "duration_days": 20,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "h20",
           "name": "Site boundary, hoarding and gate house",
           "duration_days": 15,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "h30",
@@ -342,24 +378,29 @@
             {
               "id": "s10",
               "name": "Foundations and hardstanding for cabins",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "civil"
             },
             {
               "id": "s20",
               "name": "Cabin delivery and placement",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "civil"
             },
             {
               "id": "s30",
               "name": "Welfare, sanitation and potable water",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "civil"
             },
             {
               "id": "s40",
               "name": "Material stores and laydown fencing",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "civil"
             }
-          ]
+          ],
+          "discipline": "civil"
         },
         {
           "id": "h40",
@@ -370,30 +411,36 @@
             {
               "id": "s10",
               "name": "Temporary supply application to the utility",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "electrical"
             },
             {
               "id": "s20",
               "name": "Temporary substation and DG set installation",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "electrical"
             },
             {
               "id": "s30",
               "name": "Site distribution boards and cabling",
-              "duration_days": 9
+              "duration_days": 9,
+              "discipline": "electrical"
             },
             {
               "id": "s40",
               "name": "Earthing, RCD protection and energisation",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "electrical"
             }
-          ]
+          ],
+          "discipline": "electrical"
         },
         {
           "id": "h50",
           "name": "Site access roads and hardstanding",
           "duration_days": 25,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "h60",
@@ -404,24 +451,29 @@
             {
               "id": "s10",
               "name": "Labour accommodation construction",
-              "duration_days": 12
+              "duration_days": 12,
+              "discipline": "civil"
             },
             {
               "id": "s20",
               "name": "BOCW registration submission",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "compliance"
             },
             {
               "id": "s30",
               "name": "CLRA licence application",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "compliance"
             },
             {
               "id": "s40",
               "name": "Welfare officer appointment and induction setup",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "compliance"
             }
-          ]
+          ],
+          "discipline": "compliance"
         }
       ],
       "logic": [
@@ -468,7 +520,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning departments (Construction, HSE), materials (temp works, fuel) and the three gates (BOCW, CLRA, PESO for HSD) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the FIVE LOGIC LINKS and the ONE HOLD POINT are estimates: about 65 days on the longest path (clearance -> hoarding -> offices -> labour registration). JUDGEMENTS TO CHALLENGE: temporary power is 30 days off site clearance, which assumes a DISCOM supply already at the boundary - on a greenfield parcel this is frequently the longest item in the stage and can run to months; the SS overlaps assume one enabling contractor sequencing gangs rather than separate trades. NOT MODELLED: the PESO licence for bulk HSD is listed as a gate here but has no activity in this package, because the storage it licenses is installed in mep_power (see frag.mep.power_train c67) and the city pathway data carries path.nm.peso_hsd with its own duration. Also not modelled: dewatering and ground improvement, which a brownfield or high-water-table parcel needs and a greenfield one does not, so it cannot be a fixed part of this package.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "INVENTED FOR REVIEW. Stage, owning departments (Construction, HSE), materials (temp works, fuel) and the three gates (BOCW, CLRA, PESO for HSD) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the FIVE LOGIC LINKS and the ONE HOLD POINT are estimates: about 65 days on the longest path (clearance -> hoarding -> offices -> labour registration). JUDGEMENTS TO CHALLENGE: temporary power is 30 days off site clearance, which assumes a DISCOM supply already at the boundary - on a greenfield parcel this is frequently the longest item in the stage and can run to months; the SS overlaps assume one enabling contractor sequencing gangs rather than separate trades. NOT MODELLED: the PESO licence for bulk HSD is listed as a gate here but has no activity in this package, because the storage it licenses is installed in mep_power (see frag.mep.power_train c67) and the city pathway data carries path.nm.peso_hsd with its own duration. Also not modelled: dewatering and ground improvement, which a brownfield or high-water-table parcel needs and a greenfield one does not, so it cannot be a fixed part of this package.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -499,30 +551,36 @@
             {
               "id": "s10",
               "name": "Setting out and survey control",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "civil"
             },
             {
               "id": "s20",
               "name": "Topsoil strip and cart away",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "civil"
             },
             {
               "id": "s30",
               "name": "Bulk excavation to formation",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "civil"
             },
             {
               "id": "s40",
               "name": "Formation level proof roll and survey",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "civil"
             }
-          ]
+          ],
+          "discipline": "civil"
         },
         {
           "id": "a20",
           "name": "PCC and blinding",
           "duration_days": 6,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "a30",
@@ -533,36 +591,43 @@
             {
               "id": "s10",
               "name": "Rebar delivery, cutting and bending schedule",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "structural"
             },
             {
               "id": "s20",
               "name": "Bottom mat fixing",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "structural"
             },
             {
               "id": "s30",
               "name": "Spacers, chairs and top mat fixing",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "structural"
             },
             {
               "id": "s40",
               "name": "Cast-in items, sleeves and earth pits",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "electrical"
             }
-          ]
+          ],
+          "discipline": "structural"
         },
         {
           "id": "a40",
           "name": "Formwork and shuttering",
           "duration_days": 8,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "a50",
           "name": "Raft concrete pour",
           "duration_days": 3,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "a60",
@@ -573,19 +638,23 @@
             {
               "id": "s10",
               "name": "Curing compound and water curing",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "civil"
             },
             {
               "id": "s20",
               "name": "Seven-day cube test",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "testing"
             },
             {
               "id": "s30",
               "name": "Twenty-eight-day cube test",
-              "duration_days": 14
+              "duration_days": 14,
+              "discipline": "testing"
             }
-          ]
+          ],
+          "discipline": "testing"
         }
       ],
       "logic": [
@@ -637,7 +706,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Durations sized for a 20 MW-class DC raft. The 28-day cure is the IS 456 cube-test convention, not an estimate; the rest are typical gang-based sequences. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "Durations sized for a 20 MW-class DC raft. The 28-day cure is the IS 456 cube-test convention, not an estimate; the rest are typical gang-based sequences. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -662,7 +731,8 @@
           "id": "b10",
           "name": "Column base plate setting",
           "duration_days": 10,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "structural"
         },
         {
           "id": "b20",
@@ -673,35 +743,42 @@
             {
               "id": "s10",
               "name": "Steel delivery and site marshalling",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "structural"
             },
             {
               "id": "s20",
               "name": "Crane setup and lift plan approval",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "structural"
             },
             {
               "id": "s30",
               "name": "Column erection and plumbing",
-              "duration_days": 12
+              "duration_days": 12,
+              "discipline": "structural"
             },
             {
               "id": "s40",
               "name": "Primary beam erection",
-              "duration_days": 12
+              "duration_days": 12,
+              "discipline": "structural"
             },
             {
               "id": "s50",
               "name": "Bolt-up and torque to primary connections",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "structural"
             }
-          ]
+          ],
+          "discipline": "structural"
         },
         {
           "id": "b30",
           "name": "Secondary steel and bracing",
           "duration_days": 25,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "structural"
         },
         {
           "id": "b40",
@@ -712,30 +789,36 @@
             {
               "id": "s10",
               "name": "Decking delivery and distribution",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "structural"
             },
             {
               "id": "s20",
               "name": "Decking laying and fixing",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "structural"
             },
             {
               "id": "s30",
               "name": "Shear stud welding",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "structural"
             },
             {
               "id": "s40",
               "name": "Edge trim and penetration forming",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "structural"
             }
-          ]
+          ],
+          "discipline": "structural"
         },
         {
           "id": "b50",
           "name": "Composite slab pour",
           "duration_days": 15,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "b60",
@@ -746,24 +829,29 @@
             {
               "id": "s10",
               "name": "Surface preparation and priming",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "fire"
             },
             {
               "id": "s20",
               "name": "Intumescent first coat application",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "fire"
             },
             {
               "id": "s30",
               "name": "Second coat and build-up to rating",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "fire"
             },
             {
               "id": "s40",
               "name": "Dry film thickness survey and rectification",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "fire"
             }
-          ]
+          ],
+          "discipline": "fire"
         }
       ],
       "logic": [
@@ -810,7 +898,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Typical erection sequence for a DC steel frame of this scale, including fireproofing, which is routinely underestimated. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "Typical erection sequence for a DC steel frame of this scale, including fireproofing, which is routinely underestimated. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -840,24 +928,29 @@
             {
               "id": "s10",
               "name": "Setting out and starter bars",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "civil"
             },
             {
               "id": "s20",
               "name": "Blockwork laying to level one",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "civil"
             },
             {
               "id": "s30",
               "name": "Blockwork laying to upper levels",
-              "duration_days": 12
+              "duration_days": 12,
+              "discipline": "civil"
             },
             {
               "id": "s40",
               "name": "Lintels, bed joint reinforcement and movement joints",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "civil"
             }
-          ]
+          ],
+          "discipline": "civil"
         },
         {
           "id": "d20",
@@ -868,24 +961,29 @@
             {
               "id": "s10",
               "name": "Deck preparation and vapour barrier",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "architectural"
             },
             {
               "id": "s20",
               "name": "Insulation boards and tapered falls",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "architectural"
             },
             {
               "id": "s30",
               "name": "Single-ply membrane installation",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "architectural"
             },
             {
               "id": "s40",
               "name": "Upstands, outlets and perimeter detailing",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "architectural"
             }
-          ]
+          ],
+          "discipline": "architectural"
         },
         {
           "id": "d30",
@@ -896,47 +994,56 @@
             {
               "id": "s10",
               "name": "Support rails and brackets",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "architectural"
             },
             {
               "id": "s20",
               "name": "Sheathing board and breather membrane",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "architectural"
             },
             {
               "id": "s30",
               "name": "Insulation and cavity barriers",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "architectural"
             },
             {
               "id": "s40",
               "name": "Rainscreen panel installation",
-              "duration_days": 12
+              "duration_days": 12,
+              "discipline": "architectural"
             },
             {
               "id": "s50",
               "name": "Flashings, closers and sealant",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "architectural"
             }
-          ]
+          ],
+          "discipline": "architectural"
         },
         {
           "id": "d40",
           "name": "Louvres, external doors and glazed openings",
           "duration_days": 20,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "architectural"
         },
         {
           "id": "d50",
           "name": "Fire-stopping and compartmentation to envelope penetrations",
           "duration_days": 18,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "fire"
         },
         {
           "id": "d60",
           "name": "Water-tightness testing and envelope close-out",
           "duration_days": 10,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "testing"
         }
       ],
       "logic": [
@@ -994,7 +1101,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (blocks, waterproofing, cladding) and the two gates (fire-rating, warranties) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 103 days on the longest path (blockwork -> cladding -> openings -> fire-stopping -> water-tightness). JUDGEMENTS TO CHALLENGE: the SS+15 from blockwork to roofing assumes the frame is topped out and edge details can start once perimeter walls are part-built; the SS+10 from cladding to openings assumes openings follow the cladding gang around the building rather than waiting for it. NOT MODELLED: envelope is treated as one whole-building package, so a phased build that encloses one hall at a time is not represented - that needs a per-zone sub-network which does not exist yet. Fire-stopping is placed here as a QA/QC hold, not as a Tier-1 safety activity; it gates the fire NOC but is not itself a live-energy or life-safety operation.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (blocks, waterproofing, cladding) and the two gates (fire-rating, warranties) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 103 days on the longest path (blockwork -> cladding -> openings -> fire-stopping -> water-tightness). JUDGEMENTS TO CHALLENGE: the SS+15 from blockwork to roofing assumes the frame is topped out and edge details can start once perimeter walls are part-built; the SS+10 from cladding to openings assumes openings follow the cladding gang around the building rather than waiting for it. NOT MODELLED: envelope is treated as one whole-building package, so a phased build that encloses one hall at a time is not represented - that needs a per-zone sub-network which does not exist yet. Fire-stopping is placed here as a QA/QC hold, not as a Tier-1 safety activity; it gates the fire NOC but is not itself a live-energy or life-safety operation.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -1021,7 +1128,8 @@
           "id": "c10",
           "name": "Transformer plinth and pad preparation",
           "duration_days": 12,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "c20",
@@ -1032,35 +1140,42 @@
             {
               "id": "s10",
               "name": "Rigging study and lifting method statement approval",
-              "duration_days": 2
+              "duration_days": 2,
+              "discipline": "electrical"
             },
             {
               "id": "s20",
               "name": "Offload from trailer and move to plinth",
               "duration_days": 1,
-              "requires_delivery_of": "lead.transformer_hv"
+              "requires_delivery_of": "lead.transformer_hv",
+              "discipline": "electrical"
             },
             {
               "id": "s30",
               "name": "Set on plinth, level and align to survey marks",
-              "duration_days": 2
+              "duration_days": 2,
+              "discipline": "electrical"
             },
             {
               "id": "s40",
               "name": "Anti-vibration mounts and grouting",
-              "duration_days": 1
+              "duration_days": 1,
+              "discipline": "electrical"
             },
             {
               "id": "s50",
               "name": "Oil level / nitrogen blanket check and top-up",
-              "duration_days": 1
+              "duration_days": 1,
+              "discipline": "electrical"
             },
             {
               "id": "s60",
               "name": "Pre-energisation IR, ratio and polarity tests",
-              "duration_days": 1
+              "duration_days": 1,
+              "discipline": "electrical"
             }
-          ]
+          ],
+          "discipline": "electrical"
         },
         {
           "id": "c30",
@@ -1071,40 +1186,48 @@
             {
               "id": "s10",
               "name": "Setting out and base frame installation",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "electrical"
             },
             {
               "id": "s20",
               "name": "Panel offload, positioning and mechanical coupling",
               "duration_days": 5,
-              "requires_delivery_of": "lead.hv_switchgear"
+              "requires_delivery_of": "lead.hv_switchgear",
+              "discipline": "electrical"
             },
             {
               "id": "s30",
               "name": "Busbar jointing and torque verification",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "electrical"
             },
             {
               "id": "s40",
               "name": "Earthing and bonding to the earth mat",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "electrical"
             },
             {
               "id": "s50",
               "name": "Protection relay and control wiring",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "electrical"
             },
             {
               "id": "s60",
               "name": "Secondary injection and protection-scheme testing",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "electrical"
             },
             {
               "id": "s70",
               "name": "Panel cleaning, labelling and final dressing",
-              "duration_days": 2
+              "duration_days": 2,
+              "discipline": "electrical"
             }
-          ]
+          ],
+          "discipline": "electrical"
         },
         {
           "id": "c40",
@@ -1115,57 +1238,68 @@
             {
               "id": "s10",
               "name": "LV panel positioning and fixing",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "electrical"
             },
             {
               "id": "s20",
               "name": "LV busbar interconnection and torque check",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "electrical"
             },
             {
               "id": "s30",
               "name": "UPS module placement and mechanical fixing",
               "duration_days": 4,
-              "requires_delivery_of": "lead.ups"
+              "requires_delivery_of": "lead.ups",
+              "discipline": "electrical"
             },
             {
               "id": "s40",
               "name": "Battery rack assembly",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "electrical"
             },
             {
               "id": "s50",
               "name": "Battery string installation and inter-cell links",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "electrical"
             },
             {
               "id": "s60",
               "name": "DC connections, polarity and IR verification",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "electrical"
             },
             {
               "id": "s70",
               "name": "UPS control wiring and parallel-bus configuration",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "electrical"
             },
             {
               "id": "s80",
               "name": "Initial power-up and battery capacity / burn-in test",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "electrical"
             }
-          ]
+          ],
+          "discipline": "electrical"
         },
         {
           "id": "c50",
           "name": "Busway installation and megger testing",
           "duration_days": 25,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "electrical"
         },
         {
           "id": "c60",
           "name": "Cable termination and continuity test",
           "duration_days": 25,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "electrical"
         },
         {
           "id": "c65",
@@ -1173,7 +1307,8 @@
           "duration_days": 25,
           "calendar": "6day",
           "zone_scope": "project",
-          "zone_scope_why": "The generator sets sit in the generator yard, of which there is one."
+          "zone_scope_why": "The generator sets sit in the generator yard, of which there is one.",
+          "discipline": "electrical"
         },
         {
           "id": "c67",
@@ -1181,7 +1316,8 @@
           "duration_days": 20,
           "calendar": "6day",
           "zone_scope": "project",
-          "zone_scope_why": "Bulk HSD storage is one fuel farm. Seven of them would be seven PESO licences."
+          "zone_scope_why": "Bulk HSD storage is one fuel farm. Seven of them would be seven PESO licences.",
+          "discipline": "mechanical"
         },
         {
           "id": "c70",
@@ -1189,7 +1325,8 @@
           "duration_days": 15,
           "calendar": "6day",
           "zone_scope": "project",
-          "zone_scope_why": "HV/MV energisation is a single event on the incoming supply, witnessed once by CEIG. It is not repeated per electrical room."
+          "zone_scope_why": "HV/MV energisation is a single event on the incoming supply, witnessed once by CEIG. It is not repeated per electrical room.",
+          "discipline": "electrical"
         }
       ],
       "logic": [
@@ -1293,7 +1430,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Transformer-to-UPS installation and test. Switchgear and UPS install dominate; the sequence is gated by delivery, not by labour. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates. --- EXTENDED FOR REVIEW (three additions). c65 DIESEL GENERATOR SET INSTALLATION: lead.generator was in equipment_lead_times at 30 weeks with drives_rfs=true and was consumed by nothing, so the gensets never appeared in any programme and their lead time constrained nothing. It now carries a material link. Owner-furnished gensets (dp.ofe) change WHO procures, not the lead time, so the delivery gate applies either way. c67 BULK HSD STORAGE: the fuel system path.nm.peso_hsd licenses had no activity to gate; PESO is a safety approval for bulk diesel and its absence was a real hole. c70 HV/MV ENERGISATION: the package previously ended at cable termination, so there was no energisation step at all - which meant DOMAIN_KNOWLEDGE.md#5 (\"energisation cannot precede CEIG approval\") had nothing to attach to, and safety.hv_energisation, a Tier-1 entry that BLOCKS EXPORT, matched no activity in any plan ever produced. THREE DURATIONS AND FIVE LOGIC LINKS ARE ESTIMATES. JUDGEMENTS TO CHALLENGE: 15 days for energisation assumes a single energisation event, where a 2N facility energises each path separately; the SS+10 from genset to fuel system assumes one contractor; and c65 hangs off c10 (plinth and pad preparation), which assumes the genset pads are poured with the transformer pads.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.\n\n--- INVENTED FOR REVIEW - every step below is mine, not transcribed. The PARENT activity and its duration are unchanged; the steps are a decomposition of it, and their durations sum exactly to it (enforced by test_execution_steps.py). So the step DURATIONS move no date: had they summed to anything else, the whole programme would have shifted on the strength of numbers I made up, and that shift would be indistinguishable from a real re-forecast. Re-pointing the material links DOES move dates, deliberately and in the direction of realism - see below - and that is the only thing here that does. Treat the SEQUENCE as the reviewable claim - it is the order these works are actually done in - and the individual day splits as unverified. A planner correcting them should keep the sum, or change the parent duration deliberately.\n\nThe decomposition also makes one thing MORE correct rather than merely finer: a delivery now gates only the step that needs the plant. The rigging study for a transformer can be done while the transformer is still in the factory; the offload cannot. Before this, the whole eight-day activity waited on delivery.\n\nMEASURED: decomposing these three deliverables moved RFS from 863 to 840 on the Navi Mumbai brief. Every day of that comes from the delivery re-pointing, not from the step durations. The switchgear base frames, the LV panel positioning and the rigging study no longer wait in a factory queue they were never actually in.",
+        "note": "Transformer-to-UPS installation and test. Switchgear and UPS install dominate; the sequence is gated by delivery, not by labour. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates. --- EXTENDED FOR REVIEW (three additions). c65 DIESEL GENERATOR SET INSTALLATION: lead.generator was in equipment_lead_times at 30 weeks with drives_rfs=true and was consumed by nothing, so the gensets never appeared in any programme and their lead time constrained nothing. It now carries a material link. Owner-furnished gensets (dp.ofe) change WHO procures, not the lead time, so the delivery gate applies either way. c67 BULK HSD STORAGE: the fuel system path.nm.peso_hsd licenses had no activity to gate; PESO is a safety approval for bulk diesel and its absence was a real hole. c70 HV/MV ENERGISATION: the package previously ended at cable termination, so there was no energisation step at all - which meant DOMAIN_KNOWLEDGE.md#5 (\"energisation cannot precede CEIG approval\") had nothing to attach to, and safety.hv_energisation, a Tier-1 entry that BLOCKS EXPORT, matched no activity in any plan ever produced. THREE DURATIONS AND FIVE LOGIC LINKS ARE ESTIMATES. JUDGEMENTS TO CHALLENGE: 15 days for energisation assumes a single energisation event, where a 2N facility energises each path separately; the SS+10 from genset to fuel system assumes one contractor; and c65 hangs off c10 (plinth and pad preparation), which assumes the genset pads are poured with the transformer pads.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.\n\n--- INVENTED FOR REVIEW - every step below is mine, not transcribed. The PARENT activity and its duration are unchanged; the steps are a decomposition of it, and their durations sum exactly to it (enforced by test_execution_steps.py). So the step DURATIONS move no date: had they summed to anything else, the whole programme would have shifted on the strength of numbers I made up, and that shift would be indistinguishable from a real re-forecast. Re-pointing the material links DOES move dates, deliberately and in the direction of realism - see below - and that is the only thing here that does. Treat the SEQUENCE as the reviewable claim - it is the order these works are actually done in - and the individual day splits as unverified. A planner correcting them should keep the sum, or change the parent duration deliberately.\n\nThe decomposition also makes one thing MORE correct rather than merely finer: a delivery now gates only the step that needs the plant. The rigging study for a transformer can be done while the transformer is still in the factory; the offload cannot. Before this, the whole eight-day activity waited on delivery.\n\nMEASURED: decomposing these three deliverables moved RFS from 863 to 840 on the Navi Mumbai brief. Every day of that comes from the delivery re-pointing, not from the step durations. The switchgear base frames, the LV panel positioning and the rigging study no longer wait in a factory queue they were never actually in.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -1316,7 +1453,8 @@
           "id": "d10",
           "name": "Chiller plinth preparation",
           "duration_days": 10,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "d20",
@@ -1327,25 +1465,30 @@
             {
               "id": "s10",
               "name": "Lifting study and crane plan",
-              "duration_days": 2
+              "duration_days": 2,
+              "discipline": "mechanical"
             },
             {
               "id": "s20",
               "name": "Chiller offload and set on plinth",
               "duration_days": 2,
-              "requires_delivery_of": "lead.chiller"
+              "requires_delivery_of": "lead.chiller",
+              "discipline": "mechanical"
             },
             {
               "id": "s30",
               "name": "Levelling, anti-vibration mounts and alignment",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "mechanical"
             },
             {
               "id": "s40",
               "name": "Pipework and electrical connection preparation",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "mechanical"
             }
-          ]
+          ],
+          "discipline": "mechanical"
         },
         {
           "id": "d30",
@@ -1356,35 +1499,42 @@
             {
               "id": "s10",
               "name": "Pipe routing survey and support setting out",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "mechanical"
             },
             {
               "id": "s20",
               "name": "Pipe support and hanger installation",
-              "duration_days": 9
+              "duration_days": 9,
+              "discipline": "mechanical"
             },
             {
               "id": "s30",
               "name": "Primary loop pipework erection and welding",
-              "duration_days": 14
+              "duration_days": 14,
+              "discipline": "mechanical"
             },
             {
               "id": "s40",
               "name": "Secondary loop and branch pipework",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "mechanical"
             },
             {
               "id": "s50",
               "name": "Valves, strainers and instrumentation",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "mechanical"
             }
-          ]
+          ],
+          "discipline": "mechanical"
         },
         {
           "id": "d40",
           "name": "Pressure testing and flushing",
           "duration_days": 15,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "testing"
         },
         {
           "id": "d50",
@@ -1395,30 +1545,36 @@
             {
               "id": "s10",
               "name": "Plinth and floor opening preparation",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "civil"
             },
             {
               "id": "s20",
               "name": "CRAH offload and positioning",
               "duration_days": 4,
-              "requires_delivery_of": "lead.crah"
+              "requires_delivery_of": "lead.crah",
+              "discipline": "mechanical"
             },
             {
               "id": "s30",
               "name": "Chilled water and condensate connection",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "mechanical"
             },
             {
               "id": "s40",
               "name": "Electrical and controls termination",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "controls"
             },
             {
               "id": "s50",
               "name": "Filter fit and pre-start checks",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "mechanical"
             }
-          ]
+          ],
+          "discipline": "mechanical"
         }
       ],
       "logic": [
@@ -1469,7 +1625,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Chilled water pipework is the long pole here, ahead of plant placement. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "Chilled water pipework is the long pole here, ahead of plant placement. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -1500,29 +1656,35 @@
             {
               "id": "s10",
               "name": "Detection layout marking and containment",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "fire"
             },
             {
               "id": "s20",
               "name": "Detector back-box and cabling",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "fire"
             },
             {
               "id": "s30",
               "name": "VESDA aspiration pipework installation",
-              "duration_days": 9
+              "duration_days": 9,
+              "discipline": "fire"
             },
             {
               "id": "s40",
               "name": "Sampling hole drilling and balancing",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "fire"
             },
             {
               "id": "s50",
               "name": "Loop termination and addressing",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "fire"
             }
-          ]
+          ],
+          "discipline": "fire"
         },
         {
           "id": "e20",
@@ -1533,30 +1695,36 @@
             {
               "id": "s10",
               "name": "Cylinder room preparation and bracketry",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "fire"
             },
             {
               "id": "s20",
               "name": "Cylinder bank delivery and mounting",
               "duration_days": 5,
-              "requires_delivery_of": "lead.gas_suppression"
+              "requires_delivery_of": "lead.gas_suppression",
+              "discipline": "fire"
             },
             {
               "id": "s30",
               "name": "Discharge pipework and nozzle installation",
-              "duration_days": 9
+              "duration_days": 9,
+              "discipline": "fire"
             },
             {
               "id": "s40",
               "name": "Manifold, actuators and pressure switches",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "fire"
             },
             {
               "id": "s50",
               "name": "Room integrity pre-checks and sealing",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "fire"
             }
-          ]
+          ],
+          "discipline": "fire"
         },
         {
           "id": "e30",
@@ -1564,7 +1732,8 @@
           "duration_days": 25,
           "calendar": "6day",
           "zone_scope": "project",
-          "zone_scope_why": "Pre-action sprinkler pipework is explicitly to BACK-OF-HOUSE, which is not the halls."
+          "zone_scope_why": "Pre-action sprinkler pipework is explicitly to BACK-OF-HOUSE, which is not the halls.",
+          "discipline": "fire"
         },
         {
           "id": "e40",
@@ -1575,29 +1744,35 @@
             {
               "id": "s10",
               "name": "Panel locations and containment",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "controls"
             },
             {
               "id": "s20",
               "name": "Field device installation - sensors, valves, actuators",
-              "duration_days": 9
+              "duration_days": 9,
+              "discipline": "controls"
             },
             {
               "id": "s30",
               "name": "Controller panel installation and power",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "controls"
             },
             {
               "id": "s40",
               "name": "Field wiring and termination",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "controls"
             },
             {
               "id": "s50",
               "name": "Point-to-point checks",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "controls"
             }
-          ]
+          ],
+          "discipline": "controls"
         },
         {
           "id": "e50",
@@ -1605,7 +1780,8 @@
           "duration_days": 20,
           "calendar": "6day",
           "zone_scope": "project",
-          "zone_scope_why": "One BMS head-end serves the campus. Seven head-ends is not a redundancy topology, it is a mistake."
+          "zone_scope_why": "One BMS head-end serves the campus. Seven head-ends is not a redundancy topology, it is a mistake.",
+          "discipline": "controls"
         },
         {
           "id": "e60",
@@ -1613,7 +1789,8 @@
           "duration_days": 15,
           "calendar": "6day",
           "zone_scope": "project",
-          "zone_scope_why": "Fire alarm cause-and-effect is a SYSTEM test across the installation, not a per-hall one. It is also where the fire NOC is lodged from, and a lodgement needs one unambiguous predecessor."
+          "zone_scope_why": "Fire alarm cause-and-effect is a SYSTEM test across the installation, not a per-hall one. It is also where the fire NOC is lodged from, and a lodgement needs one unambiguous predecessor.",
+          "discipline": "testing"
         }
       ],
       "logic": [
@@ -1686,7 +1863,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning department (subcontract), materials (suppression, VESDA, BMS) and the two gates (fire NOC, NBC 2016) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SEVEN LOGIC LINKS and the TWO HOLD POINTS are estimates: roughly 73 days on the longest path (detection -> BMS field -> head-end -> cause-and-effect). GROUNDED: the material link from the cylinder banks to lead.gas_suppression is real - the 16-week lead time in equipment_lead_times.json gates that activity, so suppression cannot start before the cylinders land. The safety_ref to safety.gas_suppression_discharge is also real and makes discharge testing a Tier-1 activity requiring sign-off. JUDGEMENTS TO CHALLENGE: cause-and-effect is modelled as one 15-day activity gating the fire NOC, where a real programme often runs it per-zone and re-tests; the three SS overlaps off detection assume one subcontractor sequencing gangs through the building rather than three independent trades. NOT MODELLED: the fire officer witnessing is a hold point, not a statutory pathway activity - the NOC itself lives in the city pathway data.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "INVENTED FOR REVIEW. Stage, owning department (subcontract), materials (suppression, VESDA, BMS) and the two gates (fire NOC, NBC 2016) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SEVEN LOGIC LINKS and the TWO HOLD POINTS are estimates: roughly 73 days on the longest path (detection -> BMS field -> head-end -> cause-and-effect). GROUNDED: the material link from the cylinder banks to lead.gas_suppression is real - the 16-week lead time in equipment_lead_times.json gates that activity, so suppression cannot start before the cylinders land. The safety_ref to safety.gas_suppression_discharge is also real and makes discharge testing a Tier-1 activity requiring sign-off. JUDGEMENTS TO CHALLENGE: cause-and-effect is modelled as one 15-day activity gating the fire NOC, where a real programme often runs it per-zone and re-tests; the three SS overlaps off detection assume one subcontractor sequencing gangs through the building rather than three independent trades. NOT MODELLED: the fire officer witnessing is a hold point, not a statutory pathway activity - the NOC itself lives in the city pathway data.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -1716,35 +1893,42 @@
             {
               "id": "s10",
               "name": "Floor slab preparation and datum survey",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "civil"
             },
             {
               "id": "s20",
               "name": "Pedestal setting out and bonding",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "civil"
             },
             {
               "id": "s30",
               "name": "Stringer grid installation",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "civil"
             },
             {
               "id": "s40",
               "name": "Floor panel laying and levelling",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "civil"
             },
             {
               "id": "s50",
               "name": "Cut panels, grommets and edge trim",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "civil"
             }
-          ]
+          ],
+          "discipline": "civil"
         },
         {
           "id": "f20",
           "name": "Overhead containment and cable tray",
           "duration_days": 25,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "electrical"
         },
         {
           "id": "f30",
@@ -1757,35 +1941,42 @@
             {
               "id": "s10",
               "name": "Backbone route survey and containment",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "electrical"
             },
             {
               "id": "s20",
               "name": "OS2 single-mode trunk installation",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "electrical"
             },
             {
               "id": "s30",
               "name": "OM4 multimode trunk installation",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "electrical"
             },
             {
               "id": "s40",
               "name": "Fibre splicing and enclosure termination",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "electrical"
             },
             {
               "id": "s50",
               "name": "OTDR testing and backbone certification",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "testing"
             }
-          ]
+          ],
+          "discipline": "electrical"
         },
         {
           "id": "f40",
           "name": "Rack and cabinet installation",
           "duration_days": 20,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "civil"
         },
         {
           "id": "f50",
@@ -1796,30 +1987,36 @@
             {
               "id": "s10",
               "name": "Cable pulling to racks",
-              "duration_days": 9
+              "duration_days": 9,
+              "discipline": "electrical"
             },
             {
               "id": "s20",
               "name": "Patch panel installation and dressing",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "electrical"
             },
             {
               "id": "s30",
               "name": "Copper termination",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "electrical"
             },
             {
               "id": "s40",
               "name": "Labelling to TIA-606",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "electrical"
             }
-          ]
+          ],
+          "discipline": "electrical"
         },
         {
           "id": "f60",
           "name": "Cable testing and TIA-942 certification",
           "duration_days": 15,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "testing"
         }
       ],
       "logic": [
@@ -1877,7 +2074,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (containment, structured cabling) and the TIA-942 gate are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 120 days on the longest path (raised floor -> containment -> backbone -> horizontal -> certification). JUDGEMENTS TO CHALLENGE: racks are placed after the raised floor and in parallel with the backbone, which assumes the floor carries the racks - a slab-mounted rack layout would reorder this; the SS+10 from floor to containment assumes containment follows the floor gang across the hall. NOT MODELLED: no material link to a long-lead item, because racks and cabling are not in equipment_lead_times.json - on a real project client-supplied racks are frequently the constraint here and their absence understates this stage. Also not modelled: fit-out is one whole-building package, so a hall-by-hall handover sequence is not represented. --- LOGIC REVISED FOR REVIEW: three finish-to-start links became start-to-start with a lead (f20->f30, f30->f50, f50->f60). Every activity in this package is per-hall except the backbone risers, so modelling them as one whole-building chain charged the programme for work that in reality runs concurrently across halls: horizontal cabling in the first hall does not wait for the backbone to reach the last one, and certification follows each hall rather than the building. THE THREE LEADS ARE ESTIMATES, set at roughly half the predecessor's duration, which is the crudest possible reading of 'about half the halls are ready'. They are the least defensible numbers in this entry and the first thing to replace with a per-zone sub-network.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "INVENTED FOR REVIEW. Stage, owning department, materials (containment, structured cabling) and the TIA-942 gate are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SIX LOGIC LINKS and the TWO HOLD POINTS are estimates sized for a 20-30 MW-class build: roughly 120 days on the longest path (raised floor -> containment -> backbone -> horizontal -> certification). JUDGEMENTS TO CHALLENGE: racks are placed after the raised floor and in parallel with the backbone, which assumes the floor carries the racks - a slab-mounted rack layout would reorder this; the SS+10 from floor to containment assumes containment follows the floor gang across the hall. NOT MODELLED: no material link to a long-lead item, because racks and cabling are not in equipment_lead_times.json - on a real project client-supplied racks are frequently the constraint here and their absence understates this stage. Also not modelled: fit-out is one whole-building package, so a hall-by-hall handover sequence is not represented. --- LOGIC REVISED FOR REVIEW: three finish-to-start links became start-to-start with a lead (f20->f30, f30->f50, f50->f60). Every activity in this package is per-hall except the backbone risers, so modelling them as one whole-building chain charged the programme for work that in reality runs concurrently across halls: horizontal cabling in the first hall does not wait for the backbone to reach the last one, and certification follows each hall rather than the building. THE THREE LEADS ARE ESTIMATES, set at roughly half the predecessor's duration, which is the crudest possible reading of 'about half the halls are ready'. They are the least defensible numbers in this entry and the first thing to replace with a per-zone sub-network.\n\nZONE MULTIPLICATION (Tier 2). `zone_kind` repeats this fragnet once per zone of that kind, so a campus with eight data halls schedules eight fit-outs rather than one that stands for all of them. Activities carrying `zone_scope: \"project\"` are instanced ONCE and are listed with the reason - work that genuinely happens once must not be multiplied, or the plan invents seven fuel farms. The split between per-zone and project-wide is a planner's judgement recorded as data: it is unverified like the rest of this entry, and changing it is a library edit rather than a code change.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -1901,13 +2098,15 @@
           "id": "e10",
           "name": "L1 factory acceptance testing",
           "duration_days": 25,
-          "calendar": "5day"
+          "calendar": "5day",
+          "discipline": "testing"
         },
         {
           "id": "e20",
           "name": "L2 site verification / delivery inspection",
           "duration_days": 20,
-          "calendar": "6day"
+          "calendar": "6day",
+          "discipline": "testing"
         },
         {
           "id": "e30",
@@ -1918,24 +2117,29 @@
             {
               "id": "s10",
               "name": "Pre-functional checklist preparation",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "testing"
             },
             {
               "id": "s20",
               "name": "Static checks and point-to-point verification",
-              "duration_days": 12
+              "duration_days": 12,
+              "discipline": "testing"
             },
             {
               "id": "s30",
               "name": "Motor rotation, interlock and alarm checks",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "testing"
             },
             {
               "id": "s40",
               "name": "Pre-functional documentation sign-off",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "testing"
             }
-          ]
+          ],
+          "discipline": "testing"
         },
         {
           "id": "e40",
@@ -1946,29 +2150,35 @@
             {
               "id": "s10",
               "name": "Test script and load bank mobilisation",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "testing"
             },
             {
               "id": "s20",
               "name": "Individual system functional tests",
-              "duration_days": 14
+              "duration_days": 14,
+              "discipline": "testing"
             },
             {
               "id": "s30",
               "name": "Load bank testing at partial load",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "testing"
             },
             {
               "id": "s40",
               "name": "Full-load and step-load testing",
-              "duration_days": 7
+              "duration_days": 7,
+              "discipline": "testing"
             },
             {
               "id": "s50",
               "name": "Results review and defect closure",
-              "duration_days": 3
+              "duration_days": 3,
+              "discipline": "testing"
             }
-          ]
+          ],
+          "discipline": "testing"
         },
         {
           "id": "e50",
@@ -1981,29 +2191,35 @@
             {
               "id": "s10",
               "name": "IST scenario matrix agreement",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "testing"
             },
             {
               "id": "s20",
               "name": "Integrated normal-mode operation",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "testing"
             },
             {
               "id": "s30",
               "name": "Utility failure and generator transition",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "testing"
             },
             {
               "id": "s40",
               "name": "Cooling failure and thermal ride-through",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "testing"
             },
             {
               "id": "s50",
               "name": "Witnessed rerun and results compilation",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "testing"
             }
-          ]
+          ],
+          "discipline": "testing"
         },
         {
           "id": "e60",
@@ -2011,7 +2227,8 @@
           "duration_days": 14,
           "calendar": "7day",
           "safety_flag": true,
-          "hitl_tier": "tier_1"
+          "hitl_tier": "tier_1",
+          "discipline": "testing"
         }
       ],
       "logic": [
@@ -2062,7 +2279,7 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "L1-L5 for a Tier III facility. IST and black-building are the longest-pole risks and both are Tier-1 safety activities requiring sign-off before export. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "L1-L5 for a Tier III facility. IST and black-building are the longest-pole risks and both are Tier-1 safety activities requiring sign-off before export. Structure from docs/DOMAIN_KNOWLEDGE.md#3; durations and logic are estimates.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
@@ -2088,24 +2305,29 @@
             {
               "id": "s10",
               "name": "Joint snagging walk-down",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "management"
             },
             {
               "id": "s20",
               "name": "Snag register issue and allocation",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "management"
             },
             {
               "id": "s30",
               "name": "Snag rectification",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "management"
             },
             {
               "id": "s40",
               "name": "Re-inspection and sign-off",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "management"
             }
-          ]
+          ],
+          "discipline": "management"
         },
         {
           "id": "j20",
@@ -2116,24 +2338,29 @@
             {
               "id": "s10",
               "name": "Redline mark-up collection from trades",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "management"
             },
             {
               "id": "s20",
               "name": "As-built drawing production",
-              "duration_days": 10
+              "duration_days": 10,
+              "discipline": "management"
             },
             {
               "id": "s30",
               "name": "O&M manual compilation and vendor data",
-              "duration_days": 8
+              "duration_days": 8,
+              "discipline": "management"
             },
             {
               "id": "s40",
               "name": "Client review and acceptance",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "management"
             }
-          ]
+          ],
+          "discipline": "management"
         },
         {
           "id": "j30",
@@ -2144,42 +2371,50 @@
             {
               "id": "s10",
               "name": "TCCF documentation pack submission",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "compliance"
             },
             {
               "id": "s20",
               "name": "Demonstration scripting and rehearsal",
-              "duration_days": 5
+              "duration_days": 5,
+              "discipline": "compliance"
             },
             {
               "id": "s30",
               "name": "Witnessed TCCF demonstration",
-              "duration_days": 6
+              "duration_days": 6,
+              "discipline": "compliance"
             },
             {
               "id": "s40",
               "name": "Findings closure and certificate issue",
-              "duration_days": 4
+              "duration_days": 4,
+              "discipline": "compliance"
             }
-          ]
+          ],
+          "discipline": "compliance"
         },
         {
           "id": "j40",
           "name": "Client operations training and witnessed demonstrations",
           "duration_days": 15,
-          "calendar": "5day"
+          "calendar": "5day",
+          "discipline": "management"
         },
         {
           "id": "j50",
           "name": "Warranty, guarantee and spares register handover",
           "duration_days": 15,
-          "calendar": "5day"
+          "calendar": "5day",
+          "discipline": "management"
         },
         {
           "id": "j60",
           "name": "Final account and defects liability period commencement",
           "duration_days": 20,
-          "calendar": "5day"
+          "calendar": "5day",
+          "discipline": "management"
         }
       ],
       "logic": [
@@ -2243,10 +2478,23 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "INVENTED FOR REVIEW. Stage, owning departments (PM, QA/QC) and the gates (occupancy certificate, warranties) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SEVEN LOGIC LINKS and the TWO HOLD POINTS are estimates: about 85 days on the longest path (snagging -> TCCF -> final account). UPTIME TCCF (j30) IS AN ASSUMPTION ABOUT THIS PROJECT, not a universal step: Tier Certification of Constructed Facility is a demonstration to Uptime Institute after construction, and it applies only where the client is actually pursuing certification. A project building to Tier standards without certifying would delete j30 entirely. Its 20 days covers demonstration and report, not the certification cycle end to end. JUDGEMENTS TO CHALLENGE: TCCF is placed after snag closure and before final account, which assumes a single certification pass - a failed demonstration means remediation and a re-demonstration that this does not model. SCOPE DECISION: this package covers CONTRACTOR work only. The occupancy certificate and final fire NOC are statutory and deliberately absent, because the city pathway data already holds them with their own durations and blocking rules (path.nm.occupancy_certificate 8 weeks blocks handover; path.nm.fire_noc_final 10 weeks blocks occupancy). Duplicating them here would put two numbers for the same approval in two libraries, and CLAUDE.md rules that compliance is versioned data, not fragnet content. NOT MODELLED: the defects liability period itself, typically 12-24 months, which would dwarf the construction programme if drawn as an activity - j60 marks its commencement only.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.",
+        "note": "INVENTED FOR REVIEW. Stage, owning departments (PM, QA/QC) and the gates (occupancy certificate, warranties) are transcribed from docs/DOMAIN_KNOWLEDGE.md#3. The SIX ACTIVITIES, their SIX DURATIONS, the SEVEN LOGIC LINKS and the TWO HOLD POINTS are estimates: about 85 days on the longest path (snagging -> TCCF -> final account). UPTIME TCCF (j30) IS AN ASSUMPTION ABOUT THIS PROJECT, not a universal step: Tier Certification of Constructed Facility is a demonstration to Uptime Institute after construction, and it applies only where the client is actually pursuing certification. A project building to Tier standards without certifying would delete j30 entirely. Its 20 days covers demonstration and report, not the certification cycle end to end. JUDGEMENTS TO CHALLENGE: TCCF is placed after snag closure and before final account, which assumes a single certification pass - a failed demonstration means remediation and a re-demonstration that this does not model. SCOPE DECISION: this package covers CONTRACTOR work only. The occupancy certificate and final fire NOC are statutory and deliberately absent, because the city pathway data already holds them with their own durations and blocking rules (path.nm.occupancy_certificate 8 weeks blocks handover; path.nm.fire_noc_final 10 weeks blocks occupancy). Duplicating them here would put two numbers for the same approval in two libraries, and CLAUDE.md rules that compliance is versioned data, not fragnet content. NOT MODELLED: the defects liability period itself, typically 12-24 months, which would dwarf the construction programme if drawn as an activity - j60 marks its commencement only.\n\n--- INVENTED FOR REVIEW (Tier 4) - the execution steps below are mine, not transcribed. The parent deliverables and their durations are unchanged; the steps decompose them, and their durations sum exactly to the parent (enforced by test_execution_steps.py across the whole library). So the step durations move no date. What DOES move a date, deliberately, is that a long-lead delivery now gates only the step that consumes the plant rather than the whole deliverable - preparation that does not need the equipment no longer waits in a factory queue it was never in. Treat the SEQUENCE as the reviewable claim; the individual day splits are estimates, and a planner correcting them should keep the sum or change the parent duration deliberately.\n\n--- DISCIPLINE PACKAGES (Tier 3) - `discipline` on each leaf splits a stage into the sub-packages an EPC schedule is actually let and reported in. The assignment is a planner's judgement recorded as data, unverified like the rest of this entry, and changing one is a library edit rather than a code change. It affects the STRUCTURE of the plan - the WBS path an activity sits under and the packages the 2D view groups by - and never its durations or its logic, so no date moves when a package boundary is redrawn.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#3",
         "warning": "INDUSTRY ESTIMATE, NOT A PROJECT ACTUAL. A defensible typical figure for the Indian DC market, standing in until real execution data is loaded. No project ran to this number. Must be verified before use in a live plan."
       }
     }
-  ]
+  ],
+  "disciplines": {
+    "civil": "Civil works",
+    "structural": "Structural works",
+    "architectural": "Architectural and envelope",
+    "mechanical": "Mechanical",
+    "electrical": "Electrical",
+    "fire": "Fire and life safety",
+    "controls": "Controls and BMS",
+    "testing": "Testing and commissioning",
+    "procurement": "Procurement",
+    "compliance": "Statutory and compliance",
+    "management": "Design and project management"
+  }
 }

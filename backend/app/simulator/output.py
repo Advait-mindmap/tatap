@@ -27,6 +27,21 @@ NODE_KIND_BY_TYPE = {
 }
 
 
+#: Readable names for the sub-packages the engine groups activities into.
+DISCIPLINE_LABELS = {
+    'civil': 'Civil works',
+    'structural': 'Structural works',
+    'architectural': 'Architectural and envelope',
+    'mechanical': 'Mechanical',
+    'electrical': 'Electrical',
+    'fire': 'Fire and life safety',
+    'controls': 'Controls and BMS',
+    'testing': 'Testing and commissioning',
+    'procurement': 'Procurement',
+    'compliance': 'Statutory and compliance',
+    'management': 'Design and project management',
+}
+
 def _decision_nodes(
     resolved: Dict[str, Dict[str, Any]], pending: Dict[str, Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
@@ -201,15 +216,36 @@ def build_simulation_output(
             'label': reasoning.stage.replace('_', ' ').title(), 'dept': None,
             'trail_ref': None, 'zone_id': None, 'parent': None,
         })
-        for package in reasoning.packages:
+        # ---- one node per SUB-PACKAGE, not per fragnet.
+        #
+        # A stage carries one fragnet, so a node per fragnet was a node per stage sitting beside
+        # the stage header saying the same thing twice. The packages a planner works in are the
+        # disciplines - civil, structural, mechanical - and those are what the activities carry.
+        confidence = min(
+            (p.effective_confidence for p in reasoning.packages), default=0.0
+        )
+        unverified = sorted({
+            dependency
+            for package in reasoning.packages
+            for dependency in package.unverified_dependencies
+        })
+        seen_disciplines = []
+        for activity in assembly.activities:
+            if activity.stage != reasoning.stage or not activity.discipline:
+                continue
+            if activity.discipline not in seen_disciplines:
+                seen_disciplines.append(activity.discipline)
+        for discipline in seen_disciplines:
             nodes.append({
-                'id': f'package.{reasoning.stage}.{package.fragnet_id}',
+                'id': f'package.{reasoning.stage}.{discipline}',
                 'kind': 'work_package', 'stage': reasoning.stage,
-                'label': package.fragnet_id, 'dept': None,
+                'label': DISCIPLINE_LABELS.get(discipline, discipline.replace('_', ' ').title()),
+                'dept': None,
                 'trail_ref': None, 'zone_id': None,
                 'parent': f'stage.{reasoning.stage}',
-                'confidence': package.effective_confidence,
-                'unverified_dependencies': package.unverified_dependencies,
+                'discipline': discipline,
+                'confidence': confidence,
+                'unverified_dependencies': unverified,
             })
 
     for activity in assembly.activities:
@@ -221,9 +257,10 @@ def build_simulation_output(
             'dept': activity.dept_code or None,
             'trail_ref': activity.trail_ref or None,
             'zone_id': activity.zone_id,
+            'discipline': activity.discipline,
             'parent': (
-                f'package.{activity.stage}.{activity.source_fragnet}'
-                if activity.source_fragnet else f'stage.{activity.stage}'
+                f'package.{activity.stage}.{activity.discipline}'
+                if activity.discipline else f'stage.{activity.stage}'
             ),
             'wbs_id': activity.wbs_id,
             'duration_days': activity.duration_days,

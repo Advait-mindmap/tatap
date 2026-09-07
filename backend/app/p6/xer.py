@@ -333,10 +333,33 @@ PACKAGE_NAMES = {
 }
 
 
+#: Sub-package names, for the discipline codes the engine now puts in the middle WBS segment.
+DISCIPLINE_NAMES = {
+    'civil': 'Civil works',
+    'structural': 'Structural works',
+    'architectural': 'Architectural and envelope',
+    'mechanical': 'Mechanical',
+    'electrical': 'Electrical',
+    'fire': 'Fire and life safety',
+    'controls': 'Controls and BMS',
+    'testing': 'Testing and commissioning',
+    'procurement': 'Procurement',
+    'compliance': 'Statutory and compliance',
+    'management': 'Design and project management',
+}
+
+
 def _package_label(package: str, members: Sequence[Dict[str, Any]]) -> str:
     """Name a package. The two-letter code alone says nothing to a planner reading it in P6."""
     if package in PACKAGE_NAMES:
         return PACKAGE_NAMES[package]
+
+    # A numbered package is a DISCIPLINE now, and the members all carry its name. Reading it off
+    # them rather than from a table keyed by number means the label cannot drift out of step
+    # with the order the engine assigned.
+    disciplines = sorted({str(a.get('discipline')) for a in members if a.get('discipline')})
+    if len(disciplines) == 1:
+        return DISCIPLINE_NAMES.get(disciplines[0], disciplines[0].replace('_', ' ').title())
     fragnets = sorted({str(a.get('source_fragnet')) for a in members if a.get('source_fragnet')})
     if len(fragnets) == 1:
         return fragnets[0].replace('frag.', '').replace('.', ' ').replace('_', ' ').title()

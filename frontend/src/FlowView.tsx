@@ -121,6 +121,9 @@ function FlowViewInner({
   const [selected, setSelected] = useState<string | null>(null);
   const [hiddenStages, setHiddenStages] = useState<Set<string>>(new Set());
   const [hiddenZones, setHiddenZones] = useState<Set<string>>(new Set());
+  //: Whether the reader has taken control of which zones are shown. Once they have, the default
+  //: below must never reassert itself - a filter that keeps resetting is worse than no filter.
+  const touchedZones = useRef(false);
   const [hiddenKinds, setHiddenKinds] = useState<Set<NodeKind>>(new Set());
 
   const flow = { nodes: flowNodes, edges: flowEdges };
@@ -132,6 +135,36 @@ function FlowViewInner({
     () => (hovered ? computeHighlight(hovered, adjacency) : EMPTY_HIGHLIGHT),
     [hovered, adjacency],
   );
+
+
+  /**
+   * Above this many zones, the canvas opens showing ONE of each kind.
+   *
+   * Zone lanes fixed the height problem and created a width one. A twenty-megawatt campus is
+   * seven data halls and seven electrical rooms, which is fifty-six lanes and sixteen thousand
+   * pixels; a thirty-megawatt one is seventy-four lanes and twenty-one thousand. At the zoom
+   * that fits, a card is seventeen pixels wide - the whole plan is on screen and none of it can
+   * be read, which is the same failure as the ribbon it replaced, rotated ninety degrees.
+   *
+   * So the graph opens on the first hall and the first room. Nothing is removed - the count sits
+   * in the filter, every zone is one click away, and the moment the reader touches the filter
+   * this stops applying. Hall 3 is a copy of hall 1 with different dates; showing all seven at
+   * once is what a planner does deliberately, not what they need to see first.
+   */
+  const ZONE_LANE_BUDGET = 6;
+
+  useEffect(() => {
+    if (touchedZones.current || zones.length <= ZONE_LANE_BUDGET) return;
+    // The first zone of each kind - `zone.data-hall.01`, `zone.electrical-room.01` - so every
+    // kind of space is represented rather than the alphabetically luckiest few.
+    const firstOfKind = new Map<string, string>();
+    for (const zone of zones) {
+      const kind = zone.split(".").slice(0, -1).join(".");
+      if (!firstOfKind.has(kind)) firstOfKind.set(kind, zone);
+    }
+    const keep = new Set(firstOfKind.values());
+    setHiddenZones(new Set(zones.filter((z) => !keep.has(z))));
+  }, [zones]);
 
   const visible = useMemo(
     () =>
@@ -284,7 +317,11 @@ function FlowViewInner({
     if (!signature || signature === fittedRef.current) return;
     // Low enough to show a full thirteen-stage programme. Seeing all of it is not the same as
     // reading it - that is what the decision stepper is for - but it beats seeing none of it.
-    if (reactFlow.fitView({ padding: 0.08, minZoom: 0.12, maxZoom: 1.0 })) {
+    // No minZoom here. A fixed floor of 0.12 silently CROPPED the fit the moment plans grew:
+    // a 606-activity programme needs about 0.04 to fit, so the view opened showing a third of
+    // it with no indication the rest existed. The component's own derived floor is the only
+    // bound that should apply, and it is computed never to clamp the fit.
+    if (reactFlow.fitView({ padding: 0.08, maxZoom: 1.0 })) {
       fittedRef.current = signature;
     }
   }, [autoFit, nodesInitialized, canFit, signature, reactFlow]);
@@ -493,9 +530,23 @@ function FlowViewInner({
               <h3>Halls and rooms</h3>
               <p className="small muted">
                 Each hall is planned separately, so each reads as its own lane.
-                Hide the ones you are not working on — the stage spine and
-                anything campus-wide stays either way.
+                {hiddenZones.size > 0
+                  ? ` Showing ${zones.length - hiddenZones.size} of ${zones.length} — the rest are hidden so the graph stays readable.`
+                  : " Hide the ones you are not working on."}{" "}
+                The stage spine and anything campus-wide stays either way.
               </p>
+              {hiddenZones.size > 0 && (
+                <button
+                  className="linkish small"
+                  data-testid="show-all-zones"
+                  onClick={() => {
+                    touchedZones.current = true;
+                    setHiddenZones(new Set());
+                  }}
+                >
+                  Show all {zones.length}
+                </button>
+              )}
               <ul className="legend">
                 {zones.map((zone) => (
                   <li key={zone}>
@@ -503,7 +554,10 @@ function FlowViewInner({
                       className={
                         hiddenZones.has(zone) ? "legend-item is-off" : "legend-item"
                       }
-                      onClick={() => setHiddenZones((s) => toggle(s, zone))}
+                      onClick={() => {
+                        touchedZones.current = true;
+                        setHiddenZones((s) => toggle(s, zone));
+                      }}
                     >
                       <span className="legend-label">
                         {zone.replace(/^zone\./, "").replace(/[-_]/g, " ")}

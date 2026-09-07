@@ -328,6 +328,10 @@ class AssembledActivity(BaseModel):
     confidence: float = 0.0
     unverified_dependencies: List[str] = Field(default_factory=list)
     source_fragnet: Optional[str] = None
+    #: The sub-package this belongs to: civil, structural, mechanical, electrical, controls and
+    #: the rest (Tier 3). It is what the WBS groups on below the stage, and what an EPC schedule
+    #: is actually let and reported in.
+    discipline: str = ''
     #: The library activity this is an execution step OF, where it is one (Tier 4).
     #:
     #: Without it every projection that reasons about DELIVERABLES silently degrades the moment
