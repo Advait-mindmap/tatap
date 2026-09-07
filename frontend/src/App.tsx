@@ -25,6 +25,12 @@ type ViewMode = '2d' | '3d' | 'split'
  * for the brief that was typed; the golden SimulationOutput stays where it belongs, as a test
  * artefact the backend suite pins.
  */
+/** How many times a dropped stream is picked back up before the reader is told.
+ *
+ * Bounded so a server closing every socket cannot spin, and generous enough that a
+ * proxy trimming one idle connection is invisible - which is what usually happens. */
+const MAX_RECONNECTS = 3
+
 export default function App() {
   const [phase, setPhase] = useState<Phase>('intake')
   const [intake, setIntake] = useState<IntakeResult | null>(null)
@@ -51,6 +57,39 @@ export default function App() {
    * `replaceState` rather than `pushState`: this is where you already are, not a new place, and
    * Back should leave the app rather than walk through a run's history.
    */
+  /**
+   * A stream that ends because WE ended it, versus one that just stopped.
+   *
+   * A WebSocket that closes CLEANLY fires `close` and NOT `error`, and `runSimulation` accepted
+   * an `onClose` handler that neither caller passed - so a clean close was discarded and the run
+   * stayed `running` for ever. That is the reported failure: "Simulating…" with frozen counts,
+   * no JS errors, no failed requests, while the server carried on and a decision waited.
+   *
+   * Clean closes are routine here. This stream goes quiet for long stretches while a stage
+   * reasons - measured p90 11.9s, max 137s between events - and an idle socket of that length is
+   * exactly what a proxy trims.
+   */
+  const attachRef = useRef<((runId: string) => void) | null>(null)
+  const reconnects = useRef(0)
+  const runIdRef = useRef<string | null>(null)
+  //: Which connection is the live one. Every socket is opened with the token it was born under
+  //: and reports it back on close, so a close can be attributed rather than guessed at.
+  const connection = useRef(0)
+
+  /**
+   * Abandon the current socket and take a fresh token.
+   *
+   * The token is what makes a deliberate close distinguishable from a drop, and it is safe where
+   * a flag was not: bumping it invalidates whatever socket was live, whether or not that socket
+   * ever fires a close - and on the first run there is no socket to fire one.
+   */
+  const nextConnection = useCallback(() => {
+    socket.current?.close()
+    socket.current = null
+    connection.current += 1
+    return connection.current
+  }, [])
+
   const rememberRun = useCallback((runId: string) => {
     if (!runId) return
     const url = new URL(window.location.href)
@@ -119,7 +158,7 @@ export default function App() {
     setQueued(0)
     allEventsRef.current = []
 
-    socket.current?.close()
+    const token = nextConnection()
     socket.current = runSimulation(confirmed as unknown as Record<string, unknown>, {
       onEvent: (event) => {
         // Recorded for replay, queued for drawing. Both unconditionally: what the server sent
@@ -130,7 +169,13 @@ export default function App() {
         // Put the id in the URL the moment the server issues it, not when the queue drains -
         // a run that dies mid-draw is exactly the one worth being able to get back to.
         const id = (event.payload as { run_id?: string } | undefined)?.run_id
-        if (id) rememberRun(id)
+        if (id) {
+          runIdRef.current = id
+          rememberRun(id)
+        }
+        // A delivered event means the connection works; the reconnect budget resets so a long
+        // run is not capped by drops it already recovered from.
+        reconnects.current = 0
       },
       onError: (message) =>
         setRun((current) =>
@@ -138,8 +183,61 @@ export default function App() {
             ? current
             : { ...current, status: 'error', error: message },
         ),
+      onClose: () => handleClose(token),
     })
   }, [setPlaying, rememberRun])
+
+  /**
+   * The stream ended. Decide whether that was the end of the RUN or the end of the CONNECTION.
+   *
+   * A terminal event already received means the run finished or halted properly and the server
+   * closed behind it - the queue may still be draining, so `status` is not a reliable signal
+   * here and the event record is. Anything else is a dropped connection, and the run is still
+   * out there: reattach, which is the same path a reload takes.
+   *
+   * Bounded, because a server that closes every socket immediately would otherwise spin. After
+   * the last attempt the reader is told, which is the point - the old behaviour said nothing at
+   * all, and a spinner that never resolves gives them nothing to notice.
+   */
+  const handleClose = useCallback((token: number) => {
+    // A close from a socket we have already replaced. Starting or re-attaching opens a new
+    // connection and abandons the old one, and the old one's close then arrives - about a run
+    // nobody is watching any more.
+    //
+    // This began life as a latching boolean and that was wrong in a way worth recording: the
+    // first `start()` calls `closeSocket()` before any socket exists, so the flag was armed and
+    // NOTHING ever fired a close to clear it. The next drop - a real one - saw the flag set and
+    // was swallowed, which is the exact bug this handler was written to fix, reintroduced by its
+    // own guard. A token cannot latch: it either matches the live connection or it does not.
+    if (token !== connection.current) return
+
+    const finished = allEventsRef.current.some(
+      (event) =>
+        event.type === 'simulation_completed' ||
+        event.type === 'simulation_halted' ||
+        event.type === 'simulation_error',
+    )
+    if (finished) return
+
+    const runId = runIdRef.current
+    if (runId && reconnects.current < MAX_RECONNECTS) {
+      reconnects.current += 1
+      window.setTimeout(() => attachRef.current?.(runId), 400 * reconnects.current)
+      return
+    }
+    setRun((current) =>
+      current.status === 'complete'
+        ? current
+        : {
+            ...current,
+            status: 'error',
+            error: runId
+              ? `Lost the connection to the run after ${MAX_RECONNECTS} attempts to reconnect. ` +
+                'The run is still on the server — reload to pick it up again.'
+              : 'Lost the connection before the run was identified, so it cannot be recovered.',
+          },
+    )
+  }, [])
 
   const answer = useCallback((decisionPointId: string, value: string) => {
     setRun((current) => {
@@ -189,6 +287,7 @@ export default function App() {
    * refreshed, the container restarted, or the link came from someone else.
    */
   const attachTo = useCallback((runId: string) => {
+    runIdRef.current = runId
     setRun({ ...INITIAL_RUN, status: 'running', runId })
     setPhase('run')
     setPlaying(true)
@@ -197,7 +296,7 @@ export default function App() {
     setQueued(0)
     allEventsRef.current = []
 
-    socket.current?.close()
+    const token = nextConnection()
     socket.current = runSimulation(
       {},
       {
@@ -212,10 +311,18 @@ export default function App() {
               ? current
               : { ...current, status: 'error', error: message },
           ),
+        onClose: () => handleClose(token),
       },
       { attachRunId: runId },
     )
   }, [setPlaying])
+
+  // `handleClose` is defined before `attachTo` and must be able to call it. A ref keeps the
+  // handler's identity stable, which matters because it is handed to a socket that outlives
+  // renders.
+  useEffect(() => {
+    attachRef.current = attachTo
+  }, [attachTo])
 
   // On load: if the address bar names a run, go straight to it instead of the intake screen.
   // Runs outlive the tab that started them, so the tab should not be the only way back.
@@ -230,7 +337,7 @@ export default function App() {
   const restart = useCallback(() => {
     forgetRun()
     socket.current?.stop()
-    socket.current?.close()
+    nextConnection()
     socket.current = null
     setRun(INITIAL_RUN)
     setIntake(null)

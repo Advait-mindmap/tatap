@@ -228,6 +228,10 @@ jobs:
         if: always()
         run: npx playwright test decision-desync.spec
 
+      - name: Browser tests - a dropped stream never leaves a run stuck
+        if: always()
+        run: npx playwright test stream-drop.spec
+
       - name: Browser tests - a campus of halls stays readable
         if: always()
         run: npx playwright test zone-lanes.spec
