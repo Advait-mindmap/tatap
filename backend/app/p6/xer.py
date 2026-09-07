@@ -21,8 +21,10 @@ WHAT THIS WRITES, and what it does not:
   caller supplies. The engine computes day OFFSETS; it does not know when the project begins, so
   the anchor is an input rather than a guess. Given the same anchor the dates are exact, not
   approximate: activity start = anchor + start_day, finish = anchor + finish_day.
-* Costs, resources and actuals are absent because the simulation has none. An empty TASKRSRC is
-  honest; a fabricated one would not be.
+* Actuals and costs are absent because the simulation has none. A fabricated one would not be
+  honest.
+* Resource-loaded output assigns ONE DISCIPLINE CREW PER ACTIVITY FOR ITS STATED DURATION. It is
+  not a crew-size or cost estimate, only schedule-format resource compliance.
 """
 
 from __future__ import annotations
@@ -94,6 +96,28 @@ COLUMNS: Dict[str, Tuple[str, ...]] = {
         'external_early_start_date', 'external_late_end_date', 'create_date', 'update_date',
         'create_user', 'update_user',
     ),
+    'RSRC': (
+        'rsrc_id', 'parent_rsrc_id', 'clndr_id', 'role_id', 'shift_id', 'ts_approve_user_id',
+        'user_id', 'pobs_id', 'guid', 'rsrc_seq_num', 'email_addr', 'employee_code',
+        'office_phone', 'other_phone', 'rsrc_name', 'rsrc_short_name', 'rsrc_title_name',
+        'def_qty_per_hr', 'cost_qty_type', 'ot_factor', 'active_flag', 'auto_compute_act_flag',
+        'def_cost_qty_link_flag', 'ot_flag', 'timesheet_flag', 'xfer_complete_day_cnt',
+        'xfer_notstart_day_cnt', 'curr_id', 'unit_id', 'rsrc_type', 'rsrc_notes',
+        'load_tasks_flag', 'level_flag', 'last_checksum',
+    ),
+    'TASKRSRC': (
+        'taskrsrc_id', 'task_id', 'proj_id', 'cost_qty_link_flag', 'role_id', 'acct_id',
+        'rsrc_id', 'pobs_id', 'skill_level', 'pend_complete_pct', 'remain_qty',
+        'pend_remain_qty', 'target_qty', 'remain_qty_per_hr', 'target_lag_drtn_hr_cnt',
+        'target_qty_per_hr', 'act_ot_qty', 'act_reg_qty', 'relag_drtn_hr_cnt', 'ot_factor',
+        'cost_per_qty', 'target_cost', 'act_reg_cost', 'act_ot_cost', 'remain_cost',
+        'act_start_date', 'act_end_date', 'restart_date', 'reend_date', 'target_start_date',
+        'target_end_date', 'rem_late_start_date', 'rem_late_end_date', 'rollup_dates_flag',
+        'target_crv', 'remain_crv', 'actual_crv', 'ts_pend_act_end_flag', 'guid', 'rate_type',
+        'act_this_per_cost', 'act_this_per_qty', 'curv_id', 'rsrc_type',
+        'cost_per_qty_source_type', 'create_user', 'create_date', 'has_rsrchours',
+        'taskrsrc_sum_id',
+    ),
     'TASKPRED': (
         'task_pred_id', 'task_id', 'pred_task_id', 'proj_id', 'pred_proj_id', 'pred_type',
         'lag_hr_cnt', 'float_path', 'aref', 'arls',
@@ -102,7 +126,10 @@ COLUMNS: Dict[str, Tuple[str, ...]] = {
 
 #: The order tables appear in the file. P6 reads a table's foreign keys as it goes, so a table
 #: must not precede the one it points at.
-TABLE_ORDER = ('CURRTYPE', 'OBS', 'PROJECT', 'CALENDAR', 'PROJWBS', 'TASK', 'TASKPRED')
+TABLE_ORDER = (
+    'CURRTYPE', 'OBS', 'PROJECT', 'CALENDAR', 'RSRC', 'PROJWBS', 'TASK', 'TASKPRED',
+    'TASKRSRC',
+)
 
 #: Our activity types, mapped to P6's. A milestone has no duration, which is what P6 means by
 #: TT_Mile; a gate or hold point is a milestone in the same sense.
@@ -366,6 +393,116 @@ def _package_label(package: str, members: Sequence[Dict[str, Any]]) -> str:
     return f'Package {package}'
 
 
+
+#: Crew names, by the discipline the engine files an activity under. One crew per discipline, so
+#: a plan resource-levels by trade rather than by nothing at all.
+CREW_NAMES = {
+    'civil': 'Civil works crew',
+    'structural': 'Structural works crew',
+    'architectural': 'Architectural and envelope crew',
+    'mechanical': 'Mechanical crew',
+    'electrical': 'Electrical crew',
+    'fire': 'Fire and life safety crew',
+    'controls': 'Controls and BMS crew',
+    'testing': 'Testing and commissioning team',
+    'procurement': 'Procurement team',
+    'compliance': 'Statutory and compliance team',
+    'management': 'Design and project management team',
+}
+
+#: How many of each crew is assigned to an activity.
+#:
+#: ONE. Not a crew-size estimate - the simulation has no quantities, so there is nothing to
+#: divide by a productivity rate, and any other number would be invented. The units that reach
+#: P6 are the activity's own duration expressed as crew-hours, which is the activity restated
+#: rather than a new claim about it.
+CREWS_PER_ACTIVITY = 1
+
+
+def _crew_code(discipline: str) -> str:
+    """A short resource code. P6 shows this in the resource column, so it has to be legible."""
+    return (discipline or 'general')[:8].upper()
+
+
+def build_resources(activities, proj_id, calendar_id, currency_id):
+    """One RSRC row per discipline present in the plan, and a map from discipline to rsrc_id.
+
+    Labour resources, not material: `unit_id` is left empty, which is what the reference export
+    does for its own RT_Labor row, so no UMEASURE table is needed to make the file valid.
+    """
+    disciplines = sorted({
+        str(a.get('discipline') or '') for a in activities if a.get('discipline')
+    })
+    rows = []
+    by_discipline = {}
+    for index, discipline in enumerate(disciplines, start=1):
+        rsrc_id = proj_id * 100 + index
+        by_discipline[discipline] = rsrc_id
+        rows.append({
+            'rsrc_id': rsrc_id, 'parent_rsrc_id': '', 'clndr_id': calendar_id,
+            'role_id': '', 'shift_id': '', 'ts_approve_user_id': '', 'user_id': '',
+            'pobs_id': '', 'guid': '', 'rsrc_seq_num': index * 10,
+            'email_addr': '', 'employee_code': '', 'office_phone': '', 'other_phone': '',
+            'rsrc_name': CREW_NAMES.get(discipline, f'{discipline.title()} crew'),
+            'rsrc_short_name': _crew_code(discipline),
+            'rsrc_title_name': '',
+            'def_qty_per_hr': 1, 'cost_qty_type': 'QT_Hour', 'ot_factor': '',
+            'active_flag': 'Y', 'auto_compute_act_flag': 'Y', 'def_cost_qty_link_flag': 'Y',
+            'ot_flag': 'N', 'timesheet_flag': 'N',
+            'xfer_complete_day_cnt': 60, 'xfer_notstart_day_cnt': 60,
+            'curr_id': currency_id, 'unit_id': '', 'rsrc_type': 'RT_Labor',
+            'rsrc_notes': '', 'load_tasks_flag': 'N', 'level_flag': 'Y', 'last_checksum': '',
+        })
+    return rows, by_discipline
+
+
+def build_resource_assignments(activities, task_ids, by_discipline, proj_id, dates):
+    """One TASKRSRC row per activity, assigning its discipline's crew for its own duration.
+
+    Quantities are `duration_days x HOURS_PER_DAY` at one crew, and every cost field is zero.
+    Zero cost is deliberate and honest: there are no rates in the libraries, and a plan carrying
+    invented money is worse than one carrying none - a reviewer reads a cost column as priced.
+    """
+    rows = []
+    assignment_id = 1
+    for activity in activities:
+        discipline = str(activity.get('discipline') or '')
+        ident = str(activity.get('id'))
+        rsrc_id = by_discipline.get(discipline)
+        # Milestones and gates have no duration and no crew; assigning one would put labour
+        # against an event rather than against work.
+        duration = int(activity.get('duration_days') or 0)
+        if rsrc_id is None or ident not in task_ids or duration <= 0:
+            continue
+
+        hours = duration * HOURS_PER_DAY
+        start, finish = dates(activity)
+        rows.append({
+            'taskrsrc_id': assignment_id, 'task_id': task_ids[ident], 'proj_id': proj_id,
+            'cost_qty_link_flag': 'Y', 'role_id': '', 'acct_id': '', 'rsrc_id': rsrc_id,
+            'pobs_id': '', 'skill_level': '', 'pend_complete_pct': '',
+            'remain_qty': hours, 'pend_remain_qty': '', 'target_qty': hours,
+            'remain_qty_per_hr': CREWS_PER_ACTIVITY,
+            'target_lag_drtn_hr_cnt': 0,
+            'target_qty_per_hr': CREWS_PER_ACTIVITY,
+            'act_ot_qty': 0, 'act_reg_qty': 0, 'relag_drtn_hr_cnt': 0, 'ot_factor': '',
+            'cost_per_qty': 0, 'target_cost': 0, 'act_reg_cost': 0, 'act_ot_cost': 0,
+            'remain_cost': 0,
+            'act_start_date': '', 'act_end_date': '',
+            'restart_date': start, 'reend_date': finish,
+            'target_start_date': start, 'target_end_date': finish,
+            'rem_late_start_date': start, 'rem_late_end_date': finish,
+            'rollup_dates_flag': 'Y',
+            'target_crv': '', 'remain_crv': '', 'actual_crv': '',
+            'ts_pend_act_end_flag': 'N', 'guid': '', 'rate_type': 'COST_PER_QTY',
+            'act_this_per_cost': 0, 'act_this_per_qty': 0, 'curv_id': '',
+            'rsrc_type': 'RT_Labor', 'cost_per_qty_source_type': 'ST_Rsrc',
+            'create_user': '', 'create_date': '', 'has_rsrchours': 'N', 'taskrsrc_sum_id': '',
+        })
+        assignment_id += 1
+    return rows
+
+
 def export_xer(
     output: Dict[str, Any],
     *,
@@ -458,6 +595,9 @@ def export_xer(
         'clndr_data': _CALENDAR_DATA,
     }])
 
+    resource_rows, crew_by_discipline = build_resources(activities, proj_id, clndr_id, curr_id)
+    table('RSRC', resource_rows)
+
     table('PROJWBS', wbs_nodes)
 
     task_rows: List[Dict[str, Any]] = []
@@ -507,6 +647,13 @@ def export_xer(
             })
             pred_id += 1
     table('TASKPRED', pred_rows)
+
+    table('TASKRSRC', build_resource_assignments(
+        activities, task_ids, crew_by_discipline, proj_id,
+        # `_stamp`, not the raw datetime: P6 writes minute precision, and a bare datetime
+        # stringifies with seconds, which the format does not carry and a reader rejects.
+        dates=lambda a: (_stamp(at(a.get('start_day'))), _stamp(at(a.get('finish_day')))),
+    ))
 
     lines.append('%E')
     return '\n'.join(lines) + '\n'

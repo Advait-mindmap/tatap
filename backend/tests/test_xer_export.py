@@ -566,3 +566,117 @@ def test_a_malformed_start_date_is_refused_rather_than_guessed(client, completed
     )
     assert response.status_code == 400
     assert 'YYYY-MM-DD' in response.json()['detail']
+
+
+# ============================================================ resources (Tier R1)
+#
+# What this is and is not: one discipline crew per activity, for that activity's own duration.
+# It is schedule-format resource compliance - a P6 file that levels by trade instead of carrying
+# no resource data at all - and it is NOT a crew-size or cost estimate. The simulation has no
+# quantities, so there is nothing to divide by a productivity rate; any crew count other than one
+# would be invented, and every cost field is zero rather than guessed.
+
+def test_the_resource_table_has_one_crew_per_discipline(real_output, parsed):
+    disciplines = {
+        str(a.get('discipline')) for a in real_output['activities'] if a.get('discipline')
+    }
+    assert len(disciplines) > 3, 'this run barely splits by discipline, so this proves nothing'
+
+    rows = parsed['RSRC'].entries()
+    assert len(rows) == len(disciplines), (
+        f'{len(rows)} resources for {len(disciplines)} disciplines'
+    )
+    assert all(row['rsrc_type'] == 'RT_Labor' for row in rows)
+    # Named, not coded. A planner opening the resource sheet reads these.
+    assert all('crew' in row['rsrc_name'].lower() or 'team' in row['rsrc_name'].lower()
+               for row in rows), [r['rsrc_name'] for r in rows]
+
+
+def test_every_real_activity_carries_its_own_discipline_crew(real_output, parsed, row_for):
+    """The assignment must follow the activity's discipline, not one crew for everything."""
+    resources = {row['rsrc_id']: row for row in parsed['RSRC'].entries()}
+    assignments = {row['task_id']: row for row in parsed['TASKRSRC'].entries()}
+
+    checked = 0
+    for activity in real_output['activities']:
+        if activity['type'] != 'task' or not activity.get('discipline'):
+            continue
+        if not int(activity.get('duration_days') or 0):
+            continue
+        task = row_for(activity['id'])
+        assignment = assignments.get(task['task_id'])
+        assert assignment, f'{activity["id"]} has no resource assignment'
+        crew = resources[assignment['rsrc_id']]
+        assert activity['discipline'][:8].upper() == crew['rsrc_short_name'], (
+            f'{activity["id"]} ({activity["discipline"]}) is assigned {crew["rsrc_name"]}'
+        )
+        checked += 1
+    assert checked > 50, f'only {checked} activities were checked'
+
+
+def test_the_units_are_the_activitys_own_duration(real_output, parsed, row_for):
+    """Not an estimate: the hours are the duration restated, so they cannot disagree with it."""
+    assignments = {row['task_id']: row for row in parsed['TASKRSRC'].entries()}
+    for activity in real_output['activities']:
+        if activity['type'] != 'task' or not activity.get('discipline'):
+            continue
+        duration = int(activity.get('duration_days') or 0)
+        if not duration:
+            continue
+        assignment = assignments.get(row_for(activity['id'])['task_id'])
+        assert assignment['target_qty'] == duration * HOURS_PER_DAY, (
+            f'{activity["id"]}: {assignment["target_qty"]} hours for a {duration}-day activity'
+        )
+        assert assignment['remain_qty'] == assignment['target_qty']
+        # One crew. Anything else would be a crew-size claim the simulation cannot support.
+        assert assignment['target_qty_per_hr'] == 1
+
+
+def test_no_cost_is_invented(parsed):
+    """Zero, not blank and not guessed. A reviewer reads a cost column as priced."""
+    for row in parsed['TASKRSRC'].entries():
+        for field in ('target_cost', 'act_reg_cost', 'act_ot_cost', 'remain_cost',
+                      'cost_per_qty'):
+            assert not row[field], f'{field} carries {row[field]!r}'
+
+
+def test_milestones_and_gates_get_no_crew(real_output, parsed, row_for):
+    """Labour against an event rather than against work would be a nonsense a leveller acts on."""
+    assignments = {row['task_id'] for row in parsed['TASKRSRC'].entries()}
+    for activity in real_output['activities']:
+        if activity['type'] in ('milestone', 'gate') or not int(
+            activity.get('duration_days') or 0
+        ):
+            assert row_for(activity['id'])['task_id'] not in assignments, (
+                f'{activity["id"]} is a zero-duration {activity["type"]} with a crew assigned'
+            )
+
+
+def test_every_assignment_points_at_a_resource_and_a_task_that_exist(parsed):
+    """A dangling foreign key makes P6 refuse the file, which is the whole cost of getting the
+    table order or the ids wrong."""
+    resources = {row['rsrc_id'] for row in parsed['RSRC'].entries()}
+    tasks = {row['task_id'] for row in parsed['TASK'].entries()}
+    rows = parsed['TASKRSRC'].entries()
+    assert rows
+    for row in rows:
+        assert row['rsrc_id'] in resources, f'assignment points at missing resource {row["rsrc_id"]}'
+        assert row['task_id'] in tasks, f'assignment points at missing task {row["task_id"]}'
+
+
+def test_resources_are_declared_before_the_work_that_uses_them(exported):
+    """P6 resolves foreign keys as it reads, so RSRC must precede TASKRSRC in the file."""
+    order = [line.split('\t')[1] for line in exported.splitlines() if line.startswith('%T\t')]
+    assert order.index('RSRC') < order.index('TASKRSRC')
+    assert order.index('CALENDAR') < order.index('RSRC'), 'RSRC references the calendar'
+    assert order.index('TASK') < order.index('TASKRSRC')
+
+
+def test_the_export_says_what_the_resource_data_is_not():
+    """The disclaimer is part of the deliverable. A resource-loaded file that does not say it
+    carries no crew sizing invites being read as an estimate."""
+    from backend.app.p6 import xer
+
+    doc = xer.__doc__ or ''
+    assert 'not a crew-size or cost estimate' in doc
+    assert 'one discipline crew per activity' in doc.lower()
