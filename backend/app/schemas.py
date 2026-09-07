@@ -328,6 +328,13 @@ class AssembledActivity(BaseModel):
     confidence: float = 0.0
     unverified_dependencies: List[str] = Field(default_factory=list)
     source_fragnet: Optional[str] = None
+    #: The library activity this is an execution step OF, where it is one (Tier 4).
+    #:
+    #: Without it every projection that reasons about DELIVERABLES silently degrades the moment
+    #: an activity is decomposed: the L1-L5 commissioning ladder listed fourteen rungs instead of
+    #: five, because each step of "L3 pre-functional checks" is separately a thing whose name
+    #: begins with L3. Rolling up needs the parent to be recorded, not inferred from a name.
+    parent_activity: Optional[str] = None
     compliance_gates: List[str] = Field(default_factory=list)
     #: Earliest start/finish in whole days from day 0, from the engine's forward pass
     #: (engine/schedule.py). Day offsets rather than dates: they are exactly as precise as

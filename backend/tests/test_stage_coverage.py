@@ -251,7 +251,14 @@ def test_the_new_entries_only_reference_things_that_exist():
     for entry in load_library('fragnets')['entries']:
         if entry['id'] not in new:
             continue
+        # Steps count as activities here. A material link names the thing that CONSUMES the
+        # plant, and since Tier 4 that is often an execution step rather than the whole
+        # deliverable - `e20-s20`, not `e20`.
         activity_ids = {a['id'] for a in entry['activities']}
+        activity_ids |= {
+            f'{a["id"]}-{step["id"]}'
+            for a in entry['activities'] for step in (a.get('steps') or [])
+        }
         for link in entry.get('material_links', []):
             assert link['activity'] in activity_ids, f"{entry['id']}: link to unknown activity"
             assert link['requires_delivery_of'] in leads, (

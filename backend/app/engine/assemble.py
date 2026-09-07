@@ -45,6 +45,9 @@ from backend.app.schemas import (
     TrailEntry,
 )
 
+#: Which review tier outranks which, for rolling governance up from steps to their deliverable.
+HITL_SEVERITY = {'tier_3': 0, 'tier_2': 1, 'tier_1': 2}
+
 #: Zone kind each stage's work lands in, for the 4D build-up.
 STAGE_ZONE_KIND = {
     'substructure': 'shell',
@@ -239,6 +242,20 @@ def assemble(
         pathway_lib = _city_pathway_entries(brief.get('city'))
     site_context = str(brief.get('site_context') or '')
     fragnet_index = {f['id']: f for f in fragnet_lib}
+    # (fragnet, activity) -> the duration of the whole DELIVERABLE, steps included.
+    #
+    # A staged release divides a producing activity's span across the zones it is worked in, so
+    # it needs the deliverable's length. Reading it off the instanced activity stopped being
+    # right the moment deliverables were decomposed: the last step of a 40-day cladding package
+    # is a 4-day sealant pass, and staging across that released every hall at once.
+    deliverable_days: Dict[Tuple[str, str], int] = {}
+    for entry in fragnet_lib:
+        for spec in entry.get('activities') or []:
+            steps = spec.get('steps') or []
+            deliverable_days[(entry['id'], spec['id'])] = (
+                sum(int(step.get('duration_days') or 0) for step in steps) if steps
+                else int(spec.get('duration_days') or 0)
+            )
 
     # The zones are derived once here and used for three separate things: instancing the
     # zone-bearing fragnets, staging the cross-stage releases hall by hall, and the 4D model.
@@ -368,6 +385,7 @@ def assemble(
                         confidence=confidence,
                         unverified_dependencies=unverified,
                         source_fragnet=fragnet['id'],
+                        parent_activity=spec.get('parent'),
                         compliance_gates=gate_ids,
                     ))
                     if zone_instances and zone is None:
@@ -463,6 +481,7 @@ def assemble(
     gate_activities, gate_edges, gate_warnings = _build_cross_stage_gates(
         ordered, stage_activity_ids, link_target, fragnet_lib, lead_lib,
         by_id={a.id: a for a in activities}, zone_counts=zone_counts, first_of=first_of,
+        deliverable_days=deliverable_days,
     )
     activities.extend(gate_activities)
     edges.extend(gate_edges)
@@ -488,7 +507,6 @@ def assemble(
     edges.sort(key=lambda e: (e.from_id, e.to_id, e.type, e.kind))
     trail.sort(key=lambda t: t.ref_id)
 
-    commissioning = _commissioning_ladder(activities)
 
     tier1 = [a for a in activities if a.hitl_tier == 'tier_1']
     tier2 = [a for a in activities if a.hitl_tier == 'tier_2']
@@ -505,6 +523,10 @@ def assemble(
     # after the logic is wired and before anything projects from the result. Doing it in a view
     # would let two views disagree about when the same activity happens.
     rfs_day = apply_schedule(activities)
+
+    # AFTER the forward pass. The ladder now reports each rung's span, rolled up from its
+    # execution steps, and a span computed before the dates exist is a row of zeroes.
+    commissioning = _commissioning_ladder(activities)
     timeline = zone_timeline(activities)
     stages_by_day = stage_timeline(activities)
 
@@ -759,6 +781,7 @@ def _build_cross_stage_gates(
     by_id: Optional[Dict[str, AssembledActivity]] = None,
     zone_counts: Optional[Dict[str, int]] = None,
     first_of: Optional[Dict[Tuple[str, str], List[str]]] = None,
+    deliverable_days: Optional[Dict[Tuple[str, str], int]] = None,
 ) -> Tuple[List[AssembledActivity], List[AssembledEdge], List[str]]:
     """Emit gate milestones and their edges from the declarative rules.
 
@@ -775,6 +798,7 @@ def _build_cross_stage_gates(
     # Where an activity was not decomposed its start and finish are the same instance, so
     # falling back to `link_target` keeps every existing caller correct.
     first_of = first_of if first_of is not None else link_target
+    deliverable_days = deliverable_days or {}
 
     def emit_gate(ident: str, label: str, stage: str, rule: GateRule,
                   anchored: bool, zone: str = '') -> AssembledActivity:
@@ -835,6 +859,19 @@ def _build_cross_stage_gates(
         per_zone_consumers, project_consumers = _split_consumers_by_zone(
             consumers, stage_activity_ids, by_id, rule.release_per_zone_kind,
         )
+        # A staged release hangs off where the producing work STARTS and spans its whole
+        # length. Hanging it off the finish and measuring the finishing step is how this
+        # regressed into "wait for all the cladding" without any test of the gate table changing.
+        staged_producers = sorted({
+            instanced
+            for pair in rule.producer_activities
+            for instanced in first_of.get(pair, [])
+        })
+        staged_days = {
+            instanced: deliverable_days.get(pair, 0)
+            for pair in rule.producer_activities
+            for instanced in first_of.get(pair, [])
+        }
         if rule.producer_activities and len(per_zone_consumers) > 1:
             activities.extend(
                 emit_gate(f'{ident}.z{i:02d}', f'{rule.label} - {zone_id}',
@@ -844,8 +881,10 @@ def _build_cross_stage_gates(
             total = len(per_zone_consumers)
             for i, zone_id in enumerate(sorted(per_zone_consumers), start=1):
                 zone_gate = f'{ident}.z{i:02d}'
-                for producer_id in producers:
-                    duration = int(getattr(by_id.get(producer_id), 'duration_days', 0) or 0)
+                for producer_id in staged_producers or producers:
+                    duration = staged_days.get(producer_id) or int(
+                        getattr(by_id.get(producer_id), 'duration_days', 0) or 0
+                    )
                     # Zone i is done i/N of the way through, so the lead grows per zone. ceil,
                     # so no zone is ever modelled as released instantaneously.
                     lead = -(-duration * i // total) if duration else 0
@@ -1073,20 +1112,52 @@ def _apply_predecessors(
 
 
 def _commissioning_ladder(activities: Iterable[AssembledActivity]) -> List[Dict[str, Any]]:
-    """The L1-L5 ladder, in order, with IST marked (DOMAIN_KNOWLEDGE.md §4)."""
-    ladder = []
+    """The L1-L5 ladder, in order, with IST marked (DOMAIN_KNOWLEDGE.md §4).
+
+    ONE RUNG PER LEVEL, however finely the level is planned. The ladder is a domain artifact - a
+    reviewer reads it to see that commissioning climbs L1 to L5 and that the IST is where RFS
+    hangs off - not an activity list; there is another one of those.
+
+    That distinction became load-bearing when L3, L4 and L5 were decomposed into execution steps.
+    Each step's name begins with its level, so the ladder grew to fourteen rungs with L3 appearing
+    four times, which is not a finer ladder but a broken one. Steps are rolled up to the
+    deliverable they belong to, and a rolled-up rung spans its steps: it starts when the first
+    begins and finishes when the last does.
+    """
+    rungs: Dict[str, Dict[str, Any]] = {}
     for activity in activities:
         if activity.stage != 'commissioning' or activity.type != 'task':
             continue
         name = activity.name.lower()
         level = next((lvl for lvl in ('l1', 'l2', 'l3', 'l4', 'l5') if name.startswith(lvl)), '')
-        ladder.append({
-            'level': level.upper(),
-            'name': activity.name,
-            'activity_id': activity.id,
-            'is_IST': 'integrated systems test' in name,
-            'safety_flag': activity.safety_flag,
-            'hitl_tier': activity.hitl_tier,
-            'blocks_export': activity.blocks_export,
-        })
-    return sorted(ladder, key=lambda item: (item['level'], item['activity_id']))
+        # The deliverable is the rung. A step named "L3 ...: static checks" belongs to the L3
+        # rung, and its own id is not what a reviewer should be shown.
+        key = f'{activity.source_fragnet}:{activity.parent_activity or activity.id}'
+        rung = rungs.get(key)
+        if rung is None:
+            rungs[key] = {
+                'level': level.upper(),
+                # The deliverable's name, not the step's: everything before the colon.
+                'name': activity.name.split(':')[0] if activity.parent_activity
+                else activity.name,
+                'activity_id': activity.id,
+                'is_IST': 'integrated systems test' in name,
+                'safety_flag': activity.safety_flag,
+                'hitl_tier': activity.hitl_tier,
+                'blocks_export': activity.blocks_export,
+                'start_day': activity.start_day,
+                'finish_day': activity.finish_day,
+            }
+            continue
+        # Governance rolls up conservatively: a rung is as safety-critical, as closely reviewed
+        # and as export-blocking as the most demanding step in it.
+        rung['is_IST'] = rung['is_IST'] or 'integrated systems test' in name
+        rung['safety_flag'] = rung['safety_flag'] or activity.safety_flag
+        rung['blocks_export'] = rung['blocks_export'] or activity.blocks_export
+        if HITL_SEVERITY.get(activity.hitl_tier, 0) > HITL_SEVERITY.get(rung['hitl_tier'], 0):
+            rung['hitl_tier'] = activity.hitl_tier
+        rung['start_day'] = min(rung['start_day'], activity.start_day)
+        rung['finish_day'] = max(rung['finish_day'], activity.finish_day)
+        # The rung is identified by its first step, so a stable id survives re-runs.
+        rung['activity_id'] = min(rung['activity_id'], activity.id)
+    return sorted(rungs.values(), key=lambda item: (item['level'], item['activity_id']))

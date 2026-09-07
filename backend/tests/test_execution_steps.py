@@ -34,9 +34,8 @@ BRIEF = {
 FRAGNET = 'frag.mep.power_train'
 
 
-@pytest.fixture(scope='module')
-def plan():
-    simulator = Simulator(BRIEF, run_id='steps', adapter=StubAdapter())
+def plan_for(brief, run_id):
+    simulator = Simulator(brief, run_id=run_id, adapter=StubAdapter())
     for _ in range(40):
         list(simulator.run())
         if not simulator.is_halted:
@@ -47,11 +46,17 @@ def plan():
     return simulator.output().model_dump()
 
 
+@pytest.fixture(scope='module')
+def plan():
+    return plan_for(BRIEF, 'steps')
+
+
 def fragnet():
     return next(f for f in load_library('fragnets')['entries'] if f['id'] == FRAGNET)
 
 
 def decomposed():
+    """The power train's decomposed deliverables. `all_decomposed()` below covers the library."""
     return [a for a in fragnet()['activities'] if a.get('steps')]
 
 
@@ -321,3 +326,133 @@ def test_a_delivery_named_against_a_deliverable_gates_its_first_step():
         if e.kind == 'delivery' and e.from_id.startswith('gate.delivery-lead-transformer-hv')
     })
     assert gated == ['a10-s10'], f'the delivery gates {gated}, not the first step'
+
+
+# ================================================================ the whole library
+#
+# The pilot proved the mechanism on one fragnet. These assert it across every fragnet that
+# declares steps, so a decomposition added later is held to the same rule without anyone
+# remembering to write a test for it.
+
+def all_decomposed():
+    """(fragnet, deliverable) for every decomposed activity in the library."""
+    return [
+        (entry, spec)
+        for entry in load_library('fragnets')['entries']
+        for spec in entry['activities'] if spec.get('steps')
+    ]
+
+
+@pytest.fixture(scope='module')
+def full_plan():
+    return plan_for(BRIEF, 'steps-library')
+
+
+def test_every_decomposition_in_the_library_sums_to_its_deliverable():
+    pairs = all_decomposed()
+    assert len(pairs) >= 30, f'only {len(pairs)} decomposed activities; the rollout is partial'
+    for entry, spec in pairs:
+        total = sum(int(s['duration_days']) for s in spec['steps'])
+        assert total == spec['duration_days'], (
+            f'{entry["id"]}:{spec["id"]} steps sum to {total}, the deliverable is '
+            f'{spec["duration_days"]} - decomposition has become a re-estimate'
+        )
+
+
+def test_every_stage_that_can_be_decomposed_has_been():
+    """The rollout covers the programme, not a corner of it."""
+    stages = {entry['stage'] for entry, _ in all_decomposed()}
+    covered = {e['stage'] for e in load_library('fragnets')['entries']}
+    assert stages == covered, f'no execution steps in: {sorted(covered - stages)}'
+
+
+def test_no_step_id_collides_with_another_in_its_fragnet():
+    """Two steps sharing an id silently overwrite each other in the plan."""
+    for entry, spec in all_decomposed():
+        ids = [s['id'] for s in spec['steps']]
+        assert len(set(ids)) == len(ids), f'{entry["id"]}:{spec["id"]} repeats a step id'
+
+
+def test_every_material_link_names_something_that_exists():
+    """A link re-pointed at a step must name a step that is really there.
+
+    The library validator only knew about deliverables, so re-pointing a link at `e20-s20`
+    passed silently until a fragnet it happened to cover was decomposed. A typo here produces a
+    delivery gate that constrains nothing at all, which is invisible in the output.
+    """
+    for entry in load_library('fragnets')['entries']:
+        known = {a['id'] for a in entry['activities']}
+        known |= {f'{a["id"]}-{s["id"]}'
+                  for a in entry['activities'] for s in (a.get('steps') or [])}
+        for link in entry.get('material_links') or []:
+            assert link['activity'] in known, (
+                f'{entry["id"]}: material link names {link["activity"]}, which does not exist'
+            )
+
+
+def test_every_decomposed_activity_is_flagged_unverified():
+    for entry, _ in all_decomposed():
+        provenance = entry.get('provenance') or {}
+        assert provenance.get('verification_status') == 'unverified', entry['id']
+        assert 'INVENTED FOR REVIEW' in (provenance.get('note') or ''), entry['id']
+
+
+def test_a_step_remembers_the_deliverable_it_belongs_to(full_plan):
+    """Without this every projection that reasons about deliverables degrades silently."""
+    steps = [a for a in full_plan['activities'] if a.get('parent_activity')]
+    assert len(steps) > 100, 'the rollout did not reach the plan'
+    for step in steps:
+        assert ':' in step['name'], f'{step["id"]} has a parent but is not named as a step'
+
+
+# --------------------------------------------------------- the two projections that broke
+
+def test_the_commissioning_ladder_has_one_rung_per_level(full_plan):
+    """A domain artifact, not an activity list.
+
+    Decomposing L3, L4 and L5 grew the ladder to fourteen rungs with L3 appearing four times -
+    every step's name begins with its own level. That is not a finer ladder, it is a broken one,
+    and a reviewer reading it to confirm commissioning climbs L1 to L5 would see nonsense.
+    """
+    ladder = full_plan['commissioning']
+    levels = [rung['level'] for rung in ladder if rung['level']]
+    assert levels == ['L1', 'L2', 'L3', 'L4', 'L5'], f'the ladder reads {levels}'
+    assert sum(rung['is_IST'] for rung in ladder) == 1, 'the IST is not exactly one rung'
+
+    # A rolled-up rung spans its steps rather than reporting one of them.
+    ist = next(rung for rung in ladder if rung['is_IST'])
+    steps = [a for a in full_plan['activities']
+             if a['name'].startswith('L5 integrated systems test')]
+    assert ist['start_day'] == min(s['start_day'] for s in steps)
+    assert ist['finish_day'] == max(s['finish_day'] for s in steps)
+
+
+def test_a_staged_release_still_spans_the_whole_deliverable(full_plan):
+    """The regression decomposition caused, and the reason it was worth catching.
+
+    The per-hall release divides the CLADDING across the halls it is worked in. Once cladding
+    became five steps, the gate hung off the last of them - a four-day sealant pass - and
+    dividing four days across seven halls released every hall at once. The activity count and
+    the logic both still looked right; only the dates quietly collapsed.
+    """
+    gates = sorted(
+        (a for a in full_plan['activities']
+         if a['id'].startswith('gate.envelope-weathertight.z')),
+        key=lambda a: a['id'],
+    )
+    assert len(gates) > 1, 'the release is not staged per hall at all'
+
+    days = [g['start_day'] for g in gates]
+    assert days == sorted(days)
+    spread = days[-1] - days[0]
+
+    cladding = [a for a in full_plan['activities']
+                if a['name'].startswith('External cladding and rainscreen')]
+    assert cladding
+    span = max(c['finish_day'] for c in cladding) - min(c['start_day'] for c in cladding)
+
+    # The releases spread across most of the cladding, not across its last step.
+    assert spread > span / 2, (
+        f'the halls are released over {spread} days out of {span} of cladding - the release is '
+        'hanging off the finishing step rather than spanning the deliverable'
+    )

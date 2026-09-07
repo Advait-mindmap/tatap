@@ -192,12 +192,28 @@ def test_every_selected_fragnet_activity_is_instanced(result):
 
 def test_durations_come_from_the_library_not_invented(result):
     frag = next(f for f in load_library('fragnets')['entries'] if f['id'] == 'frag.mep.cooling')
-    expected = {s['name']: s['duration_days'] for s in frag['activities']}
+    # Every LEAF the library declares, deliverable or execution step, with the duration it
+    # declares. Neither instancing nor decomposition may resize work: the first repeats it, the
+    # second divides it, and a duration appearing here that the library does not contain would
+    # mean the engine invented one.
+    expected = {}
+    for spec in frag['activities']:
+        steps = spec.get('steps') or []
+        if steps:
+            for step in steps:
+                expected[f'{spec["name"]}: {step["name"]}'] = step['duration_days']
+        else:
+            expected[spec['name']] = spec['duration_days']
+
+    seen = 0
     for activity in result.activities:
         if activity.source_fragnet == 'frag.mep.cooling' and activity.type == 'task':
-            # A zone instance appends " - <zone>" to the name; the duration is the library's
-            # either way, because instancing repeats work rather than resizing it.
-            assert activity.duration_days == expected[activity.name.split(' - ')[0]]
+            # A zone instance appends " - <zone>" to the name.
+            name = activity.name.split(' - ')[0]
+            assert name in expected, f'{name} is not in the library'
+            assert activity.duration_days == expected[name]
+            seen += 1
+    assert seen == len(expected), f'{len(expected) - seen} library leaves never reached the plan'
 
 
 def test_fragnet_logic_is_wired_with_type_and_lag(result):

@@ -143,11 +143,21 @@ def test_work_that_happens_once_is_never_multiplied(result):
         'Fire alarm cause-and-effect testing',
         'Structured cabling backbone (OS2 / OM4)',
     }
-    counts = collections.Counter(
-        a.name.split(' - ')[0] for a in result.activities if a.type == 'task'
-    )
+    # Counted by ZONE, not by row: a deliverable decomposed into execution steps is legitimately
+    # several rows, and what must not be multiplied is the work itself. One fuel farm may be five
+    # steps; it must not be five fuel farms.
+    zones_seen = collections.defaultdict(set)
+    for activity in result.activities:
+        if activity.type != 'task':
+            continue
+        deliverable = activity.name.split(' - ')[0].split(':')[0]
+        if deliverable in once:
+            zones_seen[deliverable].add(activity.zone_id)
     for name in sorted(once):
-        assert counts[name] == 1, f'"{name}" happens once but appears {counts[name]} times'
+        assert zones_seen[name], f'"{name}" is not in the plan at all'
+        assert len(zones_seen[name]) == 1, (
+            f'"{name}" happens once but appears in {len(zones_seen[name])} zones'
+        )
 
 
 def test_every_activity_carries_the_zone_it_belongs_to(result):
@@ -173,7 +183,12 @@ def test_a_single_hall_brief_is_not_multiplied(single):
     assert len(zones_in(single, 'data_hall')) == 1
     fit_out = [a for a in single.activities
                if a.source_fragnet == 'frag.fit_out.cabling' and a.type == 'task']
-    assert len(fit_out) == len(library('frag.fit_out.cabling')['activities'])
+    # One instance of every LEAF: a deliverable counts as its execution steps where it has them.
+    expected = sum(
+        len(spec.get('steps') or []) or 1
+        for spec in library('frag.fit_out.cabling')['activities']
+    )
+    assert len(fit_out) == expected
 
 
 # ------------------------------------------------------------------ 2. the logic stays put
