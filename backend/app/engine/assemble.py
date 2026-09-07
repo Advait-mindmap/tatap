@@ -73,6 +73,24 @@ STAGE_DISCIPLINE = {
     'commissioning': 'mechanical',
 }
 
+#: Tier-3 discipline -> the discipline a BRIEF states a delivery mode for.
+#:
+#: The two vocabularies are not the same and should not be forced to be. The brief speaks the
+#: language of how work is let - civil, structure, electrical, mechanical, gensets, fire, bms -
+#: and the library speaks the language of who does it, which is finer and includes packages
+#: nobody lets separately (testing, procurement, compliance, management). A discipline absent
+#: here has no stated mode of its own and falls back to its stage's.
+BRIEF_DISCIPLINE = {
+    'civil': 'civil',
+    'structural': 'structure',
+    # An architectural package is let with the builder's work on the jobs this library covers.
+    'architectural': 'civil',
+    'mechanical': 'mechanical',
+    'electrical': 'electrical',
+    'fire': 'fire',
+    'controls': 'bms',
+}
+
 _STOPWORDS = frozenset({
     'and', 'the', 'of', 'to', 'in', 'on', 'or', 'a', 'an', 'at', 'for', 'with', 'next', 'under',
 })
@@ -205,6 +223,25 @@ def _discipline_rank(name):
         # Something the canonical list does not know sorts after everything it does, by name,
         # rather than silently taking position zero.
         return len(DISCIPLINE_ORDER)
+
+
+def _delivery_mode_for(discipline, stage_discipline, delivery_modes):
+    """How work of this discipline is let on this project.
+
+    Per DISCIPLINE, not per stage. A fragnet bundles disciplines - fire_bms carries fire
+    suppression and BMS, fit-out carries civil and electrical - and a stage can only name one
+    delivery discipline. Resolving there meant every BMS activity inherited the fire scope's
+    mode: a brief stating BMS self-perform and fire subcontract produced BMS work assigned to a
+    subcontract package it is not in. Seven of twelve fragnets carry work the stage cannot
+    represent, so this was never specific to BMS - that is only where it was noticed.
+
+    The discipline's own stated mode wins; otherwise the stage's, which is the previous
+    behaviour and the right answer for a discipline the brief says nothing about.
+    """
+    key = BRIEF_DISCIPLINE.get(discipline or '')
+    if key and key in delivery_modes:
+        return delivery_modes[key] or 'unknown'
+    return delivery_modes.get(stage_discipline, 'unknown') or 'unknown'
 
 
 def _zone_named(name, zone):
@@ -342,8 +379,8 @@ def assemble(
         stage = reasoning.stage
         stage_idx = STAGE_INDEX.get(stage, 99)
         dept = STAGE_DEPARTMENT.get(stage, '')
-        discipline = STAGE_DISCIPLINE.get(stage, '')
-        delivery_mode = delivery_modes.get(discipline, 'unknown')
+        # The stage's OWN delivery discipline, used only where a leaf has none of its own.
+        stage_discipline = STAGE_DISCIPLINE.get(stage, '')
         gate_ids = sorted(g.gate_id for g in reasoning.gates)
         flags.extend(reasoning.flags)
 
@@ -418,6 +455,24 @@ def assemble(
             }
             for spec in specs:
                 discipline = _discipline_of(spec, fragnet)
+                # ---- HOW THIS WORK IS LET, resolved per leaf ---------------------------------
+                #
+                # Per LEAF, not per stage. A fragnet bundles disciplines - fire_bms carries fire
+                # suppression and BMS, fit-out carries civil and electrical - and a stage can
+                # only name one delivery discipline. Resolving there meant every BMS activity
+                # inherited the fire scope's mode: a brief stating BMS self-perform and fire
+                # subcontract produced BMS work assigned to a subcontract package it is not in.
+                #
+                # Seven of twelve fragnets carry leaves the stage cannot represent, so this was
+                # never specific to BMS - that is only where it was noticed. Worst is fit-out,
+                # where nine electrical leaves were being let as civil.
+                #
+                # The leaf's own discipline wins where the brief states a mode for it; otherwise
+                # the stage's, which is the old behaviour and the right fallback for a discipline
+                # the brief says nothing about.
+                delivery_mode = _delivery_mode_for(
+                    discipline, stage_discipline, delivery_modes
+                )
                 package_index = package_index_of.get(discipline, 0)
                 activity_index = activity_counter.get(package_index, -1)
                 for zone_index, zone in zones_for(spec):
@@ -525,6 +580,13 @@ def assemble(
                             duration_days=0,
                             dept_code=hold.get('role') or 'qaqc',
                             discipline=hold_discipline,
+                            # A hold belongs to whoever does the work it holds. It takes its
+                            # DELIVERABLE's discipline, so it must take that discipline's mode:
+                            # inheriting the current leaf's gave a structural inspection the
+                            # turnkey mode of the electrical step it happened to follow.
+                            delivery_mode=_delivery_mode_for(
+                                hold_discipline, stage_discipline, delivery_modes
+                            ),
                             stage=stage,
                             # The hold belongs where its work is. Left to the zone fallback,
                             # every room's pre-energisation inspection was filed in room 01.

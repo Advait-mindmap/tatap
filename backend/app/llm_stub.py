@@ -128,25 +128,55 @@ def _extract_fields(prompt: str) -> List[Dict[str, Any]]:
 
 
 def _extract_delivery_modes(prompt: str) -> List[Dict[str, Any]]:
-    body = _brief_body(prompt)
-    modes: List[Dict[str, Any]] = []
-    patterns = [
-        ('gensets', r'([^.]*\bgenset[^.]*\b(?:owner[- ]furnished|owner[- ]supplied|free issue)[^.]*)',
-         'owner-furnished'),
-        ('civil', r'([^.]*\bself[- ]perform[^.]*\bcivil[^.]*|[^.]*\bcivil[^.]*\bself[- ]perform[^.]*)',
-         'self-perform'),
-        ('electrical', r'([^.]*\belectrical[^.]*\bturnkey[^.]*)', 'turnkey'),
-        ('mechanical', r'([^.]*\bmechanical[^.]*\bturnkey[^.]*)', 'turnkey'),
-        ('fire', r'([^.]*\bfire[^.]*\bsubcontract[^.]*)', 'subcontract'),
-        ('bms', r'([^.]*\bBMS[^.]*\bsubcontract[^.]*)', 'subcontract'),
-    ]
-    for discipline, pattern, mode in patterns:
-        quote = _first(pattern, body)
-        if quote:
-            modes.append({'discipline': discipline, 'mode': mode, 'quote': quote,
-                          'confidence': 0.85})
-    return modes
+    """Any discipline paired with any delivery mode, in the same sentence.
 
+    This used to be a fixed list of pairs - `bms` matched only alongside "subcontract", `civil`
+    only alongside "self-perform" - which meant the stub could see the combinations someone had
+    anticipated and no others. A brief saying "BMS is self-performed" produced no bms mode at
+    all, and the plan then fell back to the stage's, which is the very failure the stage-level
+    delivery-mode bug was about. A stub that can only confirm what we already expected is not
+    much of a control.
+    """
+    body = _brief_body(prompt)
+
+    #: Words a brief uses for each discipline the schema names.
+    terms = {
+        'civil': (r'civil', r'builder\'s work'),
+        'structure': (r'structur\w*',),
+        'electrical': (r'electrical', r'\bHV\b', r'power train'),
+        'mechanical': (r'mechanical', r'cooling', r'chilled water'),
+        'gensets': (r'genset\w*', r'generator\w*', r'\bDG\b'),
+        'fire': (r'fire\b', r'fire suppression', r'sprinkler'),
+        'bms': (r'\bBMS\b', r'building management', r'controls\b'),
+    }
+    #: And for each mode. Ordered longest-idea-first so "owner-furnished" is not read as "furnish".
+    modes = (
+        ('owner-furnished', r'owner[- ]furnish\w*|owner[- ]suppl\w*|free[- ]issue\w*|client[- ]suppl\w*'),
+        ('self-perform', r'self[- ]perform\w*|in[- ]house'),
+        ('turnkey', r'turnkey'),
+        ('subcontract', r'subcontract\w*|sublet|let out'),
+    )
+
+    found: List[Dict[str, Any]] = []
+    seen = set()
+    # Sentence by sentence: a discipline and a mode mean something together only if they were
+    # said together. Scanning the whole brief would pair "we self-perform civil" with a "fire"
+    # three sentences later.
+    for sentence in re.split(r'(?<=[.;\n])\s+', body):
+        for discipline, patterns in terms.items():
+            if discipline in seen:
+                continue
+            if not any(re.search(pattern, sentence, re.IGNORECASE) for pattern in patterns):
+                continue
+            for mode, pattern in modes:
+                if re.search(pattern, sentence, re.IGNORECASE):
+                    found.append({
+                        'discipline': discipline, 'mode': mode,
+                        'quote': sentence.strip()[:220], 'confidence': 0.85,
+                    })
+                    seen.add(discipline)
+                    break
+    return found
 
 def _intake_response(prompt: str) -> Dict[str, Any]:
     fields = _extract_fields(prompt)

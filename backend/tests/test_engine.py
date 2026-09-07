@@ -392,16 +392,50 @@ def test_department_codes_are_carried(result):
 
 
 def test_delivery_mode_reaches_the_activities_it_governs(result):
-    """The per-discipline answer to dp.delivery_mode must not stop at the brief."""
+    """The per-discipline answer to dp.delivery_mode must not stop at the brief.
+
+    Asserted per DISCIPLINE, not per stage. This test used to require every activity in
+    mep_power to be turnkey and every one in substructure to be self-perform, which was the
+    stage-level resolution restated - and that resolution was the bug: a fragnet bundles
+    disciplines, so mep_power legitimately contains a self-performed civil plinth and
+    substructure an electrical earth-pit step. Requiring one mode per stage would now be
+    requiring the defect back.
+    """
+    from backend.app.engine.assemble import BRIEF_DISCIPLINE
+
     # source_fragnet filters out the statutory approvals that now sit in these stages. A PESO
     # licence is not self-performed or subcontracted - it is applied for - so delivery mode is
     # meaningless for it, and asserting one would be asserting a fiction.
+    stated = BRIEF['delivery_mode_by_discipline']
+    governed = [a for a in result.activities if a.type == 'task' and a.source_fragnet
+                and BRIEF_DISCIPLINE.get(a.discipline or '') in stated]
+    assert governed, 'no activity belongs to a discipline the brief states a mode for'
+    for activity in governed:
+        expected = stated[BRIEF_DISCIPLINE[activity.discipline]]
+        assert activity.delivery_mode == expected, (
+            f'{activity.id} ({activity.discipline}) is {activity.delivery_mode}, '
+            f'not the stated {expected}'
+        )
+
+    # And the electrical work in mep_power - the bulk of it - is turnkey as the brief says.
     electrical = [a for a in result.activities
-                  if a.stage == 'mep_power' and a.type == 'task' and a.source_fragnet]
+                  if a.stage == 'mep_power' and a.type == 'task' and a.source_fragnet
+                  and a.discipline == 'electrical']
     assert electrical and all(a.delivery_mode == 'turnkey' for a in electrical)
-    civil = [a for a in result.activities
-             if a.stage == 'substructure' and a.type == 'task' and a.source_fragnet]
-    assert civil and all(a.delivery_mode == 'self-perform' for a in civil)
+
+
+def test_one_stage_can_carry_more_than_one_delivery_mode(result):
+    """The property the bug made impossible.
+
+    A stage that can only hold one mode is a stage that cannot describe a bundled fragnet, and
+    every BMS activity inherits the fire scope's contract.
+    """
+    modes = {}
+    for activity in result.activities:
+        if activity.type == 'task' and activity.source_fragnet and activity.delivery_mode:
+            modes.setdefault(activity.stage, set()).add(activity.delivery_mode)
+    mixed = {stage: sorted(found) for stage, found in modes.items() if len(found) > 1}
+    assert mixed, f'every stage resolved to a single mode: {modes}'
 
 
 def test_compliance_gates_are_carried_onto_activities(result):
