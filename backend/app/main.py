@@ -154,7 +154,7 @@ async def intake_document(file: UploadFile = File(...)) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail=f'{name} is empty.')
 
     try:
-        text = document_to_text(name, data)
+        text, notice = document_to_text(name, data)
     except UnsupportedDocument as exc:
         raise HTTPException(status_code=415, detail=str(exc)) from None
 
@@ -163,6 +163,9 @@ async def intake_document(file: UploadFile = File(...)) -> Dict[str, Any]:
         'text': text,
         'characters': len(text),
         'lines': text.count(chr(10)) + 1,
+        # Non-empty when the file was only partly readable - a PDF with scanned pages, say. A
+        # 200 that quietly dropped half an RFP is the outcome this exists to prevent.
+        'notice': notice,
     }
 
 

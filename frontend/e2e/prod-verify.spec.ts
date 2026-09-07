@@ -95,8 +95,9 @@ test('production: a Word document is read, and an unreadable one explains itself
   await expect(page.getByTestId('intake-error')).toBeVisible({ timeout: 60_000 })
   const message = (await page.getByTestId('intake-error').textContent()) ?? ''
   console.log(`  .pdf refusal: ${message.slice(0, 100)}`)
-  expect(message).toMatch(/PDF text extraction is not implemented/i)
-  expect(message).toContain('.docx')
+  // PDFs are read now, so a stub that is not a real PDF fails for the right reason: it will
+  // not open. The format itself is no longer refused.
+  expect(message).toMatch(/could not be opened/i)
 
   await page.screenshot({ path: 'e2e/screenshots/prod-verify-upload.png' })
 })

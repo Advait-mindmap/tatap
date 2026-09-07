@@ -150,6 +150,13 @@ export interface ExtractedDocument {
   text: string
   characters: number
   lines: number
+  /**
+   * Non-empty when the file was only PARTLY readable — a PDF with scanned pages, say.
+   *
+   * This is the outcome worth being loud about: a half-read RFP reads plausibly and nobody
+   * re-checks a file they think already worked. An outright failure is safer, because it stops.
+   */
+  notice?: string
 }
 
 /**

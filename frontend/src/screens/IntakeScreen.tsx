@@ -17,6 +17,8 @@ export function IntakeScreen({ onExtracted }: Props) {
   const [error, setError] = useState('')
   const [detail, setDetail] = useState('')
   const [notice, setNotice] = useState('')
+  //: A partial read is not good news, so it must not be shown in the same green as one.
+  const [noticeIsWarning, setNoticeIsWarning] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
@@ -40,16 +42,23 @@ export function IntakeScreen({ onExtracted }: Props) {
       const document = await uploadDocument(file)
       setFileName(document.filename)
       setText(document.text)
+      const read = `Read ${document.characters.toLocaleString()} characters from ${document.filename}.`
+      // The server's notice leads when there is one: "3 of 11 pages had no readable text" is
+      // the sentence that decides whether this brief can be trusted, and burying it under a
+      // character count would be the silent failure again in a friendlier font.
+      setNoticeIsWarning(Boolean(document.notice))
       setNotice(
-        `Read ${document.characters.toLocaleString()} characters from ${document.filename}. ` +
-          'Check it below before extracting.',
+        document.notice
+          ? `${document.notice} ${read}`
+          : `${read} Check it below before extracting.`,
       )
     } catch (cause) {
       const err = cause as ApiError
-      // The server says WHY - "PDF text extraction is not implemented", "that .docx could not be
+      // The server says WHY - "that PDF has no text layer to read", "that .docx could not be
       // opened" - so show that rather than a generic failure. Silence was the actual bug here:
       // an unsupported file used to do nothing at all.
       setNotice('')
+      setNoticeIsWarning(false)
       setError(err.message || `Could not read ${file.name}.`)
     } finally {
       setUploading(false)
@@ -172,7 +181,11 @@ export function IntakeScreen({ onExtracted }: Props) {
         </section>
 
         {notice && !error && (
-          <div className="notice notice-ok small" data-testid="intake-notice">
+          <div
+            className={`notice small ${noticeIsWarning ? 'notice-warn' : 'notice-ok'}`}
+            data-testid="intake-notice"
+            data-partial={noticeIsWarning ? 'true' : 'false'}
+          >
             {notice}
           </div>
         )}

@@ -44,7 +44,8 @@ test('the file input accepts .docx and does not silently hide other formats', as
   const accept = (await page.getByTestId('file-input').getAttribute('accept')) ?? ''
   console.log(`  accept: ${accept}`)
   expect(accept, 'Word documents are still hidden by the picker').toContain('.docx')
-  expect(accept, 'a PDF still cannot be chosen, so it cannot be explained').toContain('.pdf')
+  expect(accept, 'a PDF cannot be chosen').toContain('.pdf')
+  expect(accept, 'a .doc cannot be chosen, so it cannot be explained').toContain('.doc')
 })
 
 test('an unreadable file says why, and says what would work', async ({ page }) => {
@@ -65,9 +66,9 @@ test('an unreadable file says why, and says what would work', async ({ page }) =
   console.log(`  message: ${message.slice(0, 110)}`)
 
   // Specific about this file, and about the way out. "Unsupported file type" alone would leave
-  // the reader guessing which types are supported.
-  expect(message).toMatch(/PDF text extraction is not implemented/i)
-  expect(message, 'the message does not say what WOULD work').toContain('.docx')
+  // the reader guessing. PDFs are read now, so the reason is that THIS one will not open -
+  // not that the format is refused.
+  expect(message).toMatch(/could not be opened/i)
 
   // The brief box is untouched, so nothing half-read is left behind pretending to be content.
   expect(await page.getByTestId('brief-input').inputValue()).toBe('')
@@ -121,5 +122,117 @@ test('dropping an unreadable file explains itself too', async ({ page }) => {
 
   await page.getByTestId('intake-panel').dispatchEvent('drop', { dataTransfer })
   await expect(page.getByTestId('intake-error')).toBeVisible({ timeout: 30_000 })
-  expect(await page.getByTestId('intake-error').textContent()).toMatch(/PDF text extraction/i)
+  expect(await page.getByTestId('intake-error').textContent()).toMatch(/could not be opened/i)
+})
+
+
+/**
+ * A real PDF, built in the browser: a byte-accurate xref, a content stream per page, a font
+ * resource. Pages given an empty string get no content stream, which is what a scanned page
+ * looks like to an extractor.
+ *
+ * Built here rather than committed as a binary so the fixture is readable and reviewable, and
+ * so a change to it is a diff rather than an opaque blob.
+ */
+function makePdf(pages: string[]): Buffer {
+  const objects: string[] = ['', '', '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>']
+  const PAGES = 2
+  const FONT = 3
+  const kids: number[] = []
+
+  for (const text of pages) {
+    let contents = ''
+    if (text) {
+      const escaped = text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
+      const stream = `BT /F1 12 Tf 72 720 Td (${escaped}) Tj ET`
+      objects.push(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`)
+      contents = ` /Contents ${objects.length} 0 R`
+    }
+    objects.push(
+      `<< /Type /Page /Parent ${PAGES} 0 R /MediaBox [0 0 612 792]${contents}` +
+        ` /Resources << /Font << /F1 ${FONT} 0 R >> >> >>`,
+    )
+    kids.push(objects.length)
+  }
+
+  objects[0] = `<< /Type /Catalog /Pages ${PAGES} 0 R >>`
+  objects[1] =
+    `<< /Type /Pages /Count ${kids.length} /Kids [${kids.map((k) => `${k} 0 R`).join(' ')}] >>`
+
+  let out = '%PDF-1.4\n'
+  const offsets: number[] = []
+  objects.forEach((body, index) => {
+    offsets.push(Buffer.byteLength(out))
+    out += `${index + 1} 0 obj\n${body}\nendobj\n`
+  })
+  const start = Buffer.byteLength(out)
+  out += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
+  for (const offset of offsets) out += `${String(offset).padStart(10, '0')} 00000 n \n`
+  out += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${start}\n%%EOF\n`
+  return Buffer.from(out, 'latin1')
+}
+
+test('a PDF brief is read into the box', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByTestId('intake-screen')).toBeVisible()
+
+  await page.getByTestId('file-input').setInputFiles({
+    name: 'rfp.pdf',
+    mimeType: 'application/pdf',
+    buffer: makePdf([
+      'We are bidding a 30 MW Tier IV data centre in Chennai.',
+      'Topology is 2N and the scope is design-build.',
+    ]),
+  })
+
+  await expect(page.getByTestId('intake-notice')).toBeVisible({ timeout: 30_000 })
+  const text = await page.getByTestId('brief-input').inputValue()
+  console.log(`  .pdf read: ${text.length} characters`)
+  expect(text).toContain('30 MW Tier IV')
+  expect(text).toContain('design-build')
+
+  // Fully readable, so the notice is the ordinary one rather than a warning.
+  expect(await page.getByTestId('intake-notice').getAttribute('data-partial')).toBe('false')
+})
+
+test('a partly scanned PDF warns instead of quietly handing over half a brief', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.getByTestId('file-input').setInputFiles({
+    name: 'scanned-rfp.pdf',
+    mimeType: 'application/pdf',
+    buffer: makePdf([
+      'We are bidding a 30 MW Tier IV data centre in Chennai.',
+      '',
+      'Delivery is design-build with turnkey electrical.',
+      '',
+    ]),
+  })
+
+  const notice = page.getByTestId('intake-notice')
+  await expect(notice).toBeVisible({ timeout: 30_000 })
+  const message = (await notice.textContent()) ?? ''
+  console.log(`  partial read: ${message.slice(0, 120)}`)
+
+  expect(message).toContain('2 of 4 pages')
+  // Styled as a warning, not as success. A half-read RFP shown in the same green as a whole one
+  // is the silent failure again in a friendlier font.
+  expect(await notice.getAttribute('data-partial')).toBe('true')
+  expect(await page.getByTestId('brief-input').inputValue()).toContain('30 MW')
+})
+
+test('a scanned PDF with no text layer is refused, not returned empty', async ({ page }) => {
+  await page.goto('/')
+  await page.getByTestId('file-input').setInputFiles({
+    name: 'scan.pdf',
+    mimeType: 'application/pdf',
+    buffer: makePdf(['', '', '']),
+  })
+
+  const error = page.getByTestId('intake-error')
+  await expect(error).toBeVisible({ timeout: 30_000 })
+  expect((await error.textContent()) ?? '').toMatch(/no text layer/i)
+  // Nothing half-read left behind pretending to be content.
+  expect(await page.getByTestId('brief-input').inputValue()).toBe('')
 })

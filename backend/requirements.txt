@@ -6,3 +6,4 @@ jsonschema==4.23.0
 SQLAlchemy==2.0.52
 psycopg[binary]==3.3.4
 pgvector==0.5.0
+pypdf==5.1.0
