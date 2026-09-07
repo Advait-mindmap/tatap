@@ -9,7 +9,10 @@ stated becomes a question, never an assumed value — this is stop-and-ask appli
 door (CLAUDE.md rule 3).
 """
 
+
 from __future__ import annotations
+
+import re
 
 import os
 from typing import Any, Dict
@@ -31,6 +34,14 @@ TARGET_FIELDS: Dict[str, str] = {
     'power_position': 'The grid/power position: feeder, substation scope, energisation route.',
     'target_rfs_date': 'Target ready-for-service date, ISO YYYY-MM-DD if an exact date is given.',
     'phasing': 'single-handover | phased-by-hall | phased-by-block',
+    'data_hall_count': (
+        'How many data halls the brief states, as a number. ONLY if it says so - do not infer '
+        'one from the IT load.'
+    ),
+    'hall_handover_interval_days': (
+        'If halls are handed over at intervals, the interval the brief states, IN DAYS. '
+        '"six-month intervals" is 180, "quarterly" is 90. Only if an interval is stated.'
+    ),
     'special_conditions': 'Site-specific constraints: access, monsoon, live-facility, logistics.',
 }
 
@@ -157,3 +168,70 @@ def extraction_schema() -> Dict[str, Any]:
         },
         'required': ['fields', 'delivery_modes', 'questions', 'overall_confidence'],
     }
+
+#: Words a brief uses for an interval, and the days each one means.
+#:
+#: THIS IS AN INTERPRETATION, NOT A FACT, and it is the whole of the judgement in reading
+#: "approximately six-month intervals" as a number. Two choices are recorded here rather than
+#: buried:
+#:
+#: * A MONTH IS 30 DAYS. Not 30.44, not the calendar month the phrase happens to land in. The
+#:   input is approximate - "approximately six-month intervals" - so carrying more precision
+#:   than the source has would be false precision, and 30 is the convention a planner reading a
+#:   bar chart would assume.
+#: * "APPROXIMATELY" IS DROPPED, not widened into a range. The engine schedules to a single
+#:   number; turning fuzzy language into a range would need a range everywhere downstream. The
+#:   fuzziness is preserved instead in the provenance note, so a reviewer sees that the six
+#:   months was stated loosely and can tighten it.
+INTERVAL_UNIT_DAYS = {
+    'day': 1, 'days': 1,
+    'week': 7, 'weeks': 7,
+    'fortnight': 14, 'fortnights': 14,
+    'month': 30, 'months': 30,
+    'quarter': 91, 'quarters': 91,
+    'year': 365, 'years': 365,
+}
+
+#: Interval phrases that name a period without a number.
+INTERVAL_WORDS = {
+    'monthly': 30, 'quarterly': 91, 'fortnightly': 14, 'weekly': 7,
+    'half-yearly': 182, 'six-monthly': 180, 'biannual': 182, 'annually': 365, 'yearly': 365,
+}
+
+#: Number words a brief writes out rather than digits.
+NUMBER_WORDS = {
+    'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8,
+    'nine': 9, 'ten': 10, 'eleven': 11, 'twelve': 12,
+}
+
+
+def parse_interval_days(text):
+    """Read "approximately six-month intervals" as a number of days, or None.
+
+    Returns days. The phrase itself travels with it in the field provenance, because the number
+    is an interpretation of the words and a reviewer needs both to judge it.
+    """
+    if text is None:
+        return None
+    value = str(text).strip().lower()
+    if not value:
+        return None
+
+    # A bare number is already days - that is what the extraction schema asks the model for.
+    if re.fullmatch(r'\d+', value):
+        return int(value)
+
+    for word, days in INTERVAL_WORDS.items():
+        if word in value:
+            return days
+
+    match = re.search(
+        r'(\d+|' + '|'.join(NUMBER_WORDS) + r')[\s-]*'
+        r'(day|days|week|weeks|fortnight|fortnights|month|months|quarter|quarters|year|years)',
+        value,
+    )
+    if not match:
+        return None
+    count = match.group(1)
+    number = int(count) if count.isdigit() else NUMBER_WORDS[count]
+    return number * INTERVAL_UNIT_DAYS[match.group(2)]

@@ -58,12 +58,25 @@ def generate_zones(brief: Dict[str, Any], tier_rules: List[Dict[str, Any]]) -> L
         r['id'] for r in (hall_rule, mult_rule, plant_rule)
         if r is not None and rests_on_estimated_data(r)
     })
+    # A stated hall count does not rest on the hall-sizing estimate, because it did not come
+    # from it. Leaving the dependency on would understate the confidence of a fact the client
+    # gave us.
+    if brief.get('data_hall_count') and hall_rule is not None:
+        unverified = [dep for dep in unverified if dep != hall_rule.get('id')]
 
     def counted(kind: str, per_mw_key: str) -> int:
         rate = float(per_mw.get(per_mw_key) or 0.0)
         return max(1, math.ceil(load_mw * rate * multiplier)) if rate and load_mw else 0
 
-    halls = max(1, math.ceil(load_mw / mw_per_hall)) if load_mw else 0
+    # THE BRIEF WINS. `mw_per_hall` is unverified industry-estimate data, so dividing the load
+    # by it is a guess; a brief that states "four data halls" has told us the answer. Deriving
+    # it anyway meant a stated four-hall campus was planned as however many halls the estimate
+    # implied, and fit-out, fire and power were then multiplied across the wrong number.
+    stated_halls = brief.get('data_hall_count')
+    if stated_halls:
+        halls = max(1, int(stated_halls))
+    else:
+        halls = max(1, math.ceil(load_mw / mw_per_hall)) if load_mw else 0
 
     plan: List[tuple] = [
         ('site', 'Site and external works', 1),
@@ -90,6 +103,10 @@ def generate_zones(brief: Dict[str, Any], tier_rules: List[Dict[str, Any]]) -> L
                     'topology': topology,
                     'mw_per_hall': mw_per_hall,
                     'redundancy_multiplier': multiplier,
+                    # Which way the hall count was decided, so a reader can tell a number the
+                    # brief gave from one the sizing rules produced.
+                    'hall_count_source': 'brief' if stated_halls else 'mw_per_hall_formula',
+                    'stated_data_hall_count': stated_halls,
                 },
                 'unverified_dependencies': unverified,
             })

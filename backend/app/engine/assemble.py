@@ -216,7 +216,7 @@ def _zone_named(name, zone):
     return name if not zone else f'{name} - {zone.get("name") or zone.get("id")}'
 
 
-def _pair_by_zone(sources, targets):
+def _pair_by_zone(sources, targets, phased=False):
     """Wire one fragnet logic link across the zone instances of its two ends.
 
     Three cases, and each is a construction fact rather than a convenience:
@@ -226,8 +226,25 @@ def _pair_by_zone(sources, targets):
       hall wait for every other, turning eight parallel fit-outs back into one serial one.
     * Predecessor project-wide, successor per-zone: the backbone is installed once and releases
       every hall.
-    * Predecessor per-zone, successor project-wide: the system test waits for ALL the halls,
-      which is what makes it a system test.
+    * Predecessor per-zone, successor project-wide: the campus-wide work waits for ALL the
+      halls. For a system test that is exactly right - waiting for everything is what makes it a
+      system test.
+
+    `phased` changes that last case, and only that one.
+
+    A campus-wide step sitting BETWEEN per-hall steps - the structured cabling backbone lives
+    between hall containment and hall patching - fans in from every hall and then fans back out,
+    so every hall's completion is pinned to the LAST hall's containment. Under a single handover
+    that is correct and costs nothing, because the halls finish together anyway. Under a phased
+    handover it silently destroys the phasing: hall 1 cannot be handed over in Q2 2028 if its
+    patching waits on hall 4, and the halls come back within days of each other however far
+    apart their releases were set.
+
+    So where the brief states a phased handover, campus-wide work follows the FIRST hall rather
+    than the last. THIS IS AN INTERPRETATION, and it is the construction it implies: a phased
+    campus installs shared infrastructure to serve the hall being handed over and extends it as
+    the others come. It is the reading that makes the client's stated phasing achievable, and it
+    is recorded on the edge so a planner can see it was chosen.
     """
     by_source = {zone_index_of(s): s for s in sources}
     by_target = {zone_index_of(t): t for t in targets}
@@ -237,6 +254,8 @@ def _pair_by_zone(sources, targets):
             pairs.append((by_source[zone_index], target))
         elif 0 in by_source:
             pairs.append((by_source[0], target))
+        elif phased and by_source:
+            pairs.append((by_source[min(by_source)], target))
         else:
             pairs.extend((source, target) for _, source in sorted(by_source.items()))
     return sorted(set(pairs))
@@ -288,6 +307,9 @@ def assemble(
     # zone-bearing fragnets, staging the cross-stage releases hall by hall, and the 4D model.
     # They were previously derived twice at two different points, which was one edit away from
     # the plan and the model disagreeing about how many halls there are.
+    # A stated handover interval means the halls are meant to complete apart, which changes how
+    # campus-wide work inside a zone-bearing fragnet is wired. See _pair_by_zone.
+    phased_handover = bool(brief.get('hall_handover_interval_days'))
     zones = generate_zones(brief, tier_lib)
     zones_by_kind = {}
     for zone in zones:
@@ -525,6 +547,7 @@ def assemble(
                     for source, target in _pair_by_zone(
                         link_target.get((fragnet['id'], earlier), []),
                         first_of.get((fragnet['id'], later), []),
+                        phased=phased_handover,
                     ):
                         edges.append(AssembledEdge(
                             from_id=source, to_id=target, type='FS', lag=0, kind='fragnet',
@@ -540,6 +563,7 @@ def assemble(
                     .get((fragnet['id'], link['from']), []),
                     (link_target if to_end == 'last' else first_of)
                     .get((fragnet['id'], link['to']), []),
+                    phased=phased_handover,
                 )
                 for source, target in pairs:
                     edges.append(AssembledEdge(
@@ -554,6 +578,7 @@ def assemble(
         ordered, stage_activity_ids, link_target, fragnet_lib, lead_lib,
         by_id={a.id: a for a in activities}, zone_counts=zone_counts, first_of=first_of,
         deliverable_days=deliverable_days,
+        handover_interval_days=brief.get('hall_handover_interval_days'),
     )
     activities.extend(gate_activities)
     edges.extend(gate_edges)
@@ -811,14 +836,23 @@ def _build_statutory_activities(
     return activities, edges, warnings, trail
 
 
-def _delivery_gate(ident, lead_id, zone=None):
-    """One "delivery to site" milestone, for the whole project or for one zone."""
+def _delivery_gate(ident, lead_id, zone=None, anchored=True):
+    """One "delivery to site" milestone, for the whole project or for one zone.
+
+    `anchored` false means no procurement activity precedes it, so the lead time is applied to
+    nothing and the plant arrives on day zero - the same inversion the cross-stage gates guard
+    against, and on the item class that most often drives RFS.
+    """
     where = f' - {zone}' if zone else ''
+    unanchored = '' if anchored else ' [UNANCHORED - no procurement precedes this]'
     return AssembledActivity(
         id=ident, wbs_id=f'00.dl.{lead_id[-3:]}',
-        name=f'Delivery to site: {lead_id}{where}', type='milestone', duration_days=0,
+        name=f'Delivery to site: {lead_id}{where}{unanchored}', type='milestone',
+        duration_days=0,
         dept_code='procurement', stage=DELIVERY_GATE.producer_stage, zone_id=zone,
-        trail_ref=trail_ref(ident), hitl_tier='tier_3',
+        trail_ref=trail_ref(ident),
+        hitl_tier='tier_3' if anchored else 'tier_1',
+        blocks_export=not anchored,
     )
 
 
@@ -854,6 +888,7 @@ def _build_cross_stage_gates(
     zone_counts: Optional[Dict[str, int]] = None,
     first_of: Optional[Dict[Tuple[str, str], List[str]]] = None,
     deliverable_days: Optional[Dict[Tuple[str, str], int]] = None,
+    handover_interval_days: Optional[int] = None,
 ) -> Tuple[List[AssembledActivity], List[AssembledEdge], List[str]]:
     """Emit gate milestones and their edges from the declarative rules.
 
@@ -874,15 +909,37 @@ def _build_cross_stage_gates(
 
     def emit_gate(ident: str, label: str, stage: str, rule: GateRule,
                   anchored: bool, zone: str = '') -> AssembledActivity:
-        # A per-zone gate belongs to the zone it RELEASES, not to the zone of the stage that
-        # produced it. Left to the fallback, every hall's weather-tightness milestone was filed
-        # under the shell, and the 4D model drew eight releases in the wrong place.
+        """One cross-stage milestone.
+
+        A per-zone gate belongs to the zone it RELEASES, not to the zone of the stage that
+        produced it. Left to the fallback, every hall's weather-tightness milestone was filed
+        under the shell, and the 4D model drew eight releases in the wrong place.
+
+        AN UNANCHORED GATE BLOCKS EXPORT. It has no predecessors, so the forward pass puts it on
+        day zero, and it then releases everything downstream immediately - a milestone reading
+        "Commissioning complete" sitting on day one while handover runs free. That is worse than
+        a wrong date: the gate INVERTS the constraint it exists to carry, from "handover waits
+        for commissioning" to "handover waits for nothing", and it does so while looking like an
+        achieved milestone in the export.
+
+        The unanchored case is legitimate - a stage the planner scoped out, or one whose fragnets
+        do not exist yet - which is why the gate is still emitted and still carries its
+        constraint. What is NOT legitimate is shipping a plan built on it without anyone
+        deciding that was right. So it is Tier-1 and export-blocking, the same treatment
+        CLAUDE.md gives Tier-1 safety work, and its name says what it is rather than claiming
+        the milestone was met.
+        """
         return AssembledActivity(
-            id=ident, wbs_id=f'00.{rule.kind[:2]}.{ident[-3:]}', name=label, type='gate',
+            id=ident,
+            wbs_id=f'00.{rule.kind[:2]}.{ident[-3:]}',
+            name=label if anchored else f'{label} [UNANCHORED - nothing produces this]',
+            type='gate',
             duration_days=0, dept_code=STAGE_DEPARTMENT.get(stage, ''), stage=stage,
             zone_id=zone or None,
-            trail_ref=trail_ref(ident), hitl_tier='tier_3',
-            unverified_dependencies=[] if anchored else [],
+            trail_ref=trail_ref(ident),
+            hitl_tier='tier_3' if anchored else 'tier_1',
+            blocks_export=not anchored,
+            unverified_dependencies=[],
         )
 
     for rule in CROSS_STAGE_GATES:
@@ -974,10 +1031,47 @@ def _build_cross_stage_gates(
                         from_id=zone_gate, to_id=consumer_id, type='FS', lag=0,
                         kind='cross_stage_gate', why=rule.why,
                     ))
+            # ---- PHASED HANDOVER --------------------------------------------------------
+            #
+            # Where the brief states that halls hand over at intervals, that interval is a
+            # CLIENT COMMITMENT and it dominates. Releasing purely on cladding progress spread
+            # seven halls across ten days, which is what a contractor would do if nobody asked
+            # otherwise - and the brief had asked otherwise.
+            #
+            # Expressed as start-to-start from the FIRST hall's gate, so hall i cannot begin
+            # before its phased slot. It composes with the weather-tightness release rather than
+            # replacing it: a hall waits for whichever comes later, being clad and being due.
+            if handover_interval_days and len(per_zone_consumers) > 1:
+                first_gate = f'{ident}.z01'
+                for i, zone_id in enumerate(sorted(per_zone_consumers), start=2):
+                    if i > len(per_zone_consumers):
+                        break
+                    edges.append(AssembledEdge(
+                        from_id=first_gate, to_id=f'{ident}.z{i:02d}', type='SS',
+                        lag=(i - 1) * int(handover_interval_days),
+                        kind='cross_stage_gate',
+                        why=(
+                            f'The brief phases hall handover at {handover_interval_days}-day '
+                            f'intervals, so this hall is released {(i - 1) * int(handover_interval_days)} '
+                            f'days after the first. That interval is an interpretation of the '
+                            f'brief\'s wording - see the field provenance for the phrase it '
+                            f'came from.'
+                        ),
+                    ))
+
             # Work that was NOT instanced per zone waits for the last zone. A system-wide test
             # is not released by one hall being ready, and releasing it early is the error that
             # would actually mislead a planner.
-            last_gate = f'{ident}.z{len(per_zone_consumers):02d}'
+            #
+            # UNLESS the brief phases handover. Then the same reading applies here as in
+            # _pair_by_zone: a campus-wide step that sits between per-hall work follows the
+            # FIRST hall, because a phased campus builds shared infrastructure to serve the hall
+            # being handed over. Left on the last hall, the cabling backbone waited for hall 4's
+            # cladding and pinned every hall's completion to it - the halls were released six
+            # months apart and finished within days of each other, which is the phasing being
+            # honoured in the release and thrown away in the result.
+            release_index = 1 if handover_interval_days else len(per_zone_consumers)
+            last_gate = f'{ident}.z{release_index:02d}'
             for consumer_id in sorted(project_consumers):
                 edges.append(AssembledEdge(
                     from_id=last_gate, to_id=consumer_id, type='FS', lag=0,
@@ -1090,8 +1184,10 @@ def _build_cross_stage_gates(
                 by_zone.setdefault(zone, []).append(target)
         interval = stagger_days.get(lead_id)
         if interval and len(by_zone) > 1 and len(by_zone) == len(targets):
+            ordering = sorted(stage_activity_ids.get(DELIVERY_GATE.producer_stage, []))
             activities.extend(
-                _delivery_gate(f'{delivery_gate_id(lead_id)}.z{i:02d}', lead_id, zone)
+                _delivery_gate(f'{delivery_gate_id(lead_id)}.z{i:02d}', lead_id, zone,
+                               anchored=bool(ordering))
                 for i, zone in enumerate(sorted(by_zone), start=1)
             )
             for i, zone in enumerate(sorted(by_zone), start=1):
@@ -1121,7 +1217,10 @@ def _build_cross_stage_gates(
             continue
 
         ident = delivery_gate_id(lead_id)
-        activities.append(_delivery_gate(ident, lead_id))
+        activities.append(_delivery_gate(
+            ident, lead_id,
+            anchored=bool(stage_activity_ids.get(DELIVERY_GATE.producer_stage)),
+        ))
         # THE LEAD TIME IS THE LAG. Ordering and arrival are separated by the manufacturing
         # and shipping time the library records; without it the delivery milestone sat on the
         # day the order was placed and a 32-week transformer constrained nothing at all. The

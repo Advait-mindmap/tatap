@@ -89,6 +89,28 @@ def _extract_fields(prompt: str) -> List[Dict[str, Any]]:
     if city:
         add('city', city.group(1), _window(body, city))
 
+    # "four data halls", "6 data halls", "four (4) data halls". Only where the brief SAYS a
+    # count - never inferred from the load, which is the whole point of the field.
+    halls = re.search(
+        r'\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\b'
+        r'(?:\s*\(\d+\))?\s+data\s+halls?\b',
+        body, re.IGNORECASE,
+    )
+    if halls:
+        add('data_hall_count', halls.group(1), _window(body, halls))
+
+    # "at approximately six-month intervals", "three-month intervals", "quarterly handover".
+    interval = re.search(
+        r'((?:approximately\s+|about\s+|roughly\s+)?'
+        r'(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|twelve)[\s-]*'
+        r'(?:day|week|fortnight|month|quarter|year)s?'
+        r'|quarterly|monthly|fortnightly|six-monthly|half-yearly)\s*'
+        r'(?:intervals?|apart|spacing|stagger)',
+        body, re.IGNORECASE,
+    )
+    if interval:
+        add('hall_handover_interval_days', interval.group(1), _window(body, interval))
+
     site = re.search(r'\b(greenfield|brownfield)\b', body, re.IGNORECASE)
     if site:
         add('site_context', site.group(1).lower(), _window(body, site))

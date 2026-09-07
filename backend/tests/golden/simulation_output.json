@@ -35156,9 +35156,11 @@
   "zones": [
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35216,9 +35218,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35276,9 +35280,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35336,9 +35342,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35396,9 +35404,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35456,9 +35466,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35516,9 +35528,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35576,9 +35590,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35636,9 +35652,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35696,9 +35714,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35756,9 +35776,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35816,9 +35838,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35876,9 +35900,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35936,9 +35962,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -35996,9 +36024,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36056,9 +36086,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36116,9 +36148,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36176,9 +36210,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36236,9 +36272,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36296,9 +36334,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36356,9 +36396,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36416,9 +36458,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36476,9 +36520,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36536,9 +36582,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [
@@ -36596,9 +36644,11 @@
     },
     {
       "derived_from": {
+        "hall_count_source": "mw_per_hall_formula",
         "it_load_mw": 20.0,
         "mw_per_hall": 3.0,
         "redundancy_multiplier": 1.33,
+        "stated_data_hall_count": null,
         "topology": "N+1"
       },
       "equipment_counts": [

@@ -71,6 +71,22 @@ class ExtractedBrief(BaseModel):
     power_position: Optional[str] = None
     target_rfs_date: Optional[str] = None
     phasing: Optional[str] = None
+    #: How many data halls the brief SAYS the campus has.
+    #:
+    #: The engine could always compute a hall count from IT load and a per-hall figure in
+    #: tier_rules, and did. But that figure is unverified industry-estimate data, so a brief
+    #: stating "four data halls" had its own number discarded and replaced by a division - and
+    #: the plan then multiplied fit-out, fire and power across the wrong number of halls. A
+    #: stated count is a fact about this project; the formula is a fallback for when nobody
+    #: stated one.
+    data_hall_count: Optional[int] = None
+    #: The interval between hall handovers, in days, where the brief states a phased handover.
+    #:
+    #: Held in DAYS rather than as the phrase, because "approximately six-month intervals" has to
+    #: become a number before the engine can separate one hall's completion from the next. The
+    #: phrase it came from is preserved in `phasing` and in the field provenance, so the
+    #: interpretation stays auditable.
+    hall_handover_interval_days: Optional[int] = None
     special_conditions: Optional[str] = None
 
 

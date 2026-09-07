@@ -24,6 +24,8 @@ from backend.app.intake.prompt import (
     TARGET_FIELDS,
     build_user_prompt,
     extraction_schema,
+    NUMBER_WORDS,
+    parse_interval_days,
 )
 from backend.app.llm import LLMError, get_adapter
 from backend.app.schemas import (
@@ -144,6 +146,31 @@ def _coerce(name: str, raw_value: str) -> Tuple[Any, Optional[str]]:
         if not match:
             return None, f'could not read a number from {value!r}'
         return float(match.group(1)), None
+
+    if name == 'data_hall_count':
+        # Digits or the word. A brief writes "four data halls" at least as often as "4", and
+        # rejecting the word would silently fall back to the formula this field exists to
+        # replace - a failure that looks exactly like the bug it fixes.
+        match = re.search(r'\b(\d+)\b', value)
+        if match:
+            count = int(match.group(1))
+        else:
+            word = next(
+                (w for w in NUMBER_WORDS if re.search(r'\b' + w + r'\b', value.lower())),
+                None,
+            )
+            if word is None:
+                return None, f'could not read a hall count from {value!r}'
+            count = NUMBER_WORDS[word]
+        if count < 1:
+            return None, f'a campus cannot have {count} data halls'
+        return count, None
+
+    if name == 'hall_handover_interval_days':
+        days = parse_interval_days(value)
+        if days is None:
+            return None, f'could not read an interval from {value!r}'
+        return days, None
 
     if name == 'tier':
         tier = normalise_tier(value)
