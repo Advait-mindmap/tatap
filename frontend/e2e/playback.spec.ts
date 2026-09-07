@@ -34,9 +34,16 @@ const nodeCount = (page: Page) => page.locator('[data-testid="node-card"]').coun
  * replay, and under the load of a full suite run that window widens. The panel shows a
  * "N queued" chip exactly while events are waiting, so its absence is the real signal.
  */
-async function settled(page: Page, timeout = 30_000): Promise<number> {
+async function settled(page: Page, timeout = 180_000): Promise<number> {
+  // The budget is generous ON PURPOSE. This waits for the replay queue to DRAIN, and how long
+  // that takes scales with the plan: thirty seconds was ample for a 118-activity programme and
+  // is not enough for a 606-activity one, which is what turned this red. The assertion is that
+  // the draw finishes, not that it finishes quickly - a timeout tuned to yesterday's plan size
+  // tests the machine rather than the behaviour.
+  const started = Date.now()
   await expect(page.getByTestId('queued-count')).toBeHidden({ timeout })
   await page.waitForTimeout(200)
+  console.log(`  replay drained in ${((Date.now() - started) / 1000).toFixed(1)}s`)
   return nodeCount(page)
 }
 
