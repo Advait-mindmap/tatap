@@ -497,7 +497,10 @@ def assemble(
                         ref_id=ident,
                         stage=stage,
                         why=(
-                            f'Instanced from {fragnet["id"]} ({fragnet.get("name", "")}), selected '
+                            # The NAME leads. The id used to, with the name in parentheses
+                            # behind it, which put a variable name at the front of the one
+                            # sentence a planner reads to decide whether to trust the plan.
+                            f'Instanced from {fragnet.get("name") or fragnet["id"]}, selected '
                             f'because: {selection.why}'
                         ),
                         sources=sorted(selection.sources) + [fragnet['id']],

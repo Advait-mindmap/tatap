@@ -1,5 +1,6 @@
 import type { DecisionRecord, FlowNode, TrailEntry } from '../types'
 import { KIND_STYLES } from '../nodeKinds'
+import { withGlossary } from '../glossary'
 
 interface Props {
   node: FlowNode | null
@@ -122,8 +123,26 @@ export function TrailPanel({ node, trail, decision, onClose }: Props) {
         <>
           <section className="block">
             <h3>Why this is here</h3>
-            <p data-testid="trail-why">{trail.why}</p>
+            <p data-testid="trail-why">{withGlossary(trail.why)}</p>
           </section>
+
+          {trail.technical_refs && trail.technical_refs.length > 0 && (
+            <section className="block block-technical">
+              {/*
+                The identifiers the sentence above used to carry inline. They belong to whoever
+                is debugging the plan, not to the planner deciding whether to trust it, so they
+                sit here in small type under their own heading rather than in the prose.
+              */}
+              <h4 className="small muted">Technical reference</h4>
+              <ul className="sources small" data-testid="trail-technical-refs">
+                {trail.technical_refs.map((ref) => (
+                  <li key={ref} className="mono muted">
+                    {ref}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section className="block">
             <h3>Cited sources</h3>

@@ -206,6 +206,12 @@ class TrailEntry(BaseModel):
     unverified_dependencies: List[str] = Field(default_factory=list)
     #: Confidence before the unverified-data cap was applied, kept for audit.
     stated_confidence: Optional[float] = None
+    #: The internal identifiers this entry's reasoning referred to, lifted OUT of `why`.
+    #:
+    #: `why` is read by a planner deciding whether to trust the logic; these are read by whoever
+    #: is debugging it. Mixing them cost the first audience more than it helped the second, so
+    #: the prose keeps the labels and the ids sit beside it under their own heading.
+    technical_refs: List[str] = Field(default_factory=list)
 
 
 class PackageSelection(BaseModel):

@@ -15,6 +15,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 from backend.app.libraries import available_cities, load_city_pathway, load_library
+from backend.app.readable import build_labels, humanise
 from backend.app.schemas import AssemblyResult, Decision, SimulationOutput, StageReasoning
 
 #: How an assembled activity type maps onto the node kinds the 2D view distinguishes
@@ -192,6 +193,46 @@ def _long_lead_register(stage_reasonings: Sequence[StageReasoning]) -> List[Dict
     return out
 
 
+def _readable_trail(trail):
+    """Lift internal identifiers out of every trail entry's prose, into `technical_refs`.
+
+    Done here, at the boundary where the output is assembled, rather than at each place that
+    writes a `why`. Some of that text is composed by the engine and some is authored by the
+    reasoner at runtime, so the one place that can guarantee a planner never meets a raw
+    identifier is the one place every entry passes through.
+    """
+    # Every library whose ids can appear in reasoning prose, including the per-city statutory
+    # pathway - a CEIG or PESO reference is exactly the kind of thing a planner needs named
+    # rather than coded, and it lives in a city file rather than the shared set.
+    sources = [
+        load_library('fragnets')['entries'],
+        load_library('decision_points')['entries'],
+        load_library('equipment_lead_times')['entries'],
+        load_library('safety_register')['entries'],
+    ]
+    for city in available_cities():
+        try:
+            sources.append(load_city_pathway(city)['entries'])
+        except Exception:
+            continue
+    labels = build_labels(*sources)
+    readable = []
+    for entry in trail:
+        # Entries arrive as models from the engine and as plain dicts from a restored run, and
+        # both reach a reader's screen. Handling one and not the other would leave identifiers
+        # in the prose on exactly the path nobody tests by hand - a reopened run.
+        is_model = hasattr(entry, 'why')
+        why = entry.why if is_model else str(entry.get('why') or '')
+        ref_id = entry.ref_id if is_model else str(entry.get('ref_id') or '')
+
+        prose, refs = humanise(why, labels)
+        # The entry's own id is not a reference the reasoning MADE; it is the thing being
+        # explained, and it already has its own field.
+        update = {'why': prose, 'technical_refs': [r for r in refs if r != ref_id]}
+        readable.append(entry.model_copy(update=update) if is_model else {**entry, **update})
+    return readable
+
+
 def build_simulation_output(
     *,
     brief: Dict[str, Any],
@@ -353,7 +394,7 @@ def build_simulation_output(
         rfs_day=assembly.rfs_day,
         zone_timeline=dict(assembly.zone_timeline),
         stage_timeline=dict(assembly.stage_timeline),
-        reasoning_trail=trail,
+        reasoning_trail=_readable_trail(trail),
         quality={
             'dcma_summary': _dcma_summary(assembly),
             # Complete means: no unanswered fork, nothing Tier-1 awaiting sign-off, and no

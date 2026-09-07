@@ -568,3 +568,16 @@ button.option:hover { background: rgba(251,113,133,0.2); border-color: var(--ala
   outline-offset: 4px;
   background: rgba(59, 130, 246, 0.06);
 }
+
+/* A term the app explains on hover. Dotted rather than solid, so it reads as "there is more
+   here" rather than as a link that goes somewhere. */
+.glossary-term {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.glossary-term:focus-visible { outline: 2px solid var(--accent, #60a5fa); outline-offset: 2px; }
+
+/* The identifier list under the reasoning trail: present, and clearly secondary. */
+.block-technical { opacity: 0.72; }
+.block-technical h4 { margin-bottom: 4px; text-transform: uppercase; letter-spacing: .06em; }

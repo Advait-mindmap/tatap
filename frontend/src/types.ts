@@ -66,6 +66,14 @@ export interface TrailEntry {
   hitl_tier: string
   unverified_dependencies: string[]
   stated_confidence: number | null
+  /**
+   * Internal identifiers lifted OUT of `why`, for whoever is debugging rather than reading.
+   *
+   * `why` is the sentence a planner reads to decide whether to trust the logic. It used to
+   * carry `frag.superstructure.steel` and `dp.delivery_mode` inline, which asked that reader to
+   * know our variable names before they could follow it.
+   */
+  technical_refs?: string[]
 }
 
 export interface DecisionRecord {
@@ -130,6 +138,10 @@ export interface ExtractedBrief {
   power_position: string | null
   target_rfs_date: string | null
   phasing: string | null
+  /** How many data halls the brief states. Beats the load-derived formula when present. */
+  data_hall_count?: number | null
+  /** Days between hall handovers, parsed from the brief's stated phasing language. */
+  hall_handover_interval_days?: number | null
   special_conditions: string | null
 }
 
