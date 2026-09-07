@@ -232,6 +232,10 @@ jobs:
         if: always()
         run: npx playwright test stream-drop.spec
 
+      - name: Browser tests - reattaching lands on the server's state
+        if: always()
+        run: npx playwright test reattach-race.spec
+
       - name: Browser tests - a campus of halls stays readable
         if: always()
         run: npx playwright test zone-lanes.spec

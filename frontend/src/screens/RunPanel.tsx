@@ -158,7 +158,8 @@ export function RunPanel({
           </div>
 
           {run.openDecisions.length > 1 && (
-            <p className="muted small">
+            <p className="muted small" data-testid="more-decisions"
+               data-open-count={run.openDecisions.length}>
               {run.openDecisions.length - 1} more decision(s) after this one.
             </p>
           )}
