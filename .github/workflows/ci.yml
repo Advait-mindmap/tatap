@@ -228,6 +228,10 @@ jobs:
         if: always()
         run: npx playwright test decision-desync.spec
 
+      - name: Browser tests - a campus of halls stays readable
+        if: always()
+        run: npx playwright test zone-lanes.spec
+
       - name: Browser tests - document upload, and refusing one out loud
         if: always()
         run: npx playwright test intake-upload.spec
