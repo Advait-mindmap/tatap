@@ -394,8 +394,7 @@ def _package_label(package: str, members: Sequence[Dict[str, Any]]) -> str:
 
 
 
-#: Crew names, by the discipline the engine files an activity under. One crew per discipline, so
-#: a plan resource-levels by trade rather than by nothing at all.
+#: Crew names by discipline, for work carried out by our own labour.
 CREW_NAMES = {
     'civil': 'Civil works crew',
     'structural': 'Structural works crew',
@@ -410,6 +409,28 @@ CREW_NAMES = {
     'management': 'Design and project management team',
 }
 
+#: How each delivery mode is resourced, as (label suffix, P6 resource type).
+#:
+#: THE DELIVERY MODE DECIDES WHETHER THIS IS OUR LABOUR AT ALL, and that is the distinction P6's
+#: resource types exist to draw. A self-performed discipline is a gang we staff, level and pay by
+#: the hour: RT_Labor. A turnkey or subcontracted one is a package we have let - we do not staff
+#: it, cannot level it, and the crew inside it is the subcontractor's business: RT_Nonlabor, as a
+#: single package line. Owner-furnished is not even our commitment; it is the client's supply,
+#: and modelling it as our crew would put labour on our books for work we are not doing.
+#:
+#: Emitting an invented internal crew for a subcontracted discipline is the specific error this
+#: avoids. A planner opening the resource sheet would see a fire crew they do not employ.
+DELIVERY_RESOURCE = {
+    'self-perform': ('crew', 'RT_Labor'),
+    'turnkey': ('turnkey package', 'RT_Nonlabor'),
+    'subcontract': ('subcontract package', 'RT_Nonlabor'),
+    'owner-furnished': ('owner-furnished supply', 'RT_Nonlabor'),
+    # Not stated in the brief. Resourced as our own labour, which is the conservative planning
+    # assumption - you carry the crew until you know the scope is let out - and the export's
+    # disclaimer says the resource model is not an estimate either way.
+    'unknown': ('crew', 'RT_Labor'),
+}
+
 #: How many of each crew is assigned to an activity.
 #:
 #: ONE. Not a crew-size estimate - the simulation has no quantities, so there is nothing to
@@ -419,41 +440,101 @@ CREW_NAMES = {
 CREWS_PER_ACTIVITY = 1
 
 
-def _crew_code(discipline: str) -> str:
+def resource_key(activity: Dict[str, Any]) -> Tuple[str, str]:
+    """The (discipline, delivery mode) an activity is resourced under.
+
+    Keyed on BOTH because delivery mode is per stage: civil work appears self-performed in one
+    stage and turnkey in another on the same project, and those are two different resources
+    commercially - one is our gang, the other is somebody's contract.
+    """
+    return (
+        str(activity.get('discipline') or ''),
+        str(activity.get('delivery_mode') or 'unknown') or 'unknown',
+    )
+
+
+def _resource_name(discipline: str, mode: str) -> Tuple[str, str]:
+    """(display name, P6 resource type) for one resource."""
+    suffix, rsrc_type = DELIVERY_RESOURCE.get(mode, DELIVERY_RESOURCE['unknown'])
+    if suffix == 'crew':
+        return CREW_NAMES.get(discipline, f'{discipline.title()} crew'), rsrc_type
+    trade = CREW_NAMES.get(discipline, f'{discipline.title()} crew')
+    # "Fire and life safety crew" -> "Fire and life safety subcontract package"
+    for tail in (' crew', ' team'):
+        if trade.endswith(tail):
+            trade = trade[: -len(tail)]
+            break
+    return f'{trade} {suffix}', rsrc_type
+
+
+def _crew_code(discipline: str, mode: str) -> str:
     """A short resource code. P6 shows this in the resource column, so it has to be legible."""
-    return (discipline or 'general')[:8].upper()
+    tail = {'self-perform': '', 'unknown': '', 'turnkey': '-TK',
+            'subcontract': '-SC', 'owner-furnished': '-OF'}.get(mode, '')
+    return ((discipline or 'general')[:8].upper() + tail)[:20]
 
 
 def build_resources(activities, proj_id, calendar_id, currency_id):
-    """One RSRC row per discipline present in the plan, and a map from discipline to rsrc_id.
+    """One RSRC row per DISTINCT resource, and a map from (discipline, mode) to it.
 
-    Labour resources, not material: `unit_id` is left empty, which is what the reference export
-    does for its own RT_Labor row, so no UMEASURE table is needed to make the file valid.
+    Two things here are about the sheet a planner opens, not about the file being valid.
+
+    MERGED BY IDENTITY, not by key. Delivery mode is per stage, so one discipline can arrive
+    under several modes - and `self-perform` and `unknown` both resource as our own crew, which
+    means keying on the raw pair emitted two rows called "Civil works crew" with the same code.
+    Six such pairs appeared on a real brief. A resource sheet with duplicate names is one a
+    planner cannot level against, so rows are keyed on the resource they actually describe.
+
+    ONLY RESOURCES THAT DO WORK. A discipline whose activities are all zero-duration gates
+    produced a resource with no assignments - a crew on the sheet that never appears on the
+    programme, which reads as an omission rather than as the nothing it is.
+
+    Labour resources leave `unit_id` empty and carry a real `clndr_id`, which is what the
+    reference export's own RT_Labor row does, so no UMEASURE table is needed for validity.
     """
-    disciplines = sorted({
-        str(a.get('discipline') or '') for a in activities if a.get('discipline')
-    })
+    # A key only earns a resource if something it covers is real work.
+    working = {
+        resource_key(a) for a in activities
+        if a.get('discipline') and int(a.get('duration_days') or 0) > 0
+    }
+
+    identity = {}
+    for key in sorted(working):
+        discipline, mode = key
+        identity[key] = _resource_name(discipline, mode) + (_crew_code(discipline, mode),)
+
     rows = []
-    by_discipline = {}
-    for index, discipline in enumerate(disciplines, start=1):
+    by_key = {}
+    seen = {}
+    index = 0
+    for key in sorted(working):
+        name, rsrc_type, code = identity[key]
+        if (name, rsrc_type) in seen:
+            # Same resource by another route - one crew, two delivery-mode labels.
+            by_key[key] = seen[(name, rsrc_type)]
+            continue
+        index += 1
         rsrc_id = proj_id * 100 + index
-        by_discipline[discipline] = rsrc_id
+        seen[(name, rsrc_type)] = (rsrc_id, rsrc_type)
+        by_key[key] = (rsrc_id, rsrc_type)
         rows.append({
             'rsrc_id': rsrc_id, 'parent_rsrc_id': '', 'clndr_id': calendar_id,
             'role_id': '', 'shift_id': '', 'ts_approve_user_id': '', 'user_id': '',
             'pobs_id': '', 'guid': '', 'rsrc_seq_num': index * 10,
             'email_addr': '', 'employee_code': '', 'office_phone': '', 'other_phone': '',
-            'rsrc_name': CREW_NAMES.get(discipline, f'{discipline.title()} crew'),
-            'rsrc_short_name': _crew_code(discipline),
+            'rsrc_name': name,
+            'rsrc_short_name': code,
             'rsrc_title_name': '',
             'def_qty_per_hr': 1, 'cost_qty_type': 'QT_Hour', 'ot_factor': '',
             'active_flag': 'Y', 'auto_compute_act_flag': 'Y', 'def_cost_qty_link_flag': 'Y',
             'ot_flag': 'N', 'timesheet_flag': 'N',
             'xfer_complete_day_cnt': 60, 'xfer_notstart_day_cnt': 60,
-            'curr_id': currency_id, 'unit_id': '', 'rsrc_type': 'RT_Labor',
-            'rsrc_notes': '', 'load_tasks_flag': 'N', 'level_flag': 'Y', 'last_checksum': '',
+            'curr_id': currency_id, 'unit_id': '', 'rsrc_type': rsrc_type,
+            # Left as the reference export leaves them. Filling these in would assert levelling
+            # and timesheet behaviour this plan has no basis for.
+            'rsrc_notes': '', 'load_tasks_flag': '', 'level_flag': '', 'last_checksum': '',
         })
-    return rows, by_discipline
+    return rows, by_key
 
 
 def build_resource_assignments(activities, task_ids, by_discipline, proj_id, dates):
@@ -466,9 +547,9 @@ def build_resource_assignments(activities, task_ids, by_discipline, proj_id, dat
     rows = []
     assignment_id = 1
     for activity in activities:
-        discipline = str(activity.get('discipline') or '')
         ident = str(activity.get('id'))
-        rsrc_id = by_discipline.get(discipline)
+        resource = by_discipline.get(resource_key(activity))
+        rsrc_id, rsrc_type = resource if resource else (None, 'RT_Labor')
         # Milestones and gates have no duration and no crew; assigning one would put labour
         # against an event rather than against work.
         duration = int(activity.get('duration_days') or 0)
@@ -496,8 +577,10 @@ def build_resource_assignments(activities, task_ids, by_discipline, proj_id, dat
             'target_crv': '', 'remain_crv': '', 'actual_crv': '',
             'ts_pend_act_end_flag': 'N', 'guid': '', 'rate_type': 'COST_PER_QTY',
             'act_this_per_cost': 0, 'act_this_per_qty': 0, 'curv_id': '',
-            'rsrc_type': 'RT_Labor', 'cost_per_qty_source_type': 'ST_Rsrc',
-            'create_user': '', 'create_date': '', 'has_rsrchours': 'N', 'taskrsrc_sum_id': '',
+            # The assignment's type must agree with the resource's, or P6 shows a
+            # labour assignment against a non-labour package.
+            'rsrc_type': rsrc_type, 'cost_per_qty_source_type': 'ST_Rsrc',
+            'create_user': '', 'create_date': '', 'has_rsrchours': '', 'taskrsrc_sum_id': '',
         })
         assignment_id += 1
     return rows

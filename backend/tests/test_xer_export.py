@@ -680,3 +680,202 @@ def test_the_export_says_what_the_resource_data_is_not():
     doc = xer.__doc__ or ''
     assert 'not a crew-size or cost estimate' in doc
     assert 'one discipline crew per activity' in doc.lower()
+
+
+# --------------------------------------------------- delivery mode decides the resource type
+
+@pytest.fixture(scope='module')
+def let_output():
+    """A run whose brief actually states delivery modes, so the split is exercised."""
+    from backend.app.intake import extract_brief
+    from backend.app.llm_stub import StubAdapter
+    from backend.app.simulator import DecisionAnswer, Simulator
+
+    text = (
+        'We are bidding a 30 MW Tier IV data centre in Chennai, greenfield. Topology is 2N. '
+        'Delivery: we self-perform civil and structure. Electrical and mechanical are turnkey '
+        'specialist packages. Fire suppression and BMS are subcontracted.'
+    )
+    brief = extract_brief(text, adapter=StubAdapter()).brief.model_dump()
+    simulator = Simulator(brief, run_id='let', adapter=StubAdapter())
+    for _ in range(40):
+        list(simulator.run())
+        if not simulator.is_halted:
+            break
+        for fork in sorted(simulator.state.pending_decisions):
+            simulator.answer(DecisionAnswer(decision_point_id=fork, answer='Proceed'))
+    return simulator.output().model_dump()
+
+
+@pytest.fixture(scope='module')
+def let_parsed(let_output, tmp_path_factory):
+    xer_reader = pytest.importorskip('xer_reader', reason='xer-reader is needed to read back')
+    path = tmp_path_factory.mktemp('let') / 'let.xer'
+    path.write_bytes(export_bytes(let_output, start_date=ANCHOR))
+    return xer_reader.XerReader(str(path)).to_dict()
+
+
+def test_a_subcontracted_discipline_is_a_package_not_an_invented_crew(let_output, let_parsed):
+    """The specific error: emitting a fire crew the contractor does not employ.
+
+    A let package is somebody else's labour. P6 types that RT_Nonlabor - we do not staff it and
+    cannot level it - and showing it as our gang would put a crew on the sheet that does not
+    exist.
+    """
+    modes = {a.get('delivery_mode') for a in let_output['activities']}
+    assert {'self-perform', 'subcontract', 'turnkey'} <= modes, (
+        f'this brief did not produce the delivery modes under test: {sorted(modes)}'
+    )
+
+    rows = let_parsed['RSRC'].entries()
+    by_name = {r['rsrc_name']: r for r in rows}
+    packages = [r for r in rows if 'package' in r['rsrc_name']]
+    crews = [r for r in rows if r['rsrc_name'].endswith(('crew', 'team'))]
+    assert packages and crews, 'the plan did not split into packages and crews'
+
+    for row in packages:
+        assert row['rsrc_type'] == 'RT_Nonlabor', (
+            f'{row["rsrc_name"]} is a let package typed as our own labour'
+        )
+    for row in crews:
+        assert row['rsrc_type'] == 'RT_Labor', f'{row["rsrc_name"]} is our crew typed non-labour'
+
+    # And specifically: the subcontracted fire scope is a package.
+    fire = [r for r in rows if r['rsrc_name'].startswith('Fire')]
+    assert any('subcontract package' in r['rsrc_name'] and r['rsrc_type'] == 'RT_Nonlabor'
+               for r in fire), [r['rsrc_name'] for r in fire]
+
+
+def test_the_assignment_type_agrees_with_its_resource(let_parsed):
+    """A labour assignment against a non-labour package is what P6 shows when these drift."""
+    resources = {r['rsrc_id']: r for r in let_parsed['RSRC'].entries()}
+    for row in let_parsed['TASKRSRC'].entries():
+        assert row['rsrc_type'] == resources[row['rsrc_id']]['rsrc_type'], (
+            f'assignment {row["taskrsrc_id"]} is {row["rsrc_type"]} on a '
+            f'{resources[row["rsrc_id"]]["rsrc_type"]} resource'
+        )
+
+
+def test_the_resource_sheet_has_no_duplicates(let_parsed):
+    """Delivery mode is per stage, so one discipline arrives under several - and self-perform
+    and unstated both resource as our own crew. Keyed on the raw pair, six pairs of
+    identically-named, identically-coded crews appeared. A sheet like that cannot be levelled
+    against."""
+    rows = let_parsed['RSRC'].entries()
+    names = [r['rsrc_name'] for r in rows]
+    codes = [r['rsrc_short_name'] for r in rows]
+    assert len(set(names)) == len(names), f'duplicate resource names: {sorted(names)}'
+    assert len(set(codes)) == len(codes), f'duplicate resource codes: {sorted(codes)}'
+
+
+def test_no_resource_sits_on_the_sheet_with_no_work(let_parsed):
+    """A crew that never appears on the programme reads as an omission rather than as nothing."""
+    used = {row['rsrc_id'] for row in let_parsed['TASKRSRC'].entries()}
+    for row in let_parsed['RSRC'].entries():
+        assert row['rsrc_id'] in used, f'{row["rsrc_name"]} has no assignments'
+
+
+def test_the_crew_hours_reconcile_with_the_plan(let_output, let_parsed):
+    """Totalled, not just spot-checked: every crew-hour in the file traces to a duration."""
+    file_hours = sum(row['target_qty'] for row in let_parsed['TASKRSRC'].entries())
+    plan_days = sum(
+        int(a.get('duration_days') or 0) for a in let_output['activities']
+        if a['type'] == 'task' and a.get('discipline')
+    )
+    assert file_hours == plan_days * HOURS_PER_DAY, (
+        f'{file_hours} crew-hours in the file against {plan_days * HOURS_PER_DAY} in the plan'
+    )
+
+
+def test_no_column_is_invented_beyond_what_the_reference_shows():
+    """Every constant we emit that is not derived from the plan matches the reference export.
+
+    The three that did not - `load_tasks_flag`, `level_flag`, `has_rsrchours` - were filled with
+    plausible values where a real P6 file leaves them blank. Asserting levelling behaviour on a
+    plan that has no basis for it is exactly the kind of invention this export refuses elsewhere.
+    """
+    from backend.app.p6.xer import build_resources
+
+    rows, _ = build_resources(
+        [{'id': 'a', 'discipline': 'civil', 'delivery_mode': 'self-perform',
+          'duration_days': 5}], 1, 1, 1,
+    )
+    assert rows[0]['level_flag'] == ''
+    assert rows[0]['load_tasks_flag'] == ''
+
+
+@pytest.mark.parametrize('mode,expected_type', [
+    ('self-perform', 'RT_Labor'),
+    ('unknown', 'RT_Labor'),
+    ('turnkey', 'RT_Nonlabor'),
+    ('subcontract', 'RT_Nonlabor'),
+    ('owner-furnished', 'RT_Nonlabor'),
+])
+def test_each_delivery_mode_types_its_resource(mode, expected_type):
+    """Every mode, asserted directly.
+
+    Checking only that rows NAMED "package" are non-labour is not enough: if a mode stopped
+    producing packages the assertion would simply have less to check and still pass. Turnkey
+    quietly becoming our own crew survived exactly that way.
+    """
+    from backend.app.p6.xer import build_resources
+
+    rows, by_key = build_resources(
+        [{'id': 'a', 'discipline': 'electrical', 'delivery_mode': mode, 'duration_days': 5}],
+        1, 1, 1,
+    )
+    assert len(rows) == 1
+    assert rows[0]['rsrc_type'] == expected_type, (
+        f'{mode} resourced as {rows[0]["rsrc_type"]}, expected {expected_type}'
+    )
+    # And the map the assignments use agrees with the row.
+    assert by_key[('electrical', mode)] == (rows[0]['rsrc_id'], expected_type)
+
+
+def test_a_let_package_is_never_named_as_our_crew():
+    """The commercial claim, not just the type code: we do not employ a turnkey gang."""
+    from backend.app.p6.xer import build_resources
+
+    for mode in ('turnkey', 'subcontract', 'owner-furnished'):
+        rows, _ = build_resources(
+            [{'id': 'a', 'discipline': 'fire', 'delivery_mode': mode, 'duration_days': 5}],
+            1, 1, 1,
+        )
+        name = rows[0]['rsrc_name']
+        assert not name.endswith(('crew', 'team')), f'{mode} produced "{name}"'
+        assert 'package' in name or 'supply' in name, f'{mode} produced "{name}"'
+
+
+def test_a_discipline_with_only_zero_duration_work_gets_no_resource():
+    """Gates and milestones carry a discipline but no work. A crew that never appears on the
+    programme reads as an omission rather than as the nothing it is."""
+    from backend.app.p6.xer import build_resources
+
+    rows, _ = build_resources(
+        [
+            {'id': 'g', 'discipline': 'compliance', 'delivery_mode': 'unknown',
+             'duration_days': 0},
+            {'id': 'a', 'discipline': 'civil', 'delivery_mode': 'unknown', 'duration_days': 4},
+        ],
+        1, 1, 1,
+    )
+    names = [r['rsrc_name'] for r in rows]
+    assert len(rows) == 1, names
+    assert 'Civil' in names[0]
+
+
+def test_two_modes_that_resource_the_same_way_share_one_row():
+    """self-perform and unstated are both our own crew. Two rows with one name is a sheet a
+    planner cannot level against."""
+    from backend.app.p6.xer import build_resources
+
+    rows, by_key = build_resources(
+        [
+            {'id': 'a', 'discipline': 'civil', 'delivery_mode': 'self-perform',
+             'duration_days': 4},
+            {'id': 'b', 'discipline': 'civil', 'delivery_mode': 'unknown', 'duration_days': 4},
+        ],
+        1, 1, 1,
+    )
+    assert len(rows) == 1, [r['rsrc_name'] for r in rows]
+    assert by_key[('civil', 'self-perform')] == by_key[('civil', 'unknown')]
