@@ -926,21 +926,17 @@ def test_the_export_carries_the_dimensions_a_planner_filters_by(parsed):
 
 def test_every_code_value_traces_back_to_an_activity(real_output, parsed):
     """No invented values. Every code in the file is a value some activity actually holds."""
-    from backend.app.p6.xer import (
-        ACTIVITY_CODE_TYPES, _MULTI_FIELD_DIMENSIONS, _code_label, _safety_tier_label,
-    )
+    from backend.app.p6.xer import ACTIVITY_CODE_TYPES, _dimension_label
 
     types = {row['actv_code_type_id']: row['actv_code_type'] for row in parsed['ACTVTYPE'].entries()}
     field_of = dict(ACTIVITY_CODE_TYPES)
     for row in parsed['ACTVCODE'].entries():
         dimension = types[row['actv_code_type_id']]
         field = field_of[dimension]
-        # Safety Tier reads two fields - the tier and whether its mapping is confirmed - so the
-        # test has to resolve it the same way the exporter does or it checks the wrong string.
-        if dimension in _MULTI_FIELD_DIMENSIONS:
-            held = {_safety_tier_label(a) for a in real_output['activities']}
-        else:
-            held = {_code_label(dimension, a.get(field)) for a in real_output['activities']}
+        # Resolved exactly as the exporter resolves it. Two dimensions read more of the activity
+        # than one field - Safety Tier its mapping confidence, Area whether the zone is real - and
+        # a test resolving them differently checks the wrong string.
+        held = {_dimension_label(dimension, field, a) for a in real_output['activities']}
         assert row['actv_code_name'] in held, (
             f'{dimension} code {row["actv_code_name"]!r} matches no activity in the plan'
         )
@@ -1215,3 +1211,134 @@ def test_the_critical_path_reaches_the_end_of_the_project(real_output, row_for):
     assert bool(row_for(last['id'])['driving_path_flag']), (
         f'{last["name"]} finishes the project on day {last["finish_day"]} and is not critical'
     )
+
+
+# ------------------------------------------------ 12. a drawn position is not a place
+
+"""An inferred zone must not reach the file as a fact.
+
+`_attach_zones` gives zone-less work its stage's first zone so the 4D model has somewhere to draw
+it, and marks it `zone_inferred`. That flag existed only inside our model: the exporter read
+`zone_id` and could not tell a drawn position from a real one.
+
+The cost was measured on a real audit. Every statutory approval is a single campus-wide instance,
+but `stat.path-nm-ceig-energisation` has `gates_stage: commissioning`, which the fallback table
+maps to `data_hall` - so it arrived in the file labelled "Data hall 01", and a reader correctly
+concluded CEIG was hall-specific while the OC and Fire NOC beside it were not. The inconsistency
+they saw was real in the file and absent from the plan: neither is per-hall, and one merely wore a
+label. The file was inviting a wrong conclusion, precisely because it looked precise.
+"""
+
+
+def test_an_inferred_zone_is_not_exported_as_an_area(real_output, parsed, row_for):
+    by_task = _codes_by_task(parsed)
+    inferred = [a for a in real_output['activities'] if a.get('zone_inferred')]
+    assert inferred, 'no activity carries an inferred zone here, so this test proves nothing'
+    for activity in inferred:
+        area = by_task.get(row_for(activity['id'])['task_id'], {}).get('Area')
+        assert area is None, (
+            f'{activity["name"]} was placed in {activity["zone_id"]} for drawing only, and the '
+            f'file reports it as being in area {area!r}'
+        )
+
+
+def test_a_real_zone_is_still_exported_as_an_area(real_output, parsed, row_for):
+    """The other direction: suppressing the inferred ones must not suppress the real ones."""
+    real = [
+        a for a in real_output['activities']
+        if a.get('zone_id') and not a.get('zone_inferred')
+    ]
+    assert real, 'no genuinely zoned work in this plan'
+    by_task = _codes_by_task(parsed)
+    coded = sum(
+        1 for a in real if by_task.get(row_for(a['id'])['task_id'], {}).get('Area')
+    )
+    assert coded == len(real), f'{len(real) - coded} genuinely zoned activities lost their area'
+
+
+def test_an_inferred_zone_does_not_file_work_under_a_hall_in_the_wbs(real_output, parsed, row_for):
+    """The WBS is the first thing a planner opens, so a drawn position filed as a real one misleads
+    there before it misleads anywhere else."""
+    wbs = {row['wbs_id']: row for row in parsed['PROJWBS'].entries()}
+    for activity in real_output['activities']:
+        if not activity.get('zone_inferred'):
+            continue
+        node = wbs.get(row_for(activity['id'])['wbs_id'])
+        label = str(node['wbs_name']) if node else ''
+        assert 'hall' not in label.lower() and 'room' not in label.lower(), (
+            f'{activity["name"]} has an inferred zone and is filed under {label!r}'
+        )
+
+
+@pytest.fixture(scope='module')
+def phased_parsed(tmp_path_factory):
+    """A PHASED campus, parsed. The main fixture's brief hands over in one go, so no stage ever
+    holds more than one zone and the WBS never builds a zone level - which meant two mutations
+    that file inferred zones under real zone nodes survived, because there were no zone nodes."""
+    xer_reader = pytest.importorskip('xer_reader', reason='xer-reader is needed to read back')
+    from backend.app.llm_stub import StubAdapter
+    from backend.app.simulator import DecisionAnswer, Simulator
+
+    simulator = Simulator(
+        dict(BRIEF, data_hall_count=4, hall_handover_interval_days=180),
+        run_id='xer-phased', adapter=StubAdapter(),
+    )
+    for _ in range(50):
+        list(simulator.run())
+        if not simulator.is_halted:
+            break
+        for fork in sorted(simulator.state.pending_decisions):
+            simulator.answer(DecisionAnswer(decision_point_id=fork, answer=ANSWER))
+    output = simulator.output().model_dump()
+    text = export_xer(output, start_date=ANCHOR)
+    path = tmp_path_factory.mktemp('xer-phased') / 'export.xer'
+    path.write_bytes(text.encode('cp1252', errors='replace'))
+    return output, xer_reader.XerReader(str(path)).to_dict()
+
+
+def test_campus_work_is_never_filed_under_a_hall_on_a_phased_campus(phased_parsed):
+    """The WBS zone level exists here, so a drawn position filed as a real one is visible.
+
+    A campus-wide approval sitting under "Data hall 01" is what made a reader conclude CEIG was
+    hall-specific. On a phased campus the WBS actually builds hall nodes, which is the only
+    configuration where this can be seen at all.
+    """
+    output, parsed = phased_parsed
+    wbs = {row['wbs_id']: row for row in parsed['PROJWBS'].entries()}
+    zone_nodes = {
+        wid for wid, row in wbs.items()
+        if 'hall' in str(row['wbs_name']).lower() or 'room' in str(row['wbs_name']).lower()
+    }
+    assert zone_nodes, 'this plan built no zone level, so the test cannot see the fault'
+
+    by_name = {row['task_name']: row for row in parsed['TASK'].entries()}
+    id_to_name = {str(a['id']): a['name'] for a in output['activities']}
+    inferred = [a for a in output['activities'] if a.get('zone_inferred')]
+    assert inferred, 'no inferred zones in this plan'
+
+    for activity in inferred:
+        row = by_name.get(id_to_name[str(activity['id'])])
+        if row is None:
+            continue
+        assert row['wbs_id'] not in zone_nodes, (
+            f'{activity["name"]} is drawn in {activity["zone_id"]} and filed under '
+            f'{wbs[row["wbs_id"]]["wbs_name"]!r} as though it happened there'
+        )
+
+
+def test_no_wbs_node_is_empty(phased_parsed):
+    """A WBS node with nothing in it is a heading for work that does not exist.
+
+    Added because a mutation survived: building the zone level from raw `zone_id` creates a node
+    for a zone whose only members are drawn there, and those members are then correctly filed at
+    the parent - leaving "Data hall 02" in the breakdown with nothing under it. A planner reading
+    the WBS sees a hall that has no work.
+    """
+    output, parsed = phased_parsed
+    used = {row['wbs_id'] for row in parsed['TASK'].entries()}
+    parents = {row['parent_wbs_id'] for row in parsed['PROJWBS'].entries()}
+    empty = [
+        row['wbs_name'] for row in parsed['PROJWBS'].entries()
+        if row['wbs_id'] not in used and row['wbs_id'] not in parents
+    ]
+    assert not empty, f'{len(empty)} WBS nodes hold no work and head nothing: {empty[:4]}'

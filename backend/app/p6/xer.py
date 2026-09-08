@@ -310,6 +310,25 @@ def task_codes(activities: Sequence[Dict[str, Any]]) -> Dict[str, str]:
     return codes
 
 
+def _real_zone(activity: Dict[str, Any]) -> str:
+    """The zone an activity is actually IN, or '' if its zone is only where it is drawn.
+
+    `_attach_zones` gives zone-less work its stage's first zone so the 4D model has somewhere to
+    put it, and marks it `zone_inferred`. That is a drawing decision and it must not leave the
+    building as a fact.
+
+    Measured cost of not doing this: every statutory approval is a single campus-wide instance,
+    but CEIG carries `gates_stage: commissioning`, which the fallback maps to `data_hall` - so it
+    exported labelled "Data hall 01" while the Occupancy Certificate and Fire NOC beside it showed
+    no zone at all. A reader concluded CEIG was hall-specific and the others were not. The
+    inconsistency was real in the file and absent from the plan. A file that looks precise invites
+    exactly that.
+    """
+    if activity.get('zone_inferred'):
+        return ''
+    return str(activity.get('zone_id') or '')
+
+
 def _zone_label(zone_id: str) -> str:
     """`zone.electrical-room.01` -> `Electrical room 01`."""
     parts = str(zone_id or '').split('.')
@@ -421,7 +440,10 @@ def build_wbs(
 
         # ---- zone level, only where more than one zone appears under a parent
         for parent_node, members in groups:
-            zones = sorted({str(a.get('zone_id')) for a in members if a.get('zone_id')})
+            # Only zones work is genuinely IN. Counting drawn positions here would both invent a
+            # zone level and file campus-wide work under one hall, which is how a single
+            # campus-wide CEIG approval came to sit in "Data hall 01" in a real export.
+            zones = sorted({_real_zone(a) for a in members if _real_zone(a)})
             if len(zones) > 1:
                 zone_nodes = {}
                 for zone_index, zone in enumerate(zones, start=1):
@@ -430,8 +452,11 @@ def build_wbs(
                         parent_node, zone_index * 10,
                     )
                 for activity in members:
-                    zone = str(activity.get('zone_id')) if activity.get('zone_id') else ''
-                    assignment[str(activity.get('id'))] = zone_nodes.get(zone, parent_node)
+                    # Work with no real zone stays at the parent: it belongs to the stage, not to
+                    # whichever zone the model happened to draw it in.
+                    assignment[str(activity.get('id'))] = zone_nodes.get(
+                        _real_zone(activity), parent_node
+                    )
             else:
                 for activity in members:
                     assignment[str(activity.get('id'))] = parent_node
@@ -557,6 +582,11 @@ SAFETY_TIER_LABELS = {
 SAFETY_TIER_UNCONFIRMED = 'Tier 1 - HSE sign-off required (attachment unverified)'
 
 
+def _area_label(activity: Dict[str, Any]) -> str:
+    """The area code for an activity, empty where its zone is only a drawing position."""
+    return _real_zone(activity)
+
+
 def _safety_tier_label(activity: Dict[str, Any]) -> str:
     tier = str(activity.get('hitl_tier') or '').strip()
     if not tier:
@@ -622,12 +652,15 @@ ACTIVITY_CODE_TYPES = (
     ('Discipline', 'discipline'),
     ('Delivery Mode', 'delivery_mode'),
     ('Stage', 'stage'),
+    # Area reads through `_real_zone`, not `zone_id` directly: an activity placed in a zone only so
+    # the 4D model could draw it has no area to report, and reporting one makes a drawn position
+    # look like a determination.
     ('Area', 'zone_id'),
     ('Safety Tier', 'hitl_tier'),
 )
 
 #: Dimensions whose label needs more of the activity than one field.
-_MULTI_FIELD_DIMENSIONS = frozenset({'Safety Tier'})
+_MULTI_FIELD_DIMENSIONS = frozenset({'Safety Tier', 'Area'})
 
 #: P6's own limit on a code's short name. Names are truncated to it rather than rejected.
 ACTV_SHORT_LEN = 20
@@ -675,6 +708,21 @@ def _activity_float(activities: Sequence[Dict[str, Any]]) -> Dict[str, Dict[str,
     return compute_float(nodes, schedule)
 
 
+def _dimension_label(dimension: str, field: str, activity: Dict[str, Any]) -> str:
+    """One place that turns an activity into its code for a dimension.
+
+    Two dimensions need more of the activity than a single field - Safety Tier reads the tier and
+    whether its mapping is confirmed, Area reads the zone and whether that zone is real - so the
+    lookup lives here rather than being repeated at both call sites, where they had already
+    drifted apart once.
+    """
+    if dimension == 'Safety Tier':
+        return _safety_tier_label(activity)
+    if dimension == 'Area':
+        return _code_label(dimension, _area_label(activity))
+    return _code_label(dimension, activity.get(field))
+
+
 def build_activity_codes(activities, task_ids, proj_id):
     """The three activity-code tables: the dimensions, their values, and the assignments.
 
@@ -686,10 +734,7 @@ def build_activity_codes(activities, task_ids, proj_id):
     for type_index, (dimension, field) in enumerate(ACTIVITY_CODE_TYPES, start=1):
         values = []
         for activity in activities:
-            label = (
-                _safety_tier_label(activity) if dimension in _MULTI_FIELD_DIMENSIONS
-                else _code_label(dimension, activity.get(field))
-            )
+            label = _dimension_label(dimension, field, activity)
             if label and label not in values:
                 values.append(label)
         if not values:
@@ -714,10 +759,7 @@ def build_activity_codes(activities, task_ids, proj_id):
             code_id += 1
 
         for activity in activities:
-            label = (
-                _safety_tier_label(activity) if dimension in _MULTI_FIELD_DIMENSIONS
-                else _code_label(dimension, activity.get(field))
-            )
+            label = _dimension_label(dimension, field, activity)
             ident = str(activity.get('id'))
             if not label or ident not in task_ids:
                 continue
