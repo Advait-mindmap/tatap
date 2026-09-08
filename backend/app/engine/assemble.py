@@ -225,6 +225,34 @@ def _discipline_rank(name):
         return len(DISCIPLINE_ORDER)
 
 
+def _missing_live_site_controls(site_context, matched_rule_ids, safety_entries):
+    """Tier-1 rules this site context requires that nothing in the plan actually carries.
+
+    A rule gated on a site context is a control that APPLIES there. If the plan contains no
+    activity carrying it, the plan is not describing a safe job - it is describing a job with the
+    control left out, and it must not export looking complete.
+
+    Found the hard way: a real export answered "Brownfield - inside a live hall" and contained no
+    concurrent-operations control at all, because `match_safety_rules` needs two shared keywords
+    between an activity name and a rule's `activity_pattern`, and these patterns are written as
+    descriptions rather than as things activity names resemble. Two of five tier-1 rules match
+    nothing under any site context.
+
+    This does not invent the missing control - which activities carry a live-hall permit is a
+    question about what is adjacent and energised, not about what an activity is called, and
+    guessing it is exactly what the libraries forbid. It reports the absence.
+    """
+    context = (site_context or '').strip().lower()
+    if not context:
+        return []
+    return sorted(
+        entry['id'] for entry in safety_entries
+        if (entry.get('applies_when_site_context') or '').strip().lower() == context
+        and entry.get('hitl_tier') == 'tier_1'
+        and entry['id'] not in set(matched_rule_ids or ())
+    )
+
+
 def _delivery_mode_for(discipline, stage_discipline, delivery_modes):
     """How work of this discipline is let on this project.
 
@@ -324,6 +352,9 @@ def assemble(
     if pathway_lib is None:
         pathway_lib = _city_pathway_entries(brief.get('city'))
     site_context = str(brief.get('site_context') or '')
+    #: Which safety rules anything in this plan actually carries. A rule that applies to this site
+    #: and matches nothing is a control that is missing, not a control that is satisfied.
+    matched_safety_rules: set = set()
     fragnet_index = {f['id']: f for f in fragnet_lib}
     # (fragnet, activity) -> the duration of the whole DELIVERABLE, steps included.
     #
@@ -482,6 +513,7 @@ def assemble(
                     safety_matches = match_safety_rules(
                         spec['name'], safety_lib, site_context=site_context
                     )
+                    matched_safety_rules.update(rule['id'] for rule in safety_matches)
                     explicit_safety = bool(spec.get('safety_flag'))
                     is_safety = explicit_safety or bool(safety_matches)
                     hitl = spec.get('hitl_tier') or ('tier_1' if safety_matches else tier)
@@ -671,6 +703,7 @@ def assemble(
 
 
     tier1 = [a for a in activities if a.hitl_tier == 'tier_1']
+    missing_controls = _missing_live_site_controls(site_context, matched_safety_rules, safety_lib)
     tier2 = [a for a in activities if a.hitl_tier == 'tier_2']
     resting_on_estimates = sorted({
         dep for a in activities for dep in a.unverified_dependencies
@@ -708,11 +741,26 @@ def assemble(
             'tier_1_count': len(tier1),
             'tier_1_ids': sorted(a.id for a in tier1),
             'tier_2_count': len(tier2),
-            'export_blocked': bool(tier1),
-            'export_block_reason': (
-                f'{len(tier1)} Tier-1 safety activities require a named sign-off before export '
-                '(CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md §7).' if tier1 else ''
-            ),
+            'export_blocked': bool(tier1) or bool(missing_controls),
+            'export_block_reason': ' '.join(part for part in (
+                (
+                    f'{len(tier1)} Tier-1 safety activities require a named sign-off before '
+                    'export (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md §7).' if tier1 else ''
+                ),
+                (
+                    # Absence, said out loud. A control that applies to this site and appears
+                    # nowhere in the plan is the condition the export gate exists for: the file
+                    # would otherwise read as a complete programme for a live site while carrying
+                    # none of the controls a live site requires. It releases the same way any
+                    # Tier-1 item does - on a named signature - so the plan can still ship
+                    # deliberately, with a record of who accepted it.
+                    f'A {site_context} site requires safety controls that NO activity in this '
+                    f'plan carries: {", ".join(missing_controls)}. The plan is not complete for '
+                    'this site context; releasing it needs a named sign-off '
+                    '(CLAUDE.md rule 5).' if missing_controls else ''
+                ),
+            ) if part),
+            'missing_site_controls': missing_controls,
             'unverified_dependencies': resting_on_estimates,
             'compliance_gates': sorted({g for a in activities for g in a.compliance_gates}),
         },
