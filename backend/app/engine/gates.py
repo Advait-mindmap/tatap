@@ -289,6 +289,12 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
             'train it commissions was installed - an incoherence the forward pass made visible '
             'and nothing else would have caught.'
         ),
+        # RELEASE PER HALL. Electrical rooms are zone-instanced, so hall N's commissioning needs
+        # room N energised rather than the whole campus. Left campus-wide, this gate held hall 1's
+        # commissioning to day 448 while its own fit-out gate finished on 413 - 35 days that
+        # closed the first handover gap from the stated 180 to 145 and made the client's phasing
+        # promise cosmetic for exactly the hall they care about first.
+        release_per_zone_kind='data_hall',
     ),
     GateRule(
         id='cooling_installed',

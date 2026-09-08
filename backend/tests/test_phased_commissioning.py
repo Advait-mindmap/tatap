@@ -161,3 +161,37 @@ def test_a_halls_gate_is_fed_by_that_hall_and_not_by_its_neighbours(phased):
         assert not foreign, (
             f'{gate["id"]} for {gate_zone} waits on work in other halls: {foreign[:3]}'
         )
+
+
+def test_a_halls_power_gate_waits_on_that_halls_own_electrical_room(phased):
+    """THE WIRING ACROSS ZONE KINDS, which a schedule check cannot see.
+
+    Added because a mutation survived: pairing producers by zone IDENTITY instead of zone INDEX
+    leaves the power gate with no producer in its own zone - electrical rooms are not data halls -
+    so it falls back to whatever campus-wide power work exists and never waits for room N at all.
+    The dates still looked right, because the campus work happens to finish early enough. A hall
+    could be commissioned before its own electrical room was energised and every date-based
+    assertion would pass.
+    """
+    by_id = {a['id']: a for a in phased.activities}
+    gates = [
+        a for a in phased.activities
+        if str(a.get('id', '')).startswith('gate.power-installed.z')
+    ]
+    assert len(gates) > 1, (
+        f'the power gate was not instanced per hall: {[g["id"] for g in gates]}'
+    )
+
+    for index, gate in enumerate(sorted(gates, key=lambda g: g['id']), start=1):
+        rooms = {
+            by_id[pred['id']].get('zone_id')
+            for pred in (gate.get('predecessors') or [])
+            if pred['id'] in by_id and 'electrical-room' in str(by_id[pred['id']].get('zone_id'))
+        }
+        assert rooms, (
+            f'{gate["id"]} waits on no electrical room at all, so nothing ties this hall to the '
+            'room that powers it'
+        )
+        assert rooms == {f'zone.electrical-room.{index:02d}'}, (
+            f'{gate["id"]} should wait on electrical room {index:02d} and waits on {sorted(rooms)}'
+        )

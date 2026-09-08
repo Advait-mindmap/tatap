@@ -225,6 +225,45 @@ def _discipline_rank(name):
         return len(DISCIPLINE_ORDER)
 
 
+#: What a stated site context MEANS, in the words briefs and fork answers actually use.
+#:
+#: Brownfield first, and here the order genuinely matters: "brownfield site, adjacent to an
+#: operating facility" contains both ideas and is a live site.
+SITE_CONTEXT_WORDS = (
+    ('brownfield', (
+        'brownfield', 'live hall', 'live data hall', 'live facility', 'operating facility',
+        'energised', 'energized',
+    )),
+    ('greenfield', ('greenfield',)),
+)
+
+
+def canonical_site_context(value) -> str:
+    """The canonical site context a stated one means, or the stated one lowercased.
+
+    THE ENGINE ASSUMED A CANONICAL STRING NOTHING GUARANTEES. The safety register gates rules on
+    `applies_when_site_context: brownfield` and compared it for equality, while intake asks the
+    model for "greenfield | brownfield" and stores whatever comes back, and the site-context fork's
+    own options read "Brownfield - inside a live hall". A real export answered exactly that came
+    out with all thirty raised-floor activities at tier 2 and no live-hall control anywhere.
+
+    Worse, both protections failed on the same mismatch: the control did not attach, AND the export
+    gate that exists to report a missing live-site control compared the same exact string and
+    reported nothing missing. No control and no warning.
+
+    An unrecognised value is returned as-is rather than forced to either side. Reading an unclear
+    context as greenfield would silently drop the tier-1 rule, which is the failure this exists to
+    prevent.
+    """
+    text = str(value or '').strip().lower()
+    if not text:
+        return ''
+    for context, words in SITE_CONTEXT_WORDS:
+        if any(word in text for word in words):
+            return context
+    return text
+
+
 def _missing_live_site_controls(site_context, matched_rule_ids, safety_entries):
     """Tier-1 rules this site context requires that nothing in the plan actually carries.
 
@@ -364,7 +403,7 @@ def assemble(
     pathway_lib = libraries.get('city_pathway')
     if pathway_lib is None:
         pathway_lib = _city_pathway_entries(brief.get('city'))
-    site_context = str(brief.get('site_context') or '')
+    site_context = canonical_site_context(brief.get('site_context'))
     #: Which safety rules anything in this plan actually carries. A rule that applies to this site
     #: and matches nothing is a control that is missing, not a control that is satisfied.
     matched_safety_rules: set = set()
@@ -1208,14 +1247,17 @@ def _build_cross_stage_gates(
                     #
                     # The stagger is inherited rather than imposed: hall 3's fit-out already
                     # starts later because its own release did, so its commissioning follows.
-                    own = [
-                        pid for pid in producers
-                        if getattr(by_id.get(pid), 'zone_id', None) == zone_id
-                    ]
-                    campus = [
-                        pid for pid in producers
-                        if not getattr(by_id.get(pid), 'zone_id', None)
-                    ]
+                    # PAIRED BY ZONE INDEX, NOT BY ZONE IDENTITY, so a gate can cross zone
+                    # kinds. Hall 2's commissioning needs electrical room 2 energised, not the
+                    # whole campus - and room 2 is a different zone from hall 2, so comparing zone
+                    # ids finds nothing and falls back to waiting for every room.
+                    #
+                    # THIS IS AN INTERPRETATION and it is the generator's own structure: zones are
+                    # instanced per hall, so electrical-room.02 is the room that serves
+                    # data-hall.02. If a project ever pairs rooms to halls differently, this is
+                    # the assumption that has to change.
+                    own = [pid for pid in producers if zone_index_of(pid) == i]
+                    campus = [pid for pid in producers if not zone_index_of(pid)]
                     for producer_id in sorted(set(own) | set(campus)) or sorted(producers):
                         edges.append(AssembledEdge(
                             from_id=producer_id, to_id=zone_gate, type='FS', lag=0,

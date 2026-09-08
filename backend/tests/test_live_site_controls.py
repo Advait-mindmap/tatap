@@ -112,3 +112,94 @@ def test_the_block_lifts_once_a_mapping_is_verified_and_lands():
     ]
     matched = {r['id'] for r in live_site_rules()}
     assert _missing_live_site_controls('brownfield', matched, entries) == []
+
+
+# ------------------------------------------------ the brief does not speak in canonical strings
+
+"""A site context is prose, and the register matches an exact word.
+
+Found on a real brownfield export: all thirty raised-floor activities came out "Tier 2 - review
+before release" and the file carried no unverified-mapping code at all. The run had been answered
+"Brownfield - inside a live hall", and that is what the brief stored - so
+`applies_when_site_context: brownfield` did not equal it, the rule attached to nothing, AND
+`_missing_live_site_controls` compared the same exact string and reported nothing missing.
+
+BOTH PROTECTIONS FAILED TOGETHER on the same mismatch: no control, and no warning that a control
+was absent. The gate exists precisely to catch a missing live-site control, and it was blind for
+the same reason the control was.
+
+The engine assumed a canonical value that nothing in the pipeline guarantees. The intake prompt
+asks for "greenfield | brownfield" and stores whatever the model returns; the fork's own options
+read "Brownfield - adjacent to live halls" and "Brownfield - inside a live hall".
+"""
+
+SPELLINGS = [
+    'brownfield',
+    'Brownfield',
+    'Brownfield - inside a live hall',
+    'Brownfield - adjacent to live halls',
+    'brownfield site, adjacent to an operating facility',
+]
+
+
+@pytest.mark.parametrize('spelling', SPELLINGS)
+def test_a_live_site_is_recognised_however_the_brief_says_it(spelling):
+    """Each of these is the same site. The plan must treat them the same."""
+    output = run(spelling)
+
+    floor = [
+        a for a in output.activities
+        if 'Raised floor' in str(a.get('name')) and a.get('type') == 'task'
+    ]
+    assert floor, 'no raised-floor work in this plan, so the test proves nothing'
+    assert all(a.get('hitl_tier') == 'tier_1' for a in floor), (
+        f'site context {spelling!r} did not attach the live-hall control: '
+        f'{sorted({a.get("hitl_tier") for a in floor})}'
+    )
+
+
+@pytest.mark.parametrize('spelling', SPELLINGS)
+def test_the_gate_names_the_live_site_rule_however_the_brief_says_it(spelling):
+    """The half that failed silently. A gate blind to the spelling cannot report the absence it
+    exists to report."""
+    quality = run(spelling).quality
+    assert quality['export_blocked']
+    assert 'live_hall' in quality['export_block_reason'], (
+        f'site context {spelling!r} left the gate silent: {quality["export_block_reason"]!r}'
+    )
+
+
+def test_a_greenfield_brief_is_not_swept_up_by_the_same_reading():
+    """The other direction: recognising prose must not turn every site into a live one."""
+    for spelling in ('greenfield', 'Greenfield', 'greenfield parcel in an industrial park'):
+        reason = run(spelling).quality['export_block_reason']
+        assert 'live_hall' not in reason, f'{spelling!r} was read as a live site: {reason!r}'
+
+
+def test_an_unrecognised_site_context_is_not_forced_to_either_side():
+    """A context naming neither must stay as it is.
+
+    Added because a mutation survived: returning 'greenfield' for anything unrecognised passed
+    every other test in this file. Greenfield is the reading under which the live-hall rule does
+    NOT apply, so guessing it drops a tier-1 control exactly as silently as the string mismatch
+    this canonicaliser was written to fix.
+    """
+    from backend.app.engine.assemble import canonical_site_context
+
+    assert canonical_site_context('a site we have not surveyed yet') == 'a site we have not surveyed yet'
+    assert canonical_site_context('') == ''
+    assert canonical_site_context(None) == ''
+
+
+def test_the_canonicaliser_reads_both_sides_from_the_words_briefs_use():
+    """Direct, because the effect of misreading greenfield is currently invisible: no rule is
+    gated on it, so a broken greenfield reading would sit unnoticed until one is."""
+    from backend.app.engine.assemble import canonical_site_context
+
+    for text in ('greenfield', 'Greenfield', 'a greenfield parcel in SIPCOT'):
+        assert canonical_site_context(text) == 'greenfield', text
+    for text in (
+        'brownfield', 'Brownfield - inside a live hall', 'adjacent to live halls',
+        'construction beside an operating facility', 'next to an energised building',
+    ):
+        assert canonical_site_context(text) == 'brownfield', text
