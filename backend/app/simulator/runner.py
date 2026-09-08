@@ -41,6 +41,44 @@ from backend.app.simulator.events import (
 )
 
 
+
+#: Disciplines a brief can state a delivery mode for. The fork asks about all of them, so a bare
+#: answer has to know the full set to tell a gap from a statement.
+DELIVERY_DISCIPLINES = (
+    'civil', 'structure', 'electrical', 'mechanical', 'gensets', 'fire', 'bms',
+)
+
+#: What a planner's words mean, longest idea first so "owner-furnished" is not read as "furnish".
+DELIVERY_MODE_WORDS = (
+    ('owner-furnished', ('owner-furnish', 'owner furnish', 'owner-suppl', 'free issue', 'ofe')),
+    ('self-perform', ('self-perform', 'self perform', 'in-house', 'in house')),
+    ('turnkey', ('turnkey',)),
+    ('subcontract', ('subcontract', 'sublet')),
+)
+
+#: Human labels for the follow-up fork's options.
+DELIVERY_MODE_OPTIONS = ('Self-perform', 'Subcontract', 'Turnkey', 'Owner-furnished (OFE)')
+
+#: The answer that promises a per-discipline breakdown.
+MIXED_ANSWER = 'mixed'
+
+
+def read_delivery_mode(answer: str):
+    """The mode a planner's answer names, or None if it names none.
+
+    None rather than a guess: an answer that does not name a mode must change nothing. Reading
+    "we are still deciding" as a decision would be the same class of invention the libraries
+    refuse everywhere else.
+    """
+    text = (answer or '').strip().lower()
+    if not text:
+        return None
+    for mode, words in DELIVERY_MODE_WORDS:
+        if any(word in text for word in words):
+            return mode
+    return None
+
+
 class Simulator:
     """Walks the stages, emits events, halts at genuine forks, resumes on an answer."""
 
@@ -258,6 +296,7 @@ class Simulator:
                 f'Open: {sorted(self.state.pending_decisions)}'
             )
         pending = self.state.pending_decisions[answer.decision_point_id]
+        self._apply_delivery_mode(answer)
         self.state.answers[answer.decision_point_id] = {
             'answer': answer.answer,
             'answered_by': answer.answered_by,
@@ -272,6 +311,82 @@ class Simulator:
             'why_stuck': pending.get('why_stuck', ''),
             'options': list(pending.get('options', []) or []),
         }
+
+
+    # ------------------------------------------------------------------ delivery mode
+    #
+    # An answer has to change the plan or the fork is theatre. `dp.delivery_mode` stopped the
+    # run, asked which disciplines are self-performed, recorded the reply and did nothing with
+    # it: `self.brief` is set once at construction and nothing wrote back. A brief that never
+    # stated a mode for BMS therefore stayed silent however the planner answered, and BMS fell
+    # back to its stage's discipline - fire - and was planned as somebody else's subcontract.
+    # That breaks the rule the product exists for (CLAUDE.md rule 3).
+
+    def _blank_disciplines(self) -> List[str]:
+        """Disciplines the brief says nothing about, in a stable order."""
+        stated = {
+            str(k).lower() for k in (self.brief.get('delivery_mode_by_discipline') or {})
+        }
+        return [d for d in DELIVERY_DISCIPLINES if d not in stated]
+
+    def _set_delivery_mode(self, discipline: str, mode: str) -> None:
+        modes = self.brief.setdefault('delivery_mode_by_discipline', {})
+        modes[discipline] = mode
+
+    def _apply_delivery_mode(self, answer: DecisionAnswer) -> None:
+        """Write a delivery-mode answer into the brief, without overwriting what it stated.
+
+        A BARE ANSWER FILLS ONLY THE BLANKS. "Subcontract" answered to a question about every
+        discipline is an inference over the gaps, not a correction of the brief, and the same
+        principle that stops an unverified estimate speaking with the voice of a measurement
+        applies here: a discipline the brief named keeps what the brief said, even when it sits
+        squarely inside this fork's stage scope.
+        """
+        decision_id = answer.decision_point_id
+
+        if decision_id.startswith('dyn.delivery_mode.'):
+            # A follow-up about one discipline. It answers for that discipline and no other.
+            discipline = decision_id.rsplit('.', 1)[-1]
+            mode = read_delivery_mode(answer.answer)
+            if mode and discipline in DELIVERY_DISCIPLINES:
+                self._set_delivery_mode(discipline, mode)
+            return
+
+        if decision_id != 'dp.delivery_mode':
+            return
+
+        blanks = self._blank_disciplines()
+        if MIXED_ANSWER in (answer.answer or '').lower():
+            # "Mixed - specify per discipline" promises a breakdown, so collect one. Recording
+            # the phrase and moving on is the same defect as dropping the answer entirely: the
+            # option offers granularity and delivers none.
+            #
+            # One fork per blank discipline rather than free text: the modes are a closed set,
+            # and a list of buttons cannot be mistyped or half-parsed. Nothing is asked about a
+            # discipline the brief already stated - there is nothing to specify, and a question
+            # the planner cannot usefully answer is noise.
+            for discipline in blanks:
+                self.state.pending_decisions[f'dyn.delivery_mode.{discipline}'] = {
+                    'stage': self.state.pending_decisions.get(decision_id, {}).get('stage', ''),
+                    'question': f'How is the {discipline} scope delivered on this project?',
+                    'why_stuck': (
+                        'The brief does not say, and "Mixed - specify per discipline" was chosen '
+                        'rather than one mode for everything. A self-performed discipline '
+                        'expands into a full fragnet of trade activities; a subcontracted one '
+                        'collapses to an interface package.'
+                    ),
+                    'options': list(DELIVERY_MODE_OPTIONS),
+                    'impact': f'Decides how every {discipline} activity is planned and resourced.',
+                    'blocking': True,
+                    'detection': 'dynamic',
+                }
+            return
+
+        mode = read_delivery_mode(answer.answer)
+        if not mode:
+            return
+        for discipline in blanks:
+            self._set_delivery_mode(discipline, mode)
 
     def _resolved_decisions(self) -> List[Dict[str, Any]]:
         """Answers so far, in the shape the reasoning prompt injects as [DECISIONS_JSON]."""
