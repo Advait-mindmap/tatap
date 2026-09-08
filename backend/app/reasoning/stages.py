@@ -117,6 +117,31 @@ DECISION_TAGS_BY_STAGE: Dict[str, FrozenSet[str]] = {
 }
 
 
+#: How each stage is written when a person reads it. Acronyms stay capitalised and the underscore
+#: goes: "the mep_power stage" and even "the mep power stage" read as a code somebody forgot to
+#: translate, which is exactly the impression this table exists to remove.
+STAGE_LABELS = {
+    'design': 'design',
+    'approvals': 'approvals',
+    'procurement': 'procurement',
+    'enabling': 'enabling works',
+    'substructure': 'substructure',
+    'superstructure': 'superstructure',
+    'envelope': 'envelope',
+    'mep_power': 'MEP power',
+    'mep_cooling': 'MEP cooling',
+    'fire_bms': 'fire and BMS',
+    'fit_out': 'fit-out',
+    'commissioning': 'commissioning',
+    'handover': 'handover',
+}
+
+
+def stage_label(stage: str) -> str:
+    """The stage as a person writes it, or the raw name if the table does not know it."""
+    return STAGE_LABELS.get(stage, str(stage or '').replace('_', ' '))
+
+
 def is_valid_stage(stage: str) -> bool:
     return stage in STAGE_INDEX
 

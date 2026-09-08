@@ -706,6 +706,12 @@
       "parent_activity": "e40",
       "predecessors": [
         {
+          "id": "design.frag.design.engineering.e20-s50",
+          "kind": "fragnet",
+          "lag": 5,
+          "type": "FF"
+        },
+        {
           "id": "design.frag.design.engineering.e40-s40",
           "kind": "fragnet",
           "lag": 0,
@@ -13152,7 +13158,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 307,
+      "finish_day": 353,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50.z01",
@@ -13176,13 +13182,19 @@
           "kind": "fragnet",
           "lag": 8,
           "type": "SS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40-s80.z01",
+          "kind": "fragnet",
+          "lag": 3,
+          "type": "FF"
         }
       ],
       "safety_flag": false,
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 282,
+      "start_day": 328,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50.z01",
       "type": "task",
       "unverified_dependencies": [
@@ -13203,7 +13215,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 307,
+      "finish_day": 360,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50.z02",
@@ -13227,13 +13239,19 @@
           "kind": "fragnet",
           "lag": 8,
           "type": "SS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40-s80.z02",
+          "kind": "fragnet",
+          "lag": 3,
+          "type": "FF"
         }
       ],
       "safety_flag": false,
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 282,
+      "start_day": 335,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50.z02",
       "type": "task",
       "unverified_dependencies": [
@@ -13254,7 +13272,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 307,
+      "finish_day": 367,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50.z03",
@@ -13278,13 +13296,19 @@
           "kind": "fragnet",
           "lag": 8,
           "type": "SS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40-s80.z03",
+          "kind": "fragnet",
+          "lag": 3,
+          "type": "FF"
         }
       ],
       "safety_flag": false,
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 282,
+      "start_day": 342,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50.z03",
       "type": "task",
       "unverified_dependencies": [
@@ -13305,7 +13329,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 307,
+      "finish_day": 374,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50.z04",
@@ -13329,13 +13353,19 @@
           "kind": "fragnet",
           "lag": 8,
           "type": "SS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40-s80.z04",
+          "kind": "fragnet",
+          "lag": 3,
+          "type": "FF"
         }
       ],
       "safety_flag": false,
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 282,
+      "start_day": 349,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50.z04",
       "type": "task",
       "unverified_dependencies": [
@@ -13356,7 +13386,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 307,
+      "finish_day": 381,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50.z05",
@@ -13380,13 +13410,19 @@
           "kind": "fragnet",
           "lag": 8,
           "type": "SS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40-s80.z05",
+          "kind": "fragnet",
+          "lag": 3,
+          "type": "FF"
         }
       ],
       "safety_flag": false,
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 282,
+      "start_day": 356,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50.z05",
       "type": "task",
       "unverified_dependencies": [
@@ -13407,7 +13443,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 307,
+      "finish_day": 388,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50.z06",
@@ -13431,13 +13467,19 @@
           "kind": "fragnet",
           "lag": 8,
           "type": "SS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40-s80.z06",
+          "kind": "fragnet",
+          "lag": 3,
+          "type": "FF"
         }
       ],
       "safety_flag": false,
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 282,
+      "start_day": 363,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50.z06",
       "type": "task",
       "unverified_dependencies": [
@@ -13458,7 +13500,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 307,
+      "finish_day": 395,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c50.z07",
@@ -13482,13 +13524,19 @@
           "kind": "fragnet",
           "lag": 8,
           "type": "SS"
+        },
+        {
+          "id": "mep_power.frag.mep.power_train.c40-s80.z07",
+          "kind": "fragnet",
+          "lag": 3,
+          "type": "FF"
         }
       ],
       "safety_flag": false,
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 282,
+      "start_day": 370,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c50.z07",
       "type": "task",
       "unverified_dependencies": [
@@ -13509,7 +13557,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 332,
+      "finish_day": 378,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60.z01",
@@ -13533,7 +13581,7 @@
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 307,
+      "start_day": 353,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60.z01",
       "type": "task",
       "unverified_dependencies": [
@@ -13554,7 +13602,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 332,
+      "finish_day": 385,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60.z02",
@@ -13578,7 +13626,7 @@
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 307,
+      "start_day": 360,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60.z02",
       "type": "task",
       "unverified_dependencies": [
@@ -13599,7 +13647,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 332,
+      "finish_day": 392,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60.z03",
@@ -13623,7 +13671,7 @@
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 307,
+      "start_day": 367,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60.z03",
       "type": "task",
       "unverified_dependencies": [
@@ -13644,7 +13692,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 332,
+      "finish_day": 399,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60.z04",
@@ -13668,7 +13716,7 @@
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 307,
+      "start_day": 374,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60.z04",
       "type": "task",
       "unverified_dependencies": [
@@ -13689,7 +13737,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 332,
+      "finish_day": 406,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60.z05",
@@ -13713,7 +13761,7 @@
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 307,
+      "start_day": 381,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60.z05",
       "type": "task",
       "unverified_dependencies": [
@@ -13734,7 +13782,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 332,
+      "finish_day": 413,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60.z06",
@@ -13758,7 +13806,7 @@
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 307,
+      "start_day": 388,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60.z06",
       "type": "task",
       "unverified_dependencies": [
@@ -13779,7 +13827,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 25,
-      "finish_day": 332,
+      "finish_day": 420,
       "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c60.z07",
@@ -13803,7 +13851,7 @@
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 307,
+      "start_day": 395,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c60.z07",
       "type": "task",
       "unverified_dependencies": [
@@ -13917,7 +13965,7 @@
       "dept_code": "mep",
       "discipline": "electrical",
       "duration_days": 15,
-      "finish_day": 425,
+      "finish_day": 435,
       "hitl_tier": "tier_1",
       "hold_points": [],
       "id": "mep_power.frag.mep.power_train.c70",
@@ -13989,7 +14037,7 @@
       "safety_mapping_unconfirmed": false,
       "source_fragnet": "frag.mep.power_train",
       "stage": "mep_power",
-      "start_day": 410,
+      "start_day": 420,
       "trail_ref": "trail.mep_power.frag.mep.power_train.c70",
       "type": "task",
       "unverified_dependencies": [
@@ -16172,6 +16220,14 @@
         "lag": 0,
         "to": "design.frag.design.engineering.e30",
         "type": "FS",
+        "why": "Fragnet logic from frag.design.engineering."
+      },
+      {
+        "from": "design.frag.design.engineering.e20-s50",
+        "kind": "fragnet",
+        "lag": 5,
+        "to": "design.frag.design.engineering.e40-s50",
+        "type": "FF",
         "why": "Fragnet logic from frag.design.engineering."
       },
       {
@@ -21431,12 +21487,28 @@
         "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
       },
       {
+        "from": "mep_power.frag.mep.power_train.c40-s80.z01",
+        "kind": "fragnet",
+        "lag": 3,
+        "to": "mep_power.frag.mep.power_train.c50.z01",
+        "type": "FF",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
         "from": "mep_power.frag.mep.power_train.c40-s80.z02",
         "kind": "cross_stage_gate",
         "lag": 0,
         "to": "gate.power-installed",
         "type": "FS",
         "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c40-s80.z02",
+        "kind": "fragnet",
+        "lag": 3,
+        "to": "mep_power.frag.mep.power_train.c50.z02",
+        "type": "FF",
+        "why": "Fragnet logic from frag.mep.power_train."
       },
       {
         "from": "mep_power.frag.mep.power_train.c40-s80.z03",
@@ -21447,12 +21519,28 @@
         "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
       },
       {
+        "from": "mep_power.frag.mep.power_train.c40-s80.z03",
+        "kind": "fragnet",
+        "lag": 3,
+        "to": "mep_power.frag.mep.power_train.c50.z03",
+        "type": "FF",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
         "from": "mep_power.frag.mep.power_train.c40-s80.z04",
         "kind": "cross_stage_gate",
         "lag": 0,
         "to": "gate.power-installed",
         "type": "FS",
         "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c40-s80.z04",
+        "kind": "fragnet",
+        "lag": 3,
+        "to": "mep_power.frag.mep.power_train.c50.z04",
+        "type": "FF",
+        "why": "Fragnet logic from frag.mep.power_train."
       },
       {
         "from": "mep_power.frag.mep.power_train.c40-s80.z05",
@@ -21463,6 +21551,14 @@
         "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
       },
       {
+        "from": "mep_power.frag.mep.power_train.c40-s80.z05",
+        "kind": "fragnet",
+        "lag": 3,
+        "to": "mep_power.frag.mep.power_train.c50.z05",
+        "type": "FF",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
         "from": "mep_power.frag.mep.power_train.c40-s80.z06",
         "kind": "cross_stage_gate",
         "lag": 0,
@@ -21471,12 +21567,28 @@
         "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
       },
       {
+        "from": "mep_power.frag.mep.power_train.c40-s80.z06",
+        "kind": "fragnet",
+        "lag": 3,
+        "to": "mep_power.frag.mep.power_train.c50.z06",
+        "type": "FF",
+        "why": "Fragnet logic from frag.mep.power_train."
+      },
+      {
         "from": "mep_power.frag.mep.power_train.c40-s80.z07",
         "kind": "cross_stage_gate",
         "lag": 0,
         "to": "gate.power-installed",
         "type": "FS",
         "why": "INTRODUCED FOR REVIEW. DOMAIN_KNOWLEDGE.md §4 runs commissioning as an L1-L5 ladder over installed plant, so it cannot precede installation. Without this rule the schedule had commissioning finishing three hundred days BEFORE the power train it commissions was installed - an incoherence the forward pass made visible and nothing else would have caught."
+      },
+      {
+        "from": "mep_power.frag.mep.power_train.c40-s80.z07",
+        "kind": "fragnet",
+        "lag": 3,
+        "to": "mep_power.frag.mep.power_train.c50.z07",
+        "type": "FF",
+        "why": "Fragnet logic from frag.mep.power_train."
       },
       {
         "from": "mep_power.frag.mep.power_train.c50.z01",
@@ -31235,7 +31347,7 @@
       "dangling_ids": [
         "commissioning.frag.commissioning.ladder.e60"
       ],
-      "lag_count": 326,
+      "lag_count": 334,
       "lead_count": 0,
       "missing_predecessor_count": 2,
       "missing_predecessor_ids": [

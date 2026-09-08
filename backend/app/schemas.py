@@ -259,7 +259,12 @@ class RaisedDecisionPoint(BaseModel):
     blocking: bool = True
     #: 'curated' from the decision-point library, or 'dynamic' from low confidence / conflict.
     detection: str = 'curated'
-
+    #: The library identifiers behind this fork - `frag.mep.power_train`, `path.nm.peso_hsd`.
+    #:
+    #: KEPT, NOT SHOWN. The question and explanation read as engineering language; a reviewer
+    #: tracing a fork back to the entry that raised it still needs the code, and it lives here
+    #: rather than in the middle of a sentence a site engineer has to answer.
+    technical_refs: List[str] = Field(default_factory=list)
 
 class ReasoningFlag(BaseModel):
     """A non-blocking uncertainty, flagged Tier-2 for later confirmation (§4)."""

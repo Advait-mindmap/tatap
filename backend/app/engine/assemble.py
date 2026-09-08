@@ -778,7 +778,7 @@ def assemble(
     # already produced ids for, and the block targets are resolved by id.
     stat_activities, stat_edges, stat_warnings, stat_trail = _build_statutory_activities(
         ordered, stage_activity_ids, link_target, pathway_lib
-    )
+    , zones_by_kind=zones_by_kind)
     activities.extend(stat_activities)
     edges.extend(stat_edges)
     warnings.extend(stat_warnings)
@@ -884,11 +884,25 @@ def _city_pathway_entries(city):
     return load_city_pathway(slug_name)['entries']
 
 
+#: How many instances a statutory approval has. `campus` is the default and claims the least.
+#:
+#: WHICH approvals are issued per building is a regulatory question the library answers per entry,
+#: with a compliance sign-off recorded in provenance. The engine only honours the declaration. An
+#: audit asked why CEIG looked hall-specific while the Occupancy Certificate did not; the answer
+#: was that neither was - one wore a label from the 4D fallback - and the library had no field in
+#: which to say either way, so the question could not even be recorded.
+STATUTORY_SCOPES = ('campus', 'per_zone')
+
+#: What a per-zone approval repeats across. "Per building" means per data hall here.
+STATUTORY_ZONE_KIND = 'data_hall'
+
+
 def _build_statutory_activities(
     ordered: Sequence[StageReasoning],
     stage_activity_ids: Dict[str, List[str]],
     link_target: Dict[Tuple[str, str], List[str]],
     pathway_lib: Sequence[Dict[str, Any]],
+    zones_by_kind: Optional[Dict[str, List[Dict[str, Any]]]] = None,
 ) -> Tuple[List[AssembledActivity], List[AssembledEdge], List[str], List[TrailEntry]]:
     """Turn the city-pathway approvals the reasoner selected into real activities and edges.
 
@@ -926,9 +940,11 @@ def _build_statutory_activities(
 
     by_pathway_id = {e['id']: statutory_id(e['id']) for e in entries}
 
+    hall_zones = list((zones_by_kind or {}).get(STATUTORY_ZONE_KIND, ()))
+
     for entry in entries:
         pathway_id = entry['id']
-        ident = by_pathway_id[pathway_id]
+        base_ident = by_pathway_id[pathway_id]
         weeks = entry.get('typical_weeks')
         # Approval durations are quoted in WEEKS and applied as CALENDAR days: an authority does
         # not observe the site's six-day calendar.
@@ -941,95 +957,133 @@ def _build_statutory_activities(
             )
         approval = entry.get('approval') or pathway_id
         authority = entry.get('authority') or ''
-        activities.append(AssembledActivity(
-            id=ident,
-            wbs_id=f'00.st.{pathway_id[-3:]}',
-            name=f'{approval} - {authority}' if authority else approval,
-            type='task' if duration > 0 else 'milestone',
-            duration_days=duration,
-            calendar='7day',
-            dept_code='liaison',
-            stage=entry.get('gates_stage') or 'approvals',
-            trail_ref=trail_ref(ident),
-            # Statutory approvals rest on unverified library durations, and the pathway itself is
-            # confirmed with the client's compliance team rather than assumed (DOMAIN_KNOWLEDGE
-            # section 5), so they are never tier_3.
-            hitl_tier='tier_2',
-            compliance_gates=[pathway_id],
-            unverified_dependencies=[pathway_id],
-        ))
+        base_name = f'{approval} - {authority}' if authority else approval
 
-        # Every activity in a plan must be answerable for. An approval that appears in the
-        # schedule with no trail entry is a date nobody can trace, which is exactly what the
-        # reasoning trail exists to prevent - and the assembly tests caught this omission.
+        # AN UNRECOGNISED SCOPE CLAIMS LESS, NOT MORE. A typo must not invent four Occupancy
+        # Certificates; one campus approval is wrong in the safer direction, and the warning says
+        # the declaration was not understood rather than swallowing it.
+        scope = str(entry.get('scope') or 'campus').strip().lower()
+        if scope not in STATUTORY_SCOPES:
+            warnings.append(
+                f'Statutory approval {pathway_id} declares scope "{entry.get("scope")}", which is '
+                f'not one of {", ".join(STATUTORY_SCOPES)}. It is instanced once for the campus. '
+                'A per-building approval declared this way is being under-counted.'
+            )
+            scope = 'campus'
+        instances = (
+            list(enumerate(hall_zones, start=1))
+            if scope == 'per_zone' and hall_zones
+            else [(0, None)]
+        )
+
         selected_stage, selection = selection_by_id[pathway_id]
-        trail.append(TrailEntry(
-            ref_id=ident,
-            stage=entry.get('gates_stage') or selected_stage,
-            why=(
-                getattr(selection, 'why', '') or
-                f'{approval} is on the statutory pathway for this city.'
-            ),
-            sources=[pathway_id],
-            confidence=float(getattr(selection, 'effective_confidence', 0.0) or 0.0),
-            stated_confidence=float(getattr(selection, 'confidence', 0.0) or 0.0),
-            decided_by='engine',
-            hitl_tier='tier_2',
-            unverified_dependencies=[pathway_id],
-        ))
-
-        # When it can be lodged. Without this the approval starts on day zero and a late one
-        # can never bind - see PATHWAY_LODGEMENT_AFTER.
         lodgement = PATHWAY_LODGEMENT_AFTER.get(pathway_id)
-        if lodgement:
-            # Every instance, not the first: a CEIG inspection covers the whole HV
-            # installation, so lodging after one of eight electrical rooms would produce a date
-            # the inspector would not recognise.
-            for after in sorted(link_target.get(lodgement, [])):
-                edges.append(AssembledEdge(
-                    from_id=after, to_id=ident, type='FS', lag=0, kind='statutory',
-                    why=(
-                        f'{approval} cannot be applied for before the work it approves exists. '
-                        f'Lodged once {lodgement[1]} of {lodgement[0]} is complete; the '
-                        'approval duration runs from there.'
-                    ),
-                ))
-            if not link_target.get(lodgement):
-                warnings.append(
-                    f'{approval} is lodged after {lodgement[1]} of {lodgement[0]}, which this '
-                    'plan did not instance, so it reverts to starting at project start and will '
-                    'almost certainly not bind. Its duration is in the plan but its risk is not.'
-                )
 
-        for token in entry.get('blocks', []) or []:
-            targets: List[str] = []
-            if token in stage_activity_ids:
-                targets.extend(sorted(stage_activity_ids[token]))
-            elif token in PATHWAY_BLOCK_ALIASES:
-                for alias in PATHWAY_BLOCK_ALIASES[token]:
-                    if alias[0] == 'fragnet':
-                        targets.extend(link_target.get((alias[1], alias[2]), []))
-                    elif alias[0] == 'statutory' and alias[1] in by_pathway_id:
-                        targets.append(by_pathway_id[alias[1]])
-            if not targets:
-                # Silence here is how the whole pathway stayed inert. Say which token found
-                # nothing, so an unroutable block target is a visible gap rather than a no-op.
-                warnings.append(
-                    f'Statutory approval {pathway_id} ({approval}) blocks "{token}", which '
-                    'matched no stage, no alias and no instanced activity in this plan, so it '
-                    'constrains nothing. Either the stage was not walked or the token needs a '
-                    'row in PATHWAY_BLOCK_ALIASES.'
-                )
-                continue
-            for target in targets:
-                edges.append(AssembledEdge(
-                    from_id=ident, to_id=target, type='FS', lag=0, kind='statutory',
-                    why=(
-                        f'{approval} ({authority}) must be in hand first. Statutory pathway, '
-                        f'held as versioned compliance data ({pathway_id}) and confirmed with '
-                        "the client's compliance team, not assumed."
-                    ),
-                ))
+        for zone_index, zone in instances:
+            first_instance = zone_index <= 1
+            ident = base_ident if zone is None else f'{base_ident}.z{zone_index:02d}'
+
+            activities.append(AssembledActivity(
+                id=ident,
+                wbs_id=f'00.st.{pathway_id[-3:]}',
+                name=base_name if zone is None else _zone_named(base_name, zone),
+                type='task' if duration > 0 else 'milestone',
+                duration_days=duration,
+                calendar='7day',
+                dept_code='liaison',
+                stage=entry.get('gates_stage') or 'approvals',
+                # A per-zone approval is genuinely IN its zone - unlike the 4D fallback, which
+                # marks what it places. This one is a fact about the certificate.
+                zone_id=(zone or {}).get('id'),
+                trail_ref=trail_ref(ident),
+                # Statutory approvals rest on unverified library durations, and the pathway itself
+                # is confirmed with the client's compliance team rather than assumed
+                # (DOMAIN_KNOWLEDGE section 5), so they are never tier_3.
+                hitl_tier='tier_2',
+                compliance_gates=[pathway_id],
+                unverified_dependencies=[pathway_id],
+            ))
+
+            # Every activity in a plan must be answerable for. An approval that appears in the
+            # schedule with no trail entry is a date nobody can trace, which is exactly what the
+            # reasoning trail exists to prevent - and the assembly tests caught this omission.
+            trail.append(TrailEntry(
+                ref_id=ident,
+                stage=entry.get('gates_stage') or selected_stage,
+                why=(
+                    getattr(selection, 'why', '') or
+                    f'{approval} is on the statutory pathway for this city.'
+                ),
+                sources=[pathway_id],
+                confidence=float(getattr(selection, 'effective_confidence', 0.0) or 0.0),
+                stated_confidence=float(getattr(selection, 'confidence', 0.0) or 0.0),
+                decided_by='engine',
+                hitl_tier='tier_2',
+                unverified_dependencies=[pathway_id],
+            ))
+
+            # When it can be lodged. Without this the approval starts on day zero and a late one
+            # can never bind - see PATHWAY_LODGEMENT_AFTER.
+            if lodgement:
+                after_all = sorted(link_target.get(lodgement, []))
+                # A per-hall certificate is lodged after THAT hall's work. Falling back to all of
+                # it where the work is not zoned keeps the constraint rather than dropping it.
+                after_here = [a for a in after_all if zone_index_of(a) == zone_index] or after_all
+                if zone is None:
+                    after_here = after_all
+                for after in after_here:
+                    edges.append(AssembledEdge(
+                        from_id=after, to_id=ident, type='FS', lag=0, kind='statutory',
+                        why=(
+                            f'{approval} cannot be applied for before the work it approves '
+                            f'exists. Lodged once {lodgement[1]} of {lodgement[0]} is complete; '
+                            'the approval duration runs from there.'
+                        ),
+                    ))
+                if not after_all and first_instance:
+                    warnings.append(
+                        f'{approval} is lodged after {lodgement[1]} of {lodgement[0]}, which this '
+                        'plan did not instance, so it reverts to starting at project start and '
+                        'will almost certainly not bind. Its duration is in the plan but its '
+                        'risk is not.'
+                    )
+
+            for token in entry.get('blocks', []) or []:
+                targets: List[str] = []
+                if token in stage_activity_ids:
+                    targets.extend(sorted(stage_activity_ids[token]))
+                elif token in PATHWAY_BLOCK_ALIASES:
+                    for alias in PATHWAY_BLOCK_ALIASES[token]:
+                        if alias[0] == 'fragnet':
+                            targets.extend(link_target.get((alias[1], alias[2]), []))
+                        elif alias[0] == 'statutory' and alias[1] in by_pathway_id:
+                            targets.append(by_pathway_id[alias[1]])
+                if not targets:
+                    # Silence here is how the whole pathway stayed inert. Say which token found
+                    # nothing, so an unroutable block target is a visible gap rather than a no-op.
+                    if first_instance:
+                        warnings.append(
+                            f'Statutory approval {pathway_id} ({approval}) blocks "{token}", '
+                            'which matched no stage, no alias and no instanced activity in this '
+                            'plan, so it constrains nothing. Either the stage was not walked or '
+                            'the token needs a row in PATHWAY_BLOCK_ALIASES.'
+                        )
+                    continue
+                # A hall's own certificate gates that hall's work. Campus-wide work, and work
+                # this approval cannot be paired to, is gated by every instance - which is the
+                # conservative reading: no hall opens until its own certificate is in hand.
+                blocked = targets
+                if zone is not None:
+                    blocked = [t for t in targets if zone_index_of(t) == zone_index] or targets
+                for target in blocked:
+                    edges.append(AssembledEdge(
+                        from_id=ident, to_id=target, type='FS', lag=0, kind='statutory',
+                        why=(
+                            f'{approval} ({authority}) must be in hand first. Statutory pathway, '
+                            f'held as versioned compliance data ({pathway_id}) and confirmed '
+                            "with the client's compliance team, not assumed."
+                        ),
+                    ))
 
     if activities:
         warnings.append(

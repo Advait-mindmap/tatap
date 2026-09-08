@@ -36,6 +36,7 @@ from backend.app.reasoning.prompt import (
     reasoning_schema,
 )
 from backend.app.reasoning.stages import (
+    stage_label,
     PROCUREMENT_STAGE,
     STAGE_DEPARTMENT,
     decision_tags_for,
@@ -264,6 +265,29 @@ def reason_stage(
     )
 
 
+#: What a below-threshold confidence MEANS to the person being asked.
+#:
+#: The reader is a project engineer, not a machine-learning reviewer. "stated 0.55, below the 0.70
+#: threshold" is our model reporting on itself: it is not a fact about their project, it does not
+#: tell them what to do, and it cannot be answered. What they need is why the plan cannot settle
+#: this by itself - the figure behind it is an industry estimate nobody has confirmed for this job.
+UNCONFIRMED_REASON = (
+    'The figures behind this are our best estimate from industry norms, not confirmed for this '
+    'project, so it is asked rather than assumed.'
+)
+
+
+def plain_name(identifier: str, labels: Dict[str, str]) -> str:
+    """The work an identifier points at, in the words the library already uses for it.
+
+    Nothing here invents a description. `frag.fire_bms.detection_suppression` becomes whatever the
+    fragnet's own `name` says, which is what a planner wrote. An identifier with no entry keeps its
+    id - visibly wrong is better than a confident-sounding guess, and it shows up as a gap in the
+    library rather than being papered over.
+    """
+    return labels.get(identifier) or identifier
+
+
 def build_stage_reasoning(
     response: Dict[str, Any],
     *,
@@ -286,6 +310,13 @@ def build_stage_reasoning(
     rejected: List[Dict[str, str]] = []
     trail: List[TrailEntry] = []
     flags: List[ReasoningFlag] = []
+
+    # The names the libraries already carry, so questions can name work rather than point at it.
+    from backend.app.readable import build_labels
+
+    labels = build_labels(
+        libs['fragnets'], libs['gates'], libs['long_lead'], libs['decision_points'],
+    )
 
     frag_idx = _index(libs['fragnets'])
     gate_idx = _index(libs['gates'])
@@ -595,15 +626,16 @@ def build_stage_reasoning(
         dyn_id = f'dyn.low_confidence.{ident}'
         decision_points.append(RaisedDecisionPoint(
             decision_point_id=dyn_id,
-            question=f'Does {ident} apply to the {stage} stage on this project?',
-            why_stuck=(
-                f'The reasoner stated confidence {confidence:.2f}, below the '
-                f'{threshold:.2f} threshold. It is asked rather than assumed.'
+            question=(
+                f'Does {plain_name(ident, labels)} apply to the {stage_label(stage)} stage '
+                'on this project?'
             ),
+            why_stuck=UNCONFIRMED_REASON,
             options=['Yes, it applies', 'No, exclude it', 'Applies with modification'],
             impact='Determines whether this package is instanced into the plan.',
             blocking=True,
             detection='dynamic',
+            technical_refs=[ident],
         ))
         raised.add(dyn_id)
 
@@ -623,19 +655,21 @@ def build_stage_reasoning(
         # skip silently - the plan would proceed on unverified data without asking.
         dyn_id = f'dyn.low_confidence.batch.{stage}'
         items = sorted(low_confidence)
-        listing = '\n'.join(f'  - {ident} (stated {conf:.2f})' for ident, conf in items)
+        # NAMED, NOT LISTED BY CODE. The reader has to decide whether to build on these, which
+        # means recognising what they are. "frag.mep.power_train (stated 0.55)" is a code and a
+        # self-report; "Power train installation" is the work.
+        listing = '\n'.join(f'  - {plain_name(ident, labels)}' for ident, _ in items)
         decision_points.append(RaisedDecisionPoint(
             decision_point_id=dyn_id,
             question=(
-                f'{len(items)} selections for the {stage} stage rest on low-confidence '
-                'reasoning. Proceed with the estimates, or stop and obtain real data?'
+                f'{len(items)} parts of the {stage_label(stage)} scope rest on unconfirmed '
+                'estimates. Proceed with them, or stop and obtain real data?'
             ),
             why_stuck=(
-                f'Each of these was stated below the {threshold:.2f} confidence threshold, so '
-                'none is assumed:\n'
+                'The figures behind each of these are our best estimate from industry norms, not '
+                'confirmed for this project:\n'
                 f'{listing}\n'
-                'They share one cause - the library entry behind each is an unverified estimate '
-                '- so they are asked once rather than one at a time.'
+                'They share one cause, so they are asked once rather than one at a time.'
             ),
             options=['Proceed with the estimates', 'Stop and obtain real data'],
             impact=(
@@ -645,6 +679,7 @@ def build_stage_reasoning(
             ),
             blocking=True,
             detection='dynamic',
+            technical_refs=[ident for ident, _ in items],
         ))
         raised.add(dyn_id)
         for ident, _ in items:

@@ -295,8 +295,14 @@ def test_low_stated_confidence_raises_a_dynamic_decision_point(libs, hits):
     assert len(dyn) == 1
     assert dyn[0].decision_point_id == 'dyn.low_confidence.frag.mep.power_train'
     assert dyn[0].blocking is True
-    assert '0.30' in dyn[0].why_stuck
     assert result.is_halted is True
+    # The stated confidence no longer appears in the text. "0.30" is our model reporting on
+    # itself - not a fact about the project, and not something a site engineer can answer. The
+    # value still drives WHETHER the fork is raised, which is what this test is about; what the
+    # reader sees is why it matters to them.
+    assert '0.30' not in dyn[0].why_stuck
+    assert 'estimate' in dyn[0].why_stuck.lower()
+    assert dyn[0].technical_refs == ['frag.mep.power_train']
 
 
 def test_dynamic_detection_uses_stated_not_capped_confidence(libs, hits):
@@ -566,7 +572,15 @@ def test_several_low_confidence_selections_are_asked_once(libs, hits):
 
 
 def test_the_batched_fork_names_every_item_it_covers(libs, hits):
-    """Batching must not hide WHAT is uncertain - that is the auditable part."""
+    """Batching must not hide WHAT is uncertain - that is the auditable part.
+
+    It now names each item the way the library names it rather than by identifier, because the
+    person answering is a project engineer who has to recognise the work. The identifiers are kept
+    on `technical_refs` for anyone tracing the fork back, so nothing is lost - both halves are
+    asserted here, since dropping either would defeat the point.
+    """
+    from backend.app.readable import build_labels
+
     response = good_response()
     response['decision_points'] = []
     for package in response['packages']:
@@ -579,10 +593,16 @@ def test_the_batched_fork_names_every_item_it_covers(libs, hits):
     covered = [p.fragnet_id for p in result.packages if p.confidence < 0.7]
     covered += [l.lead_id for l in result.long_lead if l.confidence < 0.7]
     assert covered, 'the fixture produced nothing low-confidence to cover'
-    for ident in covered:
-        assert ident in fork.why_stuck, f'{ident} is not named in the batched question'
-        assert '0.30' in fork.why_stuck
 
+    labels = build_labels(
+        libs['fragnets'], libs['gates'], libs['long_lead'], libs['decision_points'],
+    )
+    for ident in covered:
+        assert ident in fork.technical_refs, f'{ident} is covered but not recorded for audit'
+        name = labels.get(ident)
+        assert name and name in fork.why_stuck, (
+            f'{ident} is covered but the reader is not told which work it is: {fork.why_stuck!r}'
+        )
 
 def test_batching_changes_nothing_about_the_audit_trail(libs, hits):
     """The instruction that matters: fewer interruptions, identical records.
