@@ -122,23 +122,76 @@ test('the zoom floor is derived from the graph, not a constant', async ({ page }
         everythingVisible:
           nodes.length > 0 && left >= pane.left - 2 && right <= pane.right + 2 &&
           top >= pane.top - 2 && bottom <= pane.bottom + 2,
+        // How far outside the pane the graph sits, per edge. Zero everywhere when it fits;
+        // a failure says which way it spilled and by how much, which separates "the floor is
+        // too high" from "the view is panned off to one side".
+        overflow: {
+          left: Math.round(Math.max(0, pane.left - left)),
+          right: Math.round(Math.max(0, right - pane.right)),
+          top: Math.round(Math.max(0, pane.top - top)),
+          bottom: Math.round(Math.max(0, bottom - pane.bottom)),
+        },
       }
     })
 
   const zoomOutFully = async () => {
-    // Two consecutive no-change readings before giving up, with a settle long enough for a
-    // slow machine. One reading was not enough: on CI a click had not been applied within 90ms,
-    // the zoom looked unchanged, and the loop stopped short of the floor - then reported "there
-    // is no floor" when in fact it had not reached it.
-    let unchanged = 0
-    for (let i = 0; i < 40 && unchanged < 2; i += 1) {
-      const button = page.locator('.react-flow__controls-zoomout')
+    // STOP ON THE FLOOR, NOT ON A CLOCK. Earlier versions of this loop inferred "we have arrived"
+    // from a click that appeared to change nothing after a fixed wait - first 90ms, then 200ms
+    // and two consecutive readings. Both were the same mistake with a bigger number, and both
+    // failed the same way on a slower runner: a click that has not been APPLIED yet is
+    // indistinguishable from a click that had nothing left to do, so the loop stopped above the
+    // floor and the test then reported a cropped graph as a floor that does not reach.
+    //
+    // The floor needs no inferring. The view publishes the value it derived for this graph on
+    // `data-zoom-floor`, so arrival is a fact the DOM can state: the zoom has reached the floor,
+    // or React Flow has disabled its own control. Waiting on the zoom to MOVE, rather than
+    // sampling after a delay, means a slow runner is merely slow here instead of wrong.
+    const button = page.locator('.react-flow__controls-zoomout')
+    for (let i = 0; i < 40; i += 1) {
+      const now = await readState()
+      if (now.derived > 0 && now.zoom <= now.derived * 1.001) break
       if (await button.isDisabled()) break
-      const before = (await readState()).zoom
+
       await button.click({ timeout: 4000 }).catch(() => {})
-      await page.waitForTimeout(200)
-      unchanged = Math.abs((await readState()).zoom - before) < 1e-6 ? unchanged + 1 : 0
+      const moved = await page
+        .waitForFunction(
+          (previous) => {
+            const viewport = document.querySelector('.react-flow__viewport') as HTMLElement | null
+            const zoom = Number(/scale\(([\d.]+)\)/.exec(viewport?.style.transform ?? '')?.[1] ?? 0)
+            const control = document.querySelector(
+              '.react-flow__controls-zoomout',
+            ) as HTMLButtonElement | null
+            return control?.disabled === true || Math.abs(zoom - previous) > 1e-6
+          },
+          now.zoom,
+          { timeout: 5000 },
+        )
+        .then(() => true)
+        .catch(() => false)
+      // Five seconds with no movement and no disabled control is not a slow machine, it is a
+      // view with nothing further to give. Ending here reports where the zoom actually stopped.
+      if (!moved) break
     }
+
+    // MEASURE A SETTLED TRANSFORM. Both exits above can fire while the view is still moving:
+    // React Flow disables its zoom-out control from its own store the moment the zoom reaches
+    // `minZoom`, which is not the moment the DOM transform has finished arriving there. Measuring
+    // then reads a graph still larger than the floor and reports it as a floor that crops - which
+    // is exactly the intermittent CI failure this loop produced while passing locally and under a
+    // 12x CPU throttle.
+    await page
+      .waitForFunction(
+        () => {
+          const canvas = document.querySelector('.canvas') as HTMLElement | null
+          const viewport = document.querySelector('.react-flow__viewport') as HTMLElement | null
+          const floor = Number(canvas?.getAttribute('data-zoom-floor') ?? 0)
+          const zoom = Number(/scale\(([\d.]+)\)/.exec(viewport?.style.transform ?? '')?.[1] ?? 0)
+          return floor > 0 && zoom > 0 && zoom <= floor * 1.001
+        },
+        undefined,
+        { timeout: 8000 },
+      )
+      .catch(() => {})
     return readState()
   }
 
@@ -151,8 +204,15 @@ test('the zoom floor is derived from the graph, not a constant', async ({ page }
   // The floor is low enough to show the entire programme. This is what the derived floor is
   // for: a fixed floor above it returns a cropped graph the reader cannot zoom out of, which
   // is the fault the old constant 0.15 caused.
-  expect(big.everythingVisible, 'the whole graph is not visible even at maximum zoom-out')
-    .toBe(true)
+  // The message carries the numbers. A CI failure is read through the GitHub annotation, which
+  // holds the assertion and not the console.log above it - the first time this failed, the
+  // evidence needed to diagnose it sat in a job log behind a token.
+  expect(
+    big.everythingVisible,
+    `the whole graph is not visible even at maximum zoom-out ` +
+      `(${big.nodes} nodes, derived floor ${big.derived}, stopped at ${big.zoom}, ` +
+      `zoom-out disabled: ${big.zoomOutDisabled}, overflow ${JSON.stringify(big.overflow)})`,
+  ).toBe(true)
 
   // NOT asserting that the zoom-out control is disabled here. That is React Flow's Controls
   // component reporting its own state, not a property of the derived floor, and it depends on
