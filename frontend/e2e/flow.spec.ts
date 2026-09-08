@@ -286,11 +286,43 @@ test.describe('2D process flow', () => {
     // on the size of the graph the run produced, which is not what this test is about.
     await ready(page)
 
-    const deliveryEdges = await page.$$eval('.react-flow__edge', (els) =>
-      els.map((e) => e.getAttribute('data-testid') ?? e.id).filter(Boolean),
-    )
-    const gated = deliveryEdges.filter((id) => id!.includes('gate.delivery-'))
-    expect(gated.length).toBeGreaterThan(0)
+    // Read NODES as well as edges. This assertion has failed twice on CI with zero gated edges
+    // while passing locally, and "zero" has two completely different causes that the old message
+    // could not tell apart: a plan that contains no delivery gates at all, or a plan that
+    // contains them whose edges did not reach the DOM. Two hypotheses were tested and refuted
+    // before this was added - a rendering race (edges are complete at 613ms under a 6x CPU
+    // throttle, well inside completedRun's wait) and a viewport effect (nothing sets
+    // onlyRenderVisibleElements, so every edge is in the DOM whatever the zoom). The next
+    // failure should not cost another round of guessing.
+    const seen = await page.evaluate(() => {
+      const edges = Array.from(document.querySelectorAll('.react-flow__edge'))
+      const ids = edges.map((e) => e.getAttribute('data-testid') ?? e.id).filter(Boolean) as string[]
+      const nodeIds = Array.from(document.querySelectorAll('.react-flow__node'))
+        .map((n) => n.getAttribute('data-id'))
+        .filter(Boolean) as string[]
+      return {
+        edges: ids.length,
+        gatedEdges: ids.filter((id) => id.includes('gate.delivery-')).length,
+        nodes: nodeIds.length,
+        gateNodes: nodeIds.filter((id) => id.includes('gate.delivery-')).length,
+        stages: new Set(
+          Array.from(document.querySelectorAll('[data-testid="node-card"]'))
+            .map((c) => c.getAttribute('data-stage'))
+            .filter(Boolean),
+        ).size,
+      }
+    })
+
+    expect(
+      seen.gatedEdges,
+      seen.gateNodes === 0
+        ? `the plan contains no delivery-gate nodes at all (${seen.nodes} nodes across ` +
+          `${seen.stages} stages, ${seen.edges} edges) - this is a PLAN problem, not a ` +
+          'rendering one: the run produced no delivery milestones to gate anything with'
+        : `${seen.gateNodes} delivery-gate nodes are on the canvas but none of the ` +
+          `${seen.edges} edges connects one - this is a LOGIC problem: the milestones exist ` +
+          'and gate nothing',
+    ).toBeGreaterThan(0)
   })
 
   // FIXME: clicks a card that may be off-screen in a live graph; needs the same
