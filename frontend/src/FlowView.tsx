@@ -413,6 +413,26 @@ function FlowViewInner({
     // gave 0.75 locally gave about 0.5 there, rendering the label at 6.2px instead of 9.4px.
     // "Centre this fork at a readable zoom" is a statement about zoom, so say it directly and
     // it holds on every machine.
+    // The automatic fit stands down for this graph.
+    //
+    // DEFENSIVE, NOT A FIX FOR AN OBSERVED FAULT - said plainly because it was first written as
+    // the latter and that was wrong. The fit above records a signature only when `fitView`
+    // SUCCEEDS, and it fails for the first frames after nodes land, while `canFit` is false. So
+    // a fit can in principle still be outstanding when the reader clicks, fire when `canFit`
+    // flips, and throw the view back to the whole-programme zoom.
+    //
+    // Measured with this line removed, under a 20x CPU throttle: it never happened. The view
+    // reached 0.9 and held it for a full 20 seconds. The window is narrow - after a completed
+    // run `canFit` is long since true - and the CI failure that prompted this was something
+    // else entirely: a test measuring the view 800ms after the click, while the 400ms
+    // transition was still crossing 0.45 on its way up.
+    //
+    // It stays because the stance is right and costs one line: an automatic default exists to
+    // give an untouched view a sensible starting point, never to overrule a deliberate choice.
+    // The zone filter already takes exactly this stance with `touchedZones`. A genuinely new
+    // graph changes the signature and fits as before.
+    fittedRef.current = signatureRef.current;
+
     const node = reactFlow.getNode(target.id);
     const width = node?.width ?? 240;
     const height = node?.height ?? 80;
