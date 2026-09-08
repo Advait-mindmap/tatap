@@ -245,12 +245,25 @@ def _missing_live_site_controls(site_context, matched_rule_ids, safety_entries):
     context = (site_context or '').strip().lower()
     if not context:
         return []
-    return sorted(
-        entry['id'] for entry in safety_entries
-        if (entry.get('applies_when_site_context') or '').strip().lower() == context
-        and entry.get('hitl_tier') == 'tier_1'
-        and entry['id'] not in set(matched_rule_ids or ())
-    )
+    matched = set(matched_rule_ids or ())
+    unsatisfied = []
+    for entry in safety_entries:
+        if (entry.get('applies_when_site_context') or '').strip().lower() != context:
+            continue
+        if entry.get('hitl_tier') != 'tier_1':
+            continue
+        # AN UNCONFIRMED MAPPING DOES NOT CLOSE THE GATE. A rule whose attachment nobody has
+        # verified may be attached to one narrow activity while the hazard it describes covers far
+        # more - live-hall works on a brownfield campus reach MEP tie-ins, containment and
+        # commissioning near live plant, not only the one deliverable a keyword happened to
+        # select. Counting that as coverage would be the appearance of safety again, which is the
+        # failure this whole gate exists to catch.
+        if entry.get('mapping_status') != 'verified':
+            unsatisfied.append(entry['id'])
+            continue
+        if entry['id'] not in matched:
+            unsatisfied.append(entry['id'])
+    return sorted(unsatisfied)
 
 
 def _delivery_mode_for(discipline, stage_discipline, delivery_modes):
@@ -510,8 +523,25 @@ def assemble(
                     activity_index += 1
                     activity_counter[package_index] = activity_index
                     ident = activity_id(stage, fragnet['id'], spec['id'], zone_index)
+                    # MATCH THE DELIVERABLE, NOT THE STEP. The register's patterns were
+                    # written against library deliverables - "Integrated systems test under load /
+                    # on generator" - and Tier 4 decomposition then REPLACED those deliverables
+                    # with their steps. The names the rules were written against stopped existing
+                    # as leaves, so matching fell through to whichever step happened to share two
+                    # words: the IST-under-load control landed on "Test script and load bank
+                    # mobilisation", a step of L4 FUNCTIONAL PERFORMANCE TESTING, and the L5 test
+                    # it names got nothing from the rule at all.
+                    #
+                    # The hazard belongs to the deliverable, so every step it was split into
+                    # carries it. Flagging one step would let a planner sign off part of an IST.
+                    safety_name = spec['name']
+                    if spec.get('parent'):
+                        safety_name = (
+                            library_specs.get((fragnet['id'], spec['parent']), {}).get('name')
+                            or spec['name']
+                        )
                     safety_matches = match_safety_rules(
-                        spec['name'], safety_lib, site_context=site_context
+                        safety_name, safety_lib, site_context=site_context
                     )
                     matched_safety_rules.update(rule['id'] for rule in safety_matches)
                     explicit_safety = bool(spec.get('safety_flag'))
@@ -754,10 +784,12 @@ def assemble(
                     # none of the controls a live site requires. It releases the same way any
                     # Tier-1 item does - on a named signature - so the plan can still ship
                     # deliberately, with a record of who accepted it.
-                    f'A {site_context} site requires safety controls that NO activity in this '
-                    f'plan carries: {", ".join(missing_controls)}. The plan is not complete for '
-                    'this site context; releasing it needs a named sign-off '
-                    '(CLAUDE.md rule 5).' if missing_controls else ''
+                    f'A {site_context} site requires safety controls this plan does not '
+                    f'establish: {", ".join(missing_controls)}. Each is either carried by no '
+                    'activity at all, or carried only by a mapping nobody has verified - and an '
+                    'unverified mapping may cover one narrow activity while the hazard covers '
+                    'many. The plan is not complete for this site context; releasing it needs a '
+                    'named sign-off (CLAUDE.md rule 5).' if missing_controls else ''
                 ),
             ) if part),
             'missing_site_controls': missing_controls,

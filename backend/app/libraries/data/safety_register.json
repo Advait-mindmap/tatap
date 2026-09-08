@@ -120,10 +120,11 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 5. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review. applies_when_site_context ADDED FOR REVIEW: the pattern already says \"(brownfield)\" in prose, but prose is not a condition the engine can read, so this rule fired on greenfield projects too. Found when the fit-out fragnet was added: \"Raised floor and plinth installation to data halls\" shares the words \"data\" and \"halls\" with this pattern, which was enough for the two-word keyword match, and a routine raised-floor activity on a greenfield site was marked Tier-1 and BLOCKED EXPORT. Wrongly blocking export is not a safe failure: it teaches a planner that the block is noise.",
+        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 5. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review. applies_when_site_context ADDED FOR REVIEW: the pattern already says \"(brownfield)\" in prose, but prose is not a condition the engine can read, so this rule fired on greenfield projects too. Found when the fit-out fragnet was added: \"Raised floor and plinth installation to data halls\" shares the words \"data\" and \"halls\" with this pattern, which was enough for the two-word keyword match, and a routine raised-floor activity on a greenfield site was marked Tier-1 and BLOCKED EXPORT. Wrongly blocking export is not a safe failure: it teaches a planner that the block is noise. MAPPING NOT VERIFIED. This rule attaches by keyword to \"Raised floor and plinth installation to data halls\" and to nothing else. That attachment is inherited from the matcher's behaviour, not from a planner's judgement: a test asserts it fires, but the test calls the matcher directly with a deliverable name, so it passed while decomposed plans carried no such control at all. Whether raised flooring is even the right scope is open - work near an energised hall on a brownfield campus reaches MEP tie-ins, containment and commissioning near live plant. Treated as UNSATISFIED by the export gate until an adjacency-driven mapping is reviewed, so nobody reads this as vetted coverage.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#7"
       },
-      "applies_when_site_context": "brownfield"
+      "applies_when_site_context": "brownfield",
+      "mapping_status": "inherited_unconfirmed"
     }
   ]
 }

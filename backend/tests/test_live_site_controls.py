@@ -83,10 +83,32 @@ def test_a_greenfield_plan_is_not_blocked_for_a_control_it_does_not_need():
         )
 
 
-def test_the_block_lifts_if_the_control_ever_lands():
-    """Guards against this becoming permanent. When the real mechanism attaches a live-hall
-    control, this block must stop firing on its own rather than needing to be remembered."""
+def test_matching_alone_does_not_satisfy_the_gate():
+    """A control attached by an UNVERIFIED mapping is not coverage.
+
+    live_hall_works attaches by keyword to one deliverable - raised flooring - and to nothing
+    else, while the hazard it describes reaches MEP tie-ins, containment and commissioning near
+    live plant. Counting one narrow attachment as satisfying the gate would be the appearance of
+    safety, which is the failure the gate exists to catch.
+    """
     from backend.app.engine.assemble import _missing_live_site_controls
 
+    entries = load_library('safety_register')['entries']
     matched = {r['id'] for r in live_site_rules()}
-    assert _missing_live_site_controls('brownfield', matched, load_library('safety_register')['entries']) == []
+    assert _missing_live_site_controls('brownfield', matched, entries) == sorted(matched), (
+        'an unverified mapping closed the gate merely by matching something'
+    )
+
+
+def test_the_block_lifts_once_a_mapping_is_verified_and_lands():
+    """Guards against permanence. When a planner reviews the adjacency-driven mapping and marks
+    it verified, the block must stop firing on its own rather than needing to be remembered."""
+    from backend.app.engine.assemble import _missing_live_site_controls
+
+    entries = [
+        dict(r, mapping_status='verified') if r['id'] in {x['id'] for x in live_site_rules()}
+        else r
+        for r in load_library('safety_register')['entries']
+    ]
+    matched = {r['id'] for r in live_site_rules()}
+    assert _missing_live_site_controls('brownfield', matched, entries) == []

@@ -14867,7 +14867,7 @@
       "zone_inferred": true
     },
     {
-      "blocks_export": true,
+      "blocks_export": false,
       "calendar": "6day",
       "compliance_gates": [],
       "confidence": 0.5,
@@ -14876,7 +14876,7 @@
       "discipline": "testing",
       "duration_days": 6,
       "finish_day": 576,
-      "hitl_tier": "tier_1",
+      "hitl_tier": "tier_2",
       "hold_points": [],
       "id": "commissioning.frag.commissioning.ladder.e40-s10",
       "name": "L4 functional performance testing: Test script and load bank mobilisation",
@@ -14901,7 +14901,7 @@
           "type": "FS"
         }
       ],
-      "safety_flag": true,
+      "safety_flag": false,
       "source_fragnet": "frag.commissioning.ladder",
       "stage": "commissioning",
       "start_day": 570,
@@ -15480,13 +15480,13 @@
     },
     {
       "activity_id": "commissioning.frag.commissioning.ladder.e40-s10",
-      "blocks_export": true,
+      "blocks_export": false,
       "finish_day": 610,
-      "hitl_tier": "tier_1",
+      "hitl_tier": "tier_2",
       "is_IST": false,
       "level": "L4",
       "name": "L4 functional performance testing",
-      "safety_flag": true,
+      "safety_flag": false,
       "start_day": 570
     },
     {
@@ -15597,7 +15597,7 @@
     {
       "hitl_tier": "tier_2",
       "kind": "engine_warning",
-      "message": "251 assembled activities rest on 7 unverified library entries; their confidence is the capped value, not the reasoner's claim.",
+      "message": "252 assembled activities rest on 7 unverified library entries; their confidence is the capped value, not the reasoner's claim.",
       "refs": []
     }
   ],
@@ -30527,18 +30527,18 @@
         "zone_id": "zone.data-hall.01"
       },
       {
-        "blocks_export": true,
+        "blocks_export": false,
         "confidence": 0.5,
         "dept": "commissioning",
         "discipline": "testing",
         "duration_days": 6,
         "finish": null,
-        "hitl_tier": "tier_1",
+        "hitl_tier": "tier_2",
         "id": "commissioning.frag.commissioning.ladder.e40-s10",
         "kind": "activity",
         "label": "L4 functional performance testing: Test script and load bank mobilisation",
         "parent": "package.commissioning.testing",
-        "safety_flag": true,
+        "safety_flag": false,
         "stage": "commissioning",
         "start": null,
         "trail_ref": "trail.commissioning.frag.commissioning.ladder.e40-s10",
@@ -30954,13 +30954,12 @@
       "note": "Partial. The date-dependent DCMA checks are not run because scheduling (CPM dates) is not yet computed; they are listed in checks_not_run rather than reported as passing.",
       "total_nodes": 291
     },
-    "export_block_reason": "11 Tier-1 safety activities require a named sign-off before export (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md §7).",
+    "export_block_reason": "10 Tier-1 safety activities require a named sign-off before export (CLAUDE.md rule 5, DOMAIN_KNOWLEDGE.md §7).",
     "export_blocked": true,
     "governance_complete": false,
     "open_decision_count": 0,
-    "tier_1_count": 11,
+    "tier_1_count": 10,
     "tier_1_ids": [
-      "commissioning.frag.commissioning.ladder.e40-s10",
       "commissioning.frag.commissioning.ladder.e50-s10",
       "commissioning.frag.commissioning.ladder.e50-s20",
       "commissioning.frag.commissioning.ladder.e50-s30",
@@ -30972,7 +30971,7 @@
       "mep_power.frag.mep.power_train.c67",
       "mep_power.frag.mep.power_train.c70"
     ],
-    "tier_2_count": 251,
+    "tier_2_count": 252,
     "unverified_dependencies": [
       "frag.commissioning.ladder",
       "frag.design.engineering",
@@ -31111,7 +31110,7 @@
       "confidence": 0.5,
       "decided_by": "engine",
       "decision": null,
-      "hitl_tier": "tier_1",
+      "hitl_tier": "tier_2",
       "ref_id": "commissioning.frag.commissioning.ladder.e40-s10",
       "sources": [
         "corpus:1#0",
