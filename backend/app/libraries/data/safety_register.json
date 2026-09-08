@@ -24,9 +24,13 @@
         "verification_status": "unverified",
         "verified_by": null,
         "verified_on": null,
-        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 1. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review.",
+        "note": "Activity and reason from DOMAIN_KNOWLEDGE.md section 7 row 1. permit_predecessors and hold_points are MODEL-ELABORATED and need HSE review. ATTACHMENT CORRECT, COVERAGE INCOMPLETE. This rule attaches to the deliverable that shares its name and to nothing else, so it is the one tier-1 rule whose attachment is not wrong - but it is not therefore complete. The activities in `known_coverage_gaps` are live-electrical work carrying the same arc-flash and electrocution risk, and no control reaches them. Recorded rather than fixed: extending a rule by keyword is what produced the wrong attachments elsewhere in this register, and which activities carry an HV permit is a planner's judgement.",
         "source_ref": "docs/DOMAIN_KNOWLEDGE.md#7"
-      }
+      },
+      "known_coverage_gaps": [
+        "Pre-energisation IR, ratio and polarity tests",
+        "Secondary injection and protection-scheme testing"
+      ]
     },
     {
       "id": "safety.ist_under_load",

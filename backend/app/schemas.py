@@ -353,6 +353,11 @@ class AssembledActivity(BaseModel):
     predecessors: List[Dict[str, Any]] = Field(default_factory=list)
     hold_points: List[str] = Field(default_factory=list)
     safety_flag: bool = False
+    #: True when this activity's safety tier rests on a rule whose ATTACHMENT nobody has
+    #: verified. The tier is still real - a sign-off is still required - but which activities the
+    #: rule reaches was decided by the matcher, not by a planner, so the file must not present it
+    #: as reviewed coverage. See `mapping_status` in the safety register.
+    safety_mapping_unconfirmed: bool = False
     hitl_tier: str = 'tier_3'
     blocks_export: bool = False
     trail_ref: str = ''

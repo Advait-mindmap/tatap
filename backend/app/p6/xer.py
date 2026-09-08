@@ -451,6 +451,38 @@ CREWS_PER_ACTIVITY = 1
 #: How a delivery mode reads on a code, where 'unknown' is a real answer rather than a gap: it
 #: means no mode was ever settled for that discipline, and a planner filtering for exactly those
 #: is asking a useful question.
+#: Safety tier, said as an instruction rather than a grade.
+#:
+#: The export carried no safety field at all until this: every tier-1 determination - which
+#: activities need an HSE sign-off, which ones hold the export until they get one - lived in our
+#: model and nowhere in the file a planner actually works from. P6 has no native concept for it,
+#: so it travels as a code and filters exactly like Discipline does.
+#:
+#: The labels say what is REQUIRED, not merely what grade a thing is. A bare "Tier 1" reads as
+#: vetted coverage, and it is not: one tier-1 rule currently attaches through a mapping no planner
+#: has verified (see `mapping_status` in the safety register). "Sign-off required" is true whether
+#: or not the mapping behind it has been reviewed.
+SAFETY_TIER_LABELS = {
+    'tier_1': 'Tier 1 - HSE sign-off required before export',
+    'tier_2': 'Tier 2 - review before release',
+    'tier_3': 'Tier 3 - routine',
+}
+
+#: A tier-1 activity whose rule reached it through an unverified mapping. The sign-off is just as
+#: required; what is not established is that the rule reaches the right work, or all of it. A
+#: reader filtering for safety-critical work needs to see the difference, because these are the
+#: rows a planner has to review before anyone can claim the register covers this project.
+SAFETY_TIER_UNCONFIRMED = 'Tier 1 - HSE sign-off required (attachment unverified)'
+
+
+def _safety_tier_label(activity: Dict[str, Any]) -> str:
+    tier = str(activity.get('hitl_tier') or '').strip()
+    if not tier:
+        return ''
+    if tier == 'tier_1' and activity.get('safety_mapping_unconfirmed'):
+        return SAFETY_TIER_UNCONFIRMED
+    return SAFETY_TIER_LABELS.get(tier, tier.replace('_', ' ').title())
+
 DELIVERY_MODE_LABELS = {
     'self-perform': 'Self-perform',
     'subcontract': 'Subcontract',
@@ -509,7 +541,11 @@ ACTIVITY_CODE_TYPES = (
     ('Delivery Mode', 'delivery_mode'),
     ('Stage', 'stage'),
     ('Area', 'zone_id'),
+    ('Safety Tier', 'hitl_tier'),
 )
+
+#: Dimensions whose label needs more of the activity than one field.
+_MULTI_FIELD_DIMENSIONS = frozenset({'Safety Tier'})
 
 #: P6's own limit on a code's short name. Names are truncated to it rather than rejected.
 ACTV_SHORT_LEN = 20
@@ -522,6 +558,8 @@ def _code_label(dimension: str, value: str) -> str:
         return ''
     if dimension == 'Delivery Mode':
         return DELIVERY_MODE_LABELS.get(text, text.replace('-', ' ').title())
+    if dimension == 'Safety Tier':
+        return SAFETY_TIER_LABELS.get(text, text.replace('_', ' ').title())
     if dimension == 'Area':
         return text  # zone ids are already readable: zone.data-hall.01
     return text.replace('_', ' ').title()
@@ -538,7 +576,10 @@ def build_activity_codes(activities, task_ids, proj_id):
     for type_index, (dimension, field) in enumerate(ACTIVITY_CODE_TYPES, start=1):
         values = []
         for activity in activities:
-            label = _code_label(dimension, activity.get(field))
+            label = (
+                _safety_tier_label(activity) if dimension in _MULTI_FIELD_DIMENSIONS
+                else _code_label(dimension, activity.get(field))
+            )
             if label and label not in values:
                 values.append(label)
         if not values:
@@ -563,7 +604,10 @@ def build_activity_codes(activities, task_ids, proj_id):
             code_id += 1
 
         for activity in activities:
-            label = _code_label(dimension, activity.get(field))
+            label = (
+                _safety_tier_label(activity) if dimension in _MULTI_FIELD_DIMENSIONS
+                else _code_label(dimension, activity.get(field))
+            )
             ident = str(activity.get('id'))
             if not label or ident not in task_ids:
                 continue

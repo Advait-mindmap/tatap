@@ -278,3 +278,69 @@ Recorded here so they are not mistaken for verified behaviour:
   shared vocabulary rather than shared meaning, and will miss paraphrased precedent.
 - **The pgvector SQL retrieval path is untested.** Tests run on sqlite against an equivalent
   Python implementation; the Postgres path has no coverage.
+
+---
+
+## 4. CONSTRAINT ON DEPTH WORK: safety patterns are coupled to decomposition depth
+
+**Status: an active constraint, not an open question. Read this before adding a decomposition
+tier.**
+
+### What happened
+
+The safety register matches a rule to work by pairing its `activity_pattern` against an activity
+NAME, requiring two shared keywords. Those patterns were authored against the library's
+**deliverables** — "Integrated systems test under load / on generator", "HV/MV energisation & live
+electrical testing".
+
+Tier 4 decomposition then **replaced** each deliverable with its execution steps. The names the
+rules were written against stopped existing as leaves, and matching silently fell through to
+whichever step happened to share two words with a pattern. Measured across all five tier-1 rules
+afterwards:
+
+| Rule | Attached to | |
+|---|---|---|
+| `safety.hv_energisation` | its own deliverable | correct, only because that deliverable has no steps |
+| `safety.ist_under_load` | "Test script and load bank mobilisation" — a step of **L4** | **wrong** |
+| `safety.gas_suppression_discharge` | nothing | **absent** |
+| `safety.genset_fuel_commissioning` | "Bulk HSD storage tank and fuel system installation" | questionable |
+| `safety.live_hall_works` | nothing in a decomposed plan | **absent** |
+
+A planner signing off "Tier-1 safety" was signing off load-bank mobilisation while the integrated
+systems test carried no control. Nothing caught it, because the tests call `match_safety_rules`
+directly with deliverable names — they asserted the mechanism, not the outcome.
+
+### The fix, and why it is not sufficient on its own
+
+Matching now happens at the deliverable level: a step inherits its parent's name for safety
+purposes, and every step of a hazardous deliverable carries the control. That repairs the present
+break by pinning matching to the layer the register was authored at.
+
+**It does not remove the coupling.** The register is still authored against one naming layer, and
+the engine still has to know which layer that is.
+
+### The constraint
+
+**A further decomposition tier — steps below execution steps, or any change that replaces a named
+activity with differently-named children — will break safety attachment again, the same way, and
+silently.** The failure is silent because a control landing on the wrong activity looks exactly
+like a control landing on the right one, and because the count of tier-1 activities goes UP, not
+down, so a governance summary reads as healthier.
+
+Anything adding depth must do one of:
+
+1. **Re-author the register at the new deepest naming layer**, and prove it by asserting against
+   assembled plan output — never against the matcher in isolation.
+2. **Make the patterns depth-independent**, by matching on a structural identity that survives
+   decomposition (library step ids, or an explicit `applies_to` list on each rule) rather than on
+   names. This is the durable fix and it removes the coupling entirely.
+3. **Show that the deliverable layer is still the matching layer** and that new children inherit
+   from it, as steps do today.
+
+### Related
+
+`safety.live_hall_works` carries `mapping_status: inherited_unconfirmed` and does not satisfy the
+export gate. `safety.hv_energisation` carries `known_coverage_gaps` naming live-electrical work no
+control reaches. Both are recorded in the register rather than fixed, because which activities
+carry a permit is a planner's judgement — and extending a rule by keyword is precisely what
+produced the wrong attachments above.

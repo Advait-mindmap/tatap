@@ -544,6 +544,10 @@ def assemble(
                         safety_name, safety_lib, site_context=site_context
                     )
                     matched_safety_rules.update(rule['id'] for rule in safety_matches)
+                    unconfirmed_mapping = any(
+                        (rule.get('mapping_status') or 'verified') != 'verified'
+                        for rule in safety_matches
+                    )
                     explicit_safety = bool(spec.get('safety_flag'))
                     is_safety = explicit_safety or bool(safety_matches)
                     hitl = spec.get('hitl_tier') or ('tier_1' if safety_matches else tier)
@@ -583,6 +587,7 @@ def assemble(
                         predecessors=[],
                         hold_points=sorted(h['name'] for h, _ in holds),
                         safety_flag=is_safety,
+                        safety_mapping_unconfirmed=unconfirmed_mapping,
                         hitl_tier=hitl,
                         # Tier-1 safety blocks export until signed off (CLAUDE.md rule 5).
                         blocks_export=hitl == 'tier_1',
@@ -655,6 +660,12 @@ def assemble(
                             zone_id=(zone or {}).get('id'),
                             predecessors=[{'id': ident, 'type': 'FS', 'lag': 0}],
                             hitl_tier=hitl,
+                            # A hold takes its tier from the work it holds, so it must take that
+                            # work's mapping confidence too. Without this a tier-1 hold derived
+                            # from an unverified attachment reads in the export as reviewed
+                            # coverage, while the activity it hangs off reads as unverified - the
+                            # same fact, told two different ways in one file.
+                            safety_mapping_unconfirmed=unconfirmed_mapping,
                             blocks_export=hitl == 'tier_1',
                             trail_ref=trail_ref(hold_ident),
                             confidence=confidence,

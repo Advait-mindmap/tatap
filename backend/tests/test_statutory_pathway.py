@@ -430,3 +430,35 @@ def test_the_ist_stays_downstream_of_the_diesel_licence(plan):
     # And the governance that makes the direct edge unnecessary is actually present.
     assert ist['hitl_tier'] == 'tier_1' and ist['blocks_export'] is True
     assert black_building['hitl_tier'] == 'tier_1' and black_building['blocks_export'] is True
+
+
+def test_the_brownfield_rule_reaches_an_assembled_plan_not_just_the_matcher():
+    """The companion the test above needed, and did not have.
+
+    `test_the_brownfield_rule_still_fires_on_a_brownfield_site` calls `match_safety_rules` directly
+    with a DELIVERABLE name. It passed for months while real plans carried no live-hall control at
+    all, because Tier 4 decomposition had replaced that deliverable with steps and the matcher
+    never saw the name the test feeds it. A green test, a broken product, and no contradiction
+    between them - the test asserted a mechanism, and the mechanism worked in isolation.
+
+    This asserts the OUTCOME: whatever the matcher does, a brownfield plan must actually contain
+    the control on real activities. Three tests found today shared the isolated shape, so this is
+    the pattern being closed rather than one test being patched.
+    """
+    # A BROWNFIELD plan, deliberately: the shared fixture is greenfield, where this rule must not
+    # fire at all - which is what the sibling test above asserts.
+    output = drive(dict(NAVI_MUMBAI, site_context='brownfield'), 'statutory-brownfield')
+    flagged = [
+        a for a in output['activities']
+        if a.get('hitl_tier') == 'tier_1' and 'Raised floor' in str(a.get('name'))
+    ]
+    assert flagged, (
+        'the brownfield live-hall rule attaches to nothing in an assembled plan, however it '
+        'behaves when called directly'
+    )
+    assert all(a.get('blocks_export') for a in flagged), (
+        'the control is attached but does not hold the export, so it governs nothing'
+    )
+    assert all(a.get('safety_mapping_unconfirmed') for a in flagged), (
+        'the attachment is presented as reviewed coverage; its mapping has not been verified'
+    )

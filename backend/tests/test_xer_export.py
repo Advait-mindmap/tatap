@@ -926,14 +926,21 @@ def test_the_export_carries_the_dimensions_a_planner_filters_by(parsed):
 
 def test_every_code_value_traces_back_to_an_activity(real_output, parsed):
     """No invented values. Every code in the file is a value some activity actually holds."""
-    from backend.app.p6.xer import ACTIVITY_CODE_TYPES, _code_label
+    from backend.app.p6.xer import (
+        ACTIVITY_CODE_TYPES, _MULTI_FIELD_DIMENSIONS, _code_label, _safety_tier_label,
+    )
 
     types = {row['actv_code_type_id']: row['actv_code_type'] for row in parsed['ACTVTYPE'].entries()}
     field_of = dict(ACTIVITY_CODE_TYPES)
     for row in parsed['ACTVCODE'].entries():
         dimension = types[row['actv_code_type_id']]
         field = field_of[dimension]
-        held = {_code_label(dimension, a.get(field)) for a in real_output['activities']}
+        # Safety Tier reads two fields - the tier and whether its mapping is confirmed - so the
+        # test has to resolve it the same way the exporter does or it checks the wrong string.
+        if dimension in _MULTI_FIELD_DIMENSIONS:
+            held = {_safety_tier_label(a) for a in real_output['activities']}
+        else:
+            held = {_code_label(dimension, a.get(field)) for a in real_output['activities']}
         assert row['actv_code_name'] in held, (
             f'{dimension} code {row["actv_code_name"]!r} matches no activity in the plan'
         )
@@ -987,3 +994,77 @@ def test_the_codes_survive_a_re_export_unchanged(real_output):
     first = export_xer(real_output, start_date=ANCHOR)
     second = export_xer(real_output, start_date=ANCHOR)
     assert first == second
+
+
+# ------------------------------------------------------------ 9. safety tier as a code
+
+"""Safety tier, visible to the person holding the file.
+
+Found by reading a real export: the XER carried no safety field at all. Every tier-1 determination
+- which activities need an HSE sign-off, which ones block the export until they get one - lived in
+our model and nowhere in the deliverable. A planner opening the file in P6 could not see which
+activities carry controls, and the export gate they had just satisfied referred to activities they
+could not identify.
+
+P6 has no native concept for this, but it has activity codes, and the mechanism already exists.
+"""
+
+
+def test_the_export_says_which_activities_carry_safety_controls(parsed):
+    present = {row['actv_code_type'] for row in parsed['ACTVTYPE'].entries()}
+    assert 'Safety Tier' in present, (
+        f'the file gives a reader no way to find safety-critical work; it has {sorted(present)}'
+    )
+
+
+def test_every_tier_one_activity_is_findable_in_the_file(real_output, parsed, row_for):
+    """THE SPECIFIC CLAIM: each tier-1 activity in the plan carries the tier-1 code - not "some
+    activity does", which is the shape of assertion that hid a wrong safety attachment today."""
+    by_task = _codes_by_task(parsed)
+    tier_one = [a for a in real_output['activities'] if a.get('hitl_tier') == 'tier_1']
+    assert tier_one, 'this run has no tier-1 activities, so the test proves nothing'
+
+    for activity in tier_one:
+        code = by_task.get(row_for(activity['id'])['task_id'], {}).get('Safety Tier')
+        assert code and code.startswith('Tier 1'), (
+            f'{activity["name"]} is tier-1 in the plan but reads {code!r} in the file'
+        )
+
+
+def test_an_ordinary_activity_is_not_labelled_safety_critical(real_output, parsed, row_for):
+    """The other direction. A tier-3 activity wearing a tier-1 code would send a planner looking
+    for a sign-off that nothing requires, and would inflate the very count the gate reports."""
+    by_task = _codes_by_task(parsed)
+    routine = [a for a in real_output['activities'] if a.get('hitl_tier') == 'tier_3']
+    assert routine, 'no routine activities in this run'
+
+    for activity in routine[:40]:
+        code = by_task.get(row_for(activity['id'])['task_id'], {}).get('Safety Tier')
+        assert not (code or '').startswith('Tier 1'), (
+            f'{activity["name"]} is tier-3 but the file calls it {code!r}'
+        )
+
+
+def test_the_tier_one_code_says_what_it_requires(parsed):
+    """A bare "Tier 1" reads as vetted coverage. It is a statement that a sign-off is REQUIRED,
+    which is what the reader needs to act on - and today's work found one tier-1 mapping that no
+    planner has verified, so the label must not overclaim."""
+    labels = [
+        row['actv_code_name'] for row in parsed['ACTVCODE'].entries()
+        if row['actv_code_name'].startswith('Tier 1')
+    ]
+    assert labels, 'no tier-1 code value in the file'
+    assert any('sign-off' in label.lower() for label in labels), (
+        f'the tier-1 label does not say a sign-off is required: {labels}'
+    )
+
+
+def test_the_count_in_the_file_matches_the_count_the_gate_reports(real_output, parsed):
+    """The gate blocks on a number; the file must contain that same number, or the two disagree
+    about what was signed off."""
+    by_task = _codes_by_task(parsed)
+    in_file = sum(
+        1 for codes in by_task.values() if (codes.get('Safety Tier') or '').startswith('Tier 1')
+    )
+    in_plan = sum(1 for a in real_output['activities'] if a.get('hitl_tier') == 'tier_1')
+    assert in_file == in_plan, f'{in_plan} tier-1 activities in the plan, {in_file} in the file'
