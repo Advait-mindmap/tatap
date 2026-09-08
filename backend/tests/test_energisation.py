@@ -99,23 +99,25 @@ def phased_run():
     return simulator.output()
 
 
-def test_no_hall_has_an_established_energisation_date_yet(phased_run):
-    """THIS IS A RECORD OF A GAP, NOT AN ENDORSEMENT OF IT.
+def test_every_hall_now_has_its_own_energisation_date(phased_run):
+    """THE INVERTED TEST. It previously recorded that no hall had an energisation date, and said
+    in its own assertion message that it must be inverted when per-hall commissioning landed.
 
-    The commissioning ladder is instanced once for the campus, so on a four-hall phased brief no
-    hall has commissioning of its own and no hall has an energisation date. Making the ladder
-    per-hall needs the gate feeding it to pair per zone as well - without that, every hall waits
-    on a campus-wide fit-out gate pinned to the LAST hall and they all energise on the same day,
-    which breaks the stated handover interval.
-
-    When that lands this test must be inverted, and the assertion says so rather than quietly
-    passing on the wrong answer.
+    It has. The commissioning ladder instances per hall where the brief phases handover, and
+    `fit_out_complete` releases each hall on its own fit-out rather than the last hall's - so each
+    hall commissions on its own dates and energises on its own day.
     """
     days = energisation_days(phased_run.activities)
     halls = {a.get('zone_id') for a in phased_run.activities
              if a.get('zone_id') and 'data-hall' in a['zone_id']}
     assert len(halls) == 4, f'expected four hall zones, found {sorted(halls)}'
-    assert days == {}, (
-        'a hall now has a real energisation date - per-hall commissioning has landed, so invert '
-        f'this test and assert the phasing interval between halls instead: {days}'
+    assert set(days) == halls, (
+        f'{len(days)} of {len(halls)} halls have an energisation date: {sorted(days)}'
     )
+
+
+def test_the_halls_do_not_all_energise_at_once(phased_run):
+    """Per-hall structure is not per-hall delivery. Four ladders finishing on one day would look
+    like phased commissioning while being exactly what it replaced."""
+    days = sorted(energisation_days(phased_run.activities).values())
+    assert len(set(days)) > 1, f'every hall energises on day {days[0]}'

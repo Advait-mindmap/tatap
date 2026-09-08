@@ -260,6 +260,15 @@ CROSS_STAGE_GATES: Tuple[GateRule, ...] = (
         producer_stage='fit_out',
         consumer_stages=('commissioning',),
         kind='readiness',
+        # RELEASE PER HALL. Without this the gate is emitted once for the campus and pinned to the
+        # LAST hall's fit-out, so hall 2's commissioning waited on hall 4 - its own fit-out having
+        # finished 180 days earlier. Every hall then commissioned on the same day, which is
+        # per-hall structure without per-hall delivery: it looks phased and is not.
+        #
+        # Harmless on a single-handover project, where commissioning is not instanced per zone at
+        # all: `_split_consumers_by_zone` finds no per-zone consumers and the gate falls back to
+        # the one campus release, which is what that project should have.
+        release_per_zone_kind='data_hall',
         why=(
             'INTRODUCED FOR REVIEW. L4/L5 commissioning exercises the halls as they will be '
             'operated, which presupposes the containment, racks and structured cabling are in. '

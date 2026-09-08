@@ -192,10 +192,29 @@ def test_halls_complete_at_the_stated_interval(plans, key, text, halls, interval
     gaps = [later - earlier for earlier, later in zip(days, days[1:])]
     assert gaps, 'only one hall completed, so there is no interval to check'
 
-    # Every gap is the stated interval. Not "roughly" - the engine schedules to a number, and
-    # the number came from the brief.
-    assert set(gaps) == {interval}, (
-        f'brief {key}: halls complete {gaps} days apart, not {interval}'
+    # EVERY GAP AFTER THE FIRST is the stated interval. Not "roughly" - the engine schedules to a
+    # number, and the number came from the brief.
+    #
+    # The first gap is measured separately because commissioning became per-hall. A hall's
+    # completion is now its own commissioning finishing, and hall 1's commissioning cannot start
+    # until CAMPUS-WIDE prerequisites are in - measured on brief A, `gate.power-installed`
+    # finishes on day 448 while hall 1's own fit-out gate finished on 413, so hall 1 is held 35
+    # days and the first gap closes to 145.
+    #
+    # That is a real constraint, not a scheduling error: no hall is commissioned before the
+    # campus has power. The stated interval governs the RELEASE of each hall, and it is honoured
+    # exactly wherever a hall's own work is what gates it. Asserting equality on every gap
+    # conflated the interval the client stated with the completion dates that follow from it.
+    #
+    # OPEN QUESTION, raised not decided: `gate.power-installed` releases campus-wide, but
+    # electrical rooms ARE zone-instanced. If hall N needs only room N energised, this gate should
+    # pair per zone as `fit_out_complete` now does, and the first gap would open back up.
+    assert set(gaps[1:]) == {interval}, (
+        f'brief {key}: halls after the first complete {gaps[1:]} days apart, not {interval}'
+    )
+    assert gaps[0] <= interval, (
+        f'brief {key}: the first hall completes {gaps[0]} days before the second, MORE than the '
+        f'stated {interval} - a campus prerequisite can compress this gap, never stretch it'
     )
 
 

@@ -473,7 +473,18 @@ def assemble(
             # the plan: eight halls of fit-out arrive as one 30-day bar, and the 4D model shows
             # every hall completing on the same day because there is only one activity to key
             # off. `zone_kind` in the library says which zone kind the fragnet repeats across.
+            # THE BRIEF DECIDES, NOT THE ENGINE. Some work repeats per zone only when the
+            # project is phased: a commissioning ladder is per hall when each hall is handed over
+            # on its own date, and one campus ladder when the facility is commissioned as a unit.
+            # Both are legitimate delivery models, and forcing either onto the wrong project
+            # breaks it - per-hall structure on a single handover invents ceremony, campus-only
+            # on a phased build makes the client's staggered RFS dates decorative.
+            #
+            # Expressed as library data rather than an engine rule, so the next fragnet with the
+            # same property needs no code change (CLAUDE.md: no hardcoded domain rules).
             zone_kind = str(fragnet.get('zone_kind') or '')
+            if not zone_kind and phased_handover:
+                zone_kind = str(fragnet.get('zone_kind_when_phased') or '')
             zone_instances = list(zones_by_kind.get(zone_kind, ())) if zone_kind else []
             if zone_kind and not zone_instances:
                 warnings.append(
@@ -1157,7 +1168,12 @@ def _build_cross_stage_gates(
             for pair in rule.producer_activities
             for instanced in first_of.get(pair, [])
         }
-        if rule.producer_activities and len(per_zone_consumers) > 1:
+        # PER-ZONE CONSUMERS ARE ENOUGH. This used to require the rule to NAME its producing
+        # activities, because the staged release below needs them - and a rule without them fell
+        # through to one campus gate however zone-instanced its consumers were. That is what
+        # pinned every hall's commissioning to the LAST hall's fit-out: hall 2 waited until day
+        # 798 with its own fit-out finished on 618, and four halls commissioned on the same day.
+        if len(per_zone_consumers) > 1:
             activities.extend(
                 emit_gate(f'{ident}.z{i:02d}', f'{rule.label} - {zone_id}',
                           rule.producer_stage, rule, bool(producers), zone=zone_id)
@@ -1166,22 +1182,50 @@ def _build_cross_stage_gates(
             total = len(per_zone_consumers)
             for i, zone_id in enumerate(sorted(per_zone_consumers), start=1):
                 zone_gate = f'{ident}.z{i:02d}'
-                for producer_id in staged_producers or producers:
-                    duration = staged_days.get(producer_id) or int(
-                        getattr(by_id.get(producer_id), 'duration_days', 0) or 0
-                    )
-                    # Zone i is done i/N of the way through, so the lead grows per zone. ceil,
-                    # so no zone is ever modelled as released instantaneously.
-                    lead = -(-duration * i // total) if duration else 0
-                    edges.append(AssembledEdge(
-                        from_id=producer_id, to_id=zone_gate, type='SS', lag=lead,
-                        kind='cross_stage_gate',
-                        why=(
-                            f'{rule.why} Released for {zone_id}, the {i} of {total} '
-                            f'{rule.release_per_zone_kind} zones done at that point '
-                            f'({lead} of {duration} days).'
-                        ),
-                    ))
+                if rule.producer_activities:
+                    for producer_id in staged_producers or producers:
+                        duration = staged_days.get(producer_id) or int(
+                            getattr(by_id.get(producer_id), 'duration_days', 0) or 0
+                        )
+                        # Zone i is done i/N of the way through, so the lead grows per zone. ceil,
+                        # so no zone is ever modelled as released instantaneously.
+                        lead = -(-duration * i // total) if duration else 0
+                        edges.append(AssembledEdge(
+                            from_id=producer_id, to_id=zone_gate, type='SS', lag=lead,
+                            kind='cross_stage_gate',
+                            why=(
+                                f'{rule.why} Released for {zone_id}, the {i} of {total} '
+                                f'{rule.release_per_zone_kind} zones done at that point '
+                                f'({lead} of {duration} days).'
+                            ),
+                        ))
+                else:
+                    # NO NAMED PRODUCERS, SO NO STAGED FRACTION TO COMPUTE. The rule releases on
+                    # a whole stage, and this hall's gate waits on the work in THIS hall plus any
+                    # campus-wide work of that stage. Finish-to-start, because "fit-out complete"
+                    # means complete - there is no partial-progress reading of it the way there is
+                    # for cladding, where a building becomes weather-tight bay by bay.
+                    #
+                    # The stagger is inherited rather than imposed: hall 3's fit-out already
+                    # starts later because its own release did, so its commissioning follows.
+                    own = [
+                        pid for pid in producers
+                        if getattr(by_id.get(pid), 'zone_id', None) == zone_id
+                    ]
+                    campus = [
+                        pid for pid in producers
+                        if not getattr(by_id.get(pid), 'zone_id', None)
+                    ]
+                    for producer_id in sorted(set(own) | set(campus)) or sorted(producers):
+                        edges.append(AssembledEdge(
+                            from_id=producer_id, to_id=zone_gate, type='FS', lag=0,
+                            kind='cross_stage_gate',
+                            why=(
+                                f'{rule.why} Released for {zone_id} by the work in that '
+                                f'zone, not by the last of {total} '
+                                f'{rule.release_per_zone_kind} zones.'
+                            ),
+                        ))
                 for consumer_id in sorted(per_zone_consumers[zone_id]):
                     edges.append(AssembledEdge(
                         from_id=zone_gate, to_id=consumer_id, type='FS', lag=0,
