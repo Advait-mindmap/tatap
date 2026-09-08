@@ -1068,3 +1068,150 @@ def test_the_count_in_the_file_matches_the_count_the_gate_reports(real_output, p
     )
     in_plan = sum(1 for a in real_output['activities'] if a.get('hitl_tier') == 'tier_1')
     assert in_file == in_plan, f'{in_plan} tier-1 activities in the plan, {in_file} in the file'
+
+
+# ------------------------------------------------------------ 10. calendars
+
+"""The calendar each activity is actually on.
+
+Measured on a real export: the engine assigns three calendars - 6day to 436 activities, 7day to 27,
+5day to 15 - and the exporter wrote ONE calendar row and put every task on it. Twenty-seven
+activities the plan says run seven days a week were exported as five-day work, and the file
+contradicted the plan it came from.
+
+This is not the deferred calendar question. Making the forward pass calendar-AWARE is real work and
+still outstanding; this is the export throwing away a value the engine had already computed.
+"""
+
+
+def _calendars_by_id(parsed):
+    return {row['clndr_id']: row for row in parsed['CALENDAR'].entries()}
+
+
+def test_every_calendar_the_plan_uses_is_in_the_file(real_output, parsed):
+    used = {str(a.get('calendar') or '') for a in real_output['activities']}
+    used.discard('')
+    names = {row['clndr_name'] for row in parsed['CALENDAR'].entries()}
+    assert len(names) >= len(used), (
+        f'the plan uses {len(used)} calendars {sorted(used)} and the file declares '
+        f'{len(names)}: {sorted(names)}'
+    )
+    for calendar in used:
+        assert any(calendar in name for name in names), (
+            f'no calendar in the file corresponds to {calendar!r}: {sorted(names)}'
+        )
+
+
+def test_each_task_carries_its_own_calendar(real_output, parsed, row_for):
+    """THE SPECIFIC CLAIM. Not "more than one calendar exists" - each activity is on the one the
+    engine assigned it."""
+    calendars = _calendars_by_id(parsed)
+    checked = 0
+    for activity in real_output['activities']:
+        wanted = str(activity.get('calendar') or '')
+        if not wanted:
+            continue
+        row = row_for(activity['id'])
+        name = calendars[row['clndr_id']]['clndr_name']
+        assert wanted in name, (
+            f'{activity["name"]} runs a {wanted} week in the plan and a {name!r} week in the file'
+        )
+        checked += 1
+    assert checked > 50, f'only {checked} activities carried a calendar; this proves little'
+
+
+def test_a_seven_day_calendar_actually_works_seven_days(parsed):
+    """The row must mean what its name says: P6 reads `clndr_data`, not the label."""
+    for row in parsed['CALENDAR'].entries():
+        name, data = row['clndr_name'], row['clndr_data']
+        worked = data.count('s|08:00|f|16:00')
+        if '7day' in name:
+            assert worked == 7, f'{name} declares {worked} working days'
+        elif '6day' in name:
+            assert worked == 6, f'{name} declares {worked} working days'
+        elif '5day' in name:
+            assert worked == 5, f'{name} declares {worked} working days'
+
+
+def test_the_weekly_hours_match_the_days_worked(parsed):
+    for row in parsed['CALENDAR'].entries():
+        worked = row['clndr_data'].count('s|08:00|f|16:00')
+        assert int(float(row['week_hr_cnt'])) == worked * HOURS_PER_DAY, (
+            f'{row["clndr_name"]}: {worked} days worked but week_hr_cnt is {row["week_hr_cnt"]}'
+        )
+
+
+def test_exactly_one_calendar_is_the_default(parsed):
+    # the reader types this column as a boolean, so accept either shape
+    defaults = [r for r in parsed['CALENDAR'].entries()
+                if r['default_flag'] in ('Y', True)]
+    assert len(defaults) == 1, f'{len(defaults)} calendars claim to be the default'
+
+
+def test_an_undefined_calendar_pattern_says_so_in_its_name():
+    """A working week nobody defined must not arrive looking chosen.
+
+    The export is a file, not a conversation - there is no warnings channel a P6 user reads. So
+    the assumption goes in the calendar's title, which they cannot miss when they open it.
+    """
+    from backend.app.p6.xer import DEFAULT_CALENDAR, build_calendars
+
+    rows, ids, unknown = build_calendars(
+        [{'id': 'a', 'calendar': 'tidal', 'duration_days': 1}], stamp='2000-01-01 00:00',
+    )
+    assert unknown == ['tidal']
+    assert 'undefined pattern' in rows[0]['clndr_name'], rows[0]['clndr_name']
+    assert DEFAULT_CALENDAR in rows[0]['clndr_name']
+    assert ids['tidal'] == rows[0]['clndr_id'], 'the activity must still land on a real calendar'
+
+
+# ------------------------------------------------------------ 11. float in the file
+
+def test_the_file_carries_float_for_every_activity(real_output, parsed, row_for):
+    """Blank float on every row is what made this a dependency list rather than a schedule."""
+    missing = [
+        a['name'] for a in real_output['activities']
+        if not str(row_for(a['id'])['total_float_hr_cnt']).strip()
+    ]
+    assert not missing, f'{len(missing)} activities carry no total float, e.g. {missing[:3]}'
+
+
+def test_float_is_expressed_in_the_hours_p6_stores(real_output, parsed, row_for):
+    """The engine works in days and P6 in hours; a file mixing the two silently is worse than one
+    with no float at all."""
+    from backend.app.p6.xer import _activity_float
+
+    days = _activity_float(real_output['activities'])
+    for activity in real_output['activities'][:80]:
+        row = row_for(activity['id'])
+        expected = days[str(activity['id'])]['total_float'] * HOURS_PER_DAY
+        assert int(row['total_float_hr_cnt']) == expected, activity['name']
+
+
+def test_some_activities_are_on_the_driving_path_and_some_are_not(real_output, row_for):
+    """The specific claim. Before this every row said 'N' - a computed-looking answer that was
+    false everywhere. A real schedule has both."""
+    # The reader types this column as a boolean, so compare on truth rather than on the letter.
+    flags = [bool(row_for(a['id'])['driving_path_flag']) for a in real_output['activities']]
+    assert any(flags), 'no activity is on the driving path, so the plan has no critical path'
+    assert not all(flags), 'every activity is critical, which means float is not being computed'
+
+
+def test_late_dates_are_present_and_never_precede_early_ones(real_output, row_for):
+    checked = 0
+    for activity in real_output['activities']:
+        row = row_for(activity['id'])
+        assert str(row['late_start_date']).strip(), f'{activity["name"]} has no late start'
+        assert row['late_start_date'] >= row['early_start_date'], activity['name']
+        assert row['late_end_date'] >= row['early_end_date'], activity['name']
+        checked += 1
+    assert checked > 100
+
+
+def test_the_critical_path_reaches_the_end_of_the_project(real_output, row_for):
+    """A critical path that stops short is a broken calculation. The activity finishing last must
+    be on it, by definition - it is what defines the project finish."""
+    last = max(real_output['activities'], key=lambda a: int(a['finish_day'] or 0))
+    assert bool(row_for(last['id'])['driving_path_flag']), (
+        f'{last["name"]} finishes the project on day {last["finish_day"]} and is not critical'
+    )

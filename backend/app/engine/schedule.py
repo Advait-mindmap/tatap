@@ -11,10 +11,14 @@ What this is: a forward pass over the precedence graph producing the earliest da
 can start and finish, in whole days from day 0. It invents nothing — every number is a sum of
 durations and lags already in the plan.
 
-What this is NOT: a full CPM. There is no backward pass, no float, no critical path, no calendar
-arithmetic (a '6day' calendar is recorded on each activity but not yet applied), and no mapping
-onto real dates. Those belong with the P6 export, which is where the spec puts them. Day offsets
-are the honest unit for a scrubber: they are exactly as precise as the data supports.
+`compute_float` adds the backward pass: late dates, total and free float, and which activities
+are critical. Same rule as the forward pass - every number is a sum of durations and lags already
+in the plan, and nothing is estimated.
+
+What this is still NOT: calendar arithmetic. A '6day' calendar is recorded on each activity and
+the export now carries it, but the passes here count whole days, so P6 recalculating on F9 can
+land on different dates than we wrote. Float is computed on the same day count as the dates it
+describes, which keeps the two consistent with each other until the calendars are applied.
 """
 
 from __future__ import annotations
@@ -172,6 +176,106 @@ def _field(activity: Any, name: str) -> Any:
     if isinstance(activity, dict):
         return activity.get(name)
     return getattr(activity, name, None)
+
+
+def compute_float(
+    activities: Sequence[Any], schedule: Dict[str, Tuple[int, int]]
+) -> Dict[str, Dict[str, int]]:
+    """The backward pass: late dates, total and free float, and what is critical.
+
+    The mirror of `compute_schedule`. That walks forward taking each activity's earliest start
+    from its predecessors; this walks backward taking each activity's latest finish from its
+    successors. Total float is the slack between the two, and an activity with none of it is on
+    the critical path by definition.
+
+    Everything here is arithmetic over durations and lags already in the plan - nothing is
+    estimated, exactly as in the forward pass.
+
+    FLOAT IS MEASURED AGAINST THE PROJECT FINISH, not against each chain's own end. A plan with
+    two independent chains finishing on different days has slack in the shorter one; hanging late
+    dates off each chain's own last activity would report zero float everywhere and make the
+    critical path the whole plan, which is the classic way this calculation goes quietly wrong.
+
+    NOT CALENDAR-AWARE, deliberately, because the forward pass is not either. These are day
+    offsets, and P6 recalculating with real calendars can land elsewhere. Float consistent with
+    the dates we export is the honest thing to ship until the calendars are applied; float on one
+    basis and dates on another would be worse than none.
+    """
+    index = {a.id: a for a in activities}
+    order = _order(activities)
+
+    successors: Dict[str, List[Dict[str, Any]]] = {ident: [] for ident in index}
+    for activity in activities:
+        for link in activity.predecessors or []:
+            predecessor_id = link.get('id')
+            if predecessor_id in successors:
+                successors[predecessor_id].append({'to': activity.id, 'link': link})
+
+    project_finish = max((finish for _, finish in schedule.values()), default=0)
+
+    late: Dict[str, Tuple[int, int]] = {}
+    for activity_id in reversed(order):
+        activity = index[activity_id]
+        duration = max(0, int(activity.duration_days or 0))
+        # An activity with no successors can finish as late as the project does. This is what
+        # anchors every chain to the same end rather than to its own.
+        finish = project_finish
+
+        for edge in successors.get(activity_id, ()):
+            if edge['to'] not in late:
+                continue  # unknown or cyclic: constrains nothing rather than guessing
+            s_late_start, s_late_finish = late[edge['to']]
+            lag = int(edge['link'].get('lag') or 0)
+            kind = (edge['link'].get('type') or FINISH_TO_START).upper()
+
+            # Each type inverted. The forward pass says when the successor may start given this
+            # activity; these say how late this activity may finish given the successor.
+            if kind == START_TO_START:
+                latest = s_late_start - lag + duration
+            elif kind == FINISH_TO_FINISH:
+                latest = s_late_finish - lag
+            elif kind == START_TO_FINISH:
+                latest = s_late_start - lag + duration
+            else:  # FS, and anything unrecognised - matching the forward pass
+                latest = s_late_start - lag
+
+            finish = min(finish, latest)
+
+        late[activity_id] = (finish - duration, finish)
+
+    result: Dict[str, Dict[str, int]] = {}
+    for activity_id, (late_start, late_finish) in late.items():
+        early_start, early_finish = schedule.get(activity_id, (0, 0))
+        total = late_start - early_start
+
+        # FREE float is what this activity can absorb without moving any SUCCESSOR, as opposed to
+        # without moving the project. It is the gap to the earliest thing waiting on it, so an
+        # activity nothing waits on has as much free float as it has total.
+        gaps = []
+        for edge in successors.get(activity_id, ()):
+            if edge['to'] not in schedule:
+                continue
+            s_start, _ = schedule[edge['to']]
+            lag = int(edge['link'].get('lag') or 0)
+            gaps.append(s_start - lag - early_finish)
+        free = min(gaps) if gaps else total
+
+        result[activity_id] = {
+            'late_start': late_start,
+            'late_finish': late_finish,
+            # Clamped at zero. A negative here means the logic cannot be satisfied - a cycle the
+            # topological order broke, say - and reporting "minus three days of slack" as though
+            # it were a measurement would be inventing a number to describe broken data.
+            'total_float': max(0, total),
+            'free_float': max(0, min(free, total)),
+            'critical': total <= 0,
+        }
+    return result
+
+
+def apply_float(activities: Sequence[Any]) -> Dict[str, Dict[str, int]]:
+    """Compute float from the activities' own dates and return it by id."""
+    return compute_float(activities, compute_schedule(activities))
 
 def zone_timeline(activities: Iterable[Any]) -> Dict[str, Dict[str, Any]]:
     """When each zone comes into existence and what is happening in it, day by day.

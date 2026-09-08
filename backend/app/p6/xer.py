@@ -155,18 +155,100 @@ PRED_TYPE = {'FS': 'PR_FS', 'SS': 'PR_SS', 'FF': 'PR_FF', 'SF': 'PR_SF'}
 
 #: A single 8-hour, 5-day calendar. P6 stores calendars as its own nested format; this is the
 #: minimum well-formed value, with all five weekdays worked 08:00-16:00.
-_CALENDAR_DATA = (
-    '(0||CalendarData()('
-    '   (0||DaysOfWeek()('
-    '      (0||1()())'
-    '      (0||2()(   (0||0(s|08:00|f|16:00)())))'
-    '      (0||3()(   (0||0(s|08:00|f|16:00)())))'
-    '      (0||4()(   (0||0(s|08:00|f|16:00)())))'
-    '      (0||5()(   (0||0(s|08:00|f|16:00)())))'
-    '      (0||6()(   (0||0(s|08:00|f|16:00)())))'
-    '      (0||7()())))'
-    '   (0||Exceptions()())))'
-)
+#: P6 numbers the week from Sunday: 1 = Sunday ... 7 = Saturday.
+_SUNDAY, _SATURDAY = 1, 7
+
+#: Which weekdays each named pattern works. The engine writes these names onto every activity;
+#: they were being thrown away at the border.
+CALENDAR_PATTERNS = {
+    '5day': tuple(range(2, 7)),          # Mon-Fri
+    '6day': tuple(range(2, 8)),          # Mon-Sat
+    '7day': tuple(range(1, 8)),          # every day
+}
+
+#: Fallback for a calendar name the patterns do not know. Six days is what most site work runs on
+#: this class of project, and it is what the library assigns by default - but an unknown name is
+#: reported as a warning rather than silently absorbed, because a calendar nobody defined is a
+#: schedule assumption nobody made.
+DEFAULT_CALENDAR = '6day'
+
+
+def _calendar_data(worked_days: Sequence[int]) -> str:
+    """P6's nested calendar format for a set of worked weekdays, 08:00-16:00 on each.
+
+    P6 reads this string, not the calendar's name. A row called "7-day" whose data works five days
+    IS a five-day calendar, which is exactly the failure this replaced: every task sat on a
+    five-day calendar however the plan described it.
+    """
+    days = []
+    for day in range(_SUNDAY, _SATURDAY + 1):
+        if day in worked_days:
+            days.append(f'      (0||{day}()(   (0||0(s|08:00|f|16:00)())))')
+        else:
+            days.append(f'      (0||{day}()())')
+    return (
+        '(0||CalendarData()('
+        '   (0||DaysOfWeek()('
+        + ''.join(days) +
+        ')))'
+        '   (0||Exceptions()())))'
+    )
+
+
+def build_calendars(activities, stamp: str):
+    """One CALENDAR row per pattern the plan actually uses, and the id each activity belongs on.
+
+    THE EXPORT WAS CONTRADICTING THE PLAN. The engine assigns a calendar per activity - measured on
+    a real run: 6day to 436 activities, 7day to 27, 5day to 15 - and the exporter wrote a single
+    five-day calendar and put all 478 tasks on it. Twenty-seven activities the plan says run seven
+    days a week were exported as five-day work.
+
+    Only patterns in use are written: an unused calendar in P6 is a choice nobody made. The most
+    used one is the default, which is what P6 gives anything that arrives without an assignment.
+
+    This does NOT make the schedule calendar-aware - the forward pass still counts whole days, so
+    P6 recomputing on F9 can still disagree with the dates we export. That is a separate piece of
+    work. This one stops the file misreporting what the engine already decided.
+    """
+    used = []
+    for activity in activities:
+        name = str(activity.get('calendar') or '').strip() or DEFAULT_CALENDAR
+        if name not in used:
+            used.append(name)
+    order = sorted(used, key=lambda n: (-sum(
+        1 for a in activities
+        if (str(a.get('calendar') or '').strip() or DEFAULT_CALENDAR) == n
+    ), n))
+
+    rows, ids, unknown = [], {}, []
+    for index, name in enumerate(order, start=1):
+        worked = CALENDAR_PATTERNS.get(name)
+        label = f'DC Planner {name}'
+        if worked is None:
+            # NAMED BUT UNDEFINED. The fallback is stated in the calendar's own title rather than
+            # applied quietly: a planner opening the file sees which working week was assumed and
+            # that nobody chose it. There is no other channel to say so - the export is a file,
+            # not a conversation - and a silent fallback here is a schedule assumption made on
+            # someone's behalf without telling them.
+            unknown.append(name)
+            worked = CALENDAR_PATTERNS[DEFAULT_CALENDAR]
+            label = f'DC Planner {name} (undefined pattern - {DEFAULT_CALENDAR} assumed)'
+        ids[name] = index
+        rows.append({
+            'clndr_id': index,
+            # P6 applies the default to anything arriving without an assignment. The plan's most
+            # common calendar is the least surprising thing for that to be.
+            'default_flag': 'Y' if index == 1 else 'N',
+            'clndr_name': label,
+            'proj_id': '', 'base_clndr_id': '', 'last_chng_date': stamp,
+            'clndr_type': 'CA_Base', 'day_hr_cnt': HOURS_PER_DAY,
+            'week_hr_cnt': HOURS_PER_DAY * len(worked),
+            'month_hr_cnt': round(HOURS_PER_DAY * len(worked) * 4.33, 2),
+            'year_hr_cnt': HOURS_PER_DAY * len(worked) * 52,
+            'clndr_data': _calendar_data(worked),
+        })
+    return rows, ids, unknown
+
 
 _SAFE_CODE = re.compile(r'[^A-Za-z0-9._-]+')
 
@@ -565,6 +647,34 @@ def _code_label(dimension: str, value: str) -> str:
     return text.replace('_', ' ').title()
 
 
+def _activity_float(activities: Sequence[Dict[str, Any]]) -> Dict[str, Dict[str, int]]:
+    """Float per activity id, computed from the plan's own logic.
+
+    The engine works in whole days and P6 stores hours, so this is the same HOURS_PER_DAY bridge
+    the durations already cross. Activities arrive as dicts here rather than as engine objects, so
+    they are adapted rather than re-modelled.
+    """
+    from backend.app.engine.schedule import compute_float, compute_schedule
+
+    class _Node:
+        __slots__ = ('id', 'duration_days', 'predecessors', 'start_day', 'finish_day')
+
+        def __init__(self, activity: Dict[str, Any]) -> None:
+            self.id = str(activity.get('id'))
+            self.duration_days = int(activity.get('duration_days') or 0)
+            self.predecessors = activity.get('predecessors') or []
+            self.start_day = int(activity.get('start_day') or 0)
+            self.finish_day = int(activity.get('finish_day') or 0)
+
+    nodes = [_Node(a) for a in activities]
+    # The dates the plan already holds, not a recomputation: float must describe the schedule that
+    # was exported, not a second one computed here that might differ.
+    schedule = {n.id: (n.start_day, n.finish_day) for n in nodes}
+    if not schedule:
+        return {}
+    return compute_float(nodes, schedule)
+
+
 def build_activity_codes(activities, task_ids, proj_id):
     """The three activity-code tables: the dimensions, their values, and the assignments.
 
@@ -774,6 +884,11 @@ def export_xer(
         str(a.get('id')): 1000 + i for i, a in enumerate(activities)
     }
 
+    # THE BACKWARD PASS, so the file carries a schedule rather than a dependency list. The engine
+    # computes it from the same durations and lags the forward pass used; the export converts days
+    # to the hours P6 stores and writes late dates beside the early ones it already had.
+    floats = _activity_float(activities)
+
     lines: List[str] = []
     now = _stamp(datetime(2000, 1, 1, 0, 0))  # fixed: a re-export of the same plan is identical
 
@@ -823,13 +938,8 @@ def export_xer(
         'sum_assign_level': 'SL_Taskrsrc', 'loaded_scope_level': 7, 'export_flag': 'Y',
     }])
 
-    table('CALENDAR', [{
-        'clndr_id': clndr_id, 'default_flag': 'Y', 'clndr_name': 'DC Planner 5-day',
-        'proj_id': '', 'base_clndr_id': '', 'last_chng_date': now, 'clndr_type': 'CA_Base',
-        'day_hr_cnt': HOURS_PER_DAY, 'week_hr_cnt': HOURS_PER_DAY * 5,
-        'month_hr_cnt': HOURS_PER_DAY * 5 * 4.33, 'year_hr_cnt': HOURS_PER_DAY * 5 * 52,
-        'clndr_data': _CALENDAR_DATA,
-    }])
+    calendar_rows, calendar_ids, _unknown = build_calendars(activities, now)
+    table('CALENDAR', calendar_rows)
 
     resource_rows, crew_by_discipline = build_resources(activities, proj_id, clndr_id, curr_id)
     table('RSRC', resource_rows)
@@ -843,23 +953,40 @@ def export_xer(
         finish = at(activity.get('finish_day'))
         duration_hr = int(activity.get('duration_days') or 0) * HOURS_PER_DAY
         kind = TASK_TYPE.get(str(activity.get('type') or 'task'), 'TT_Task')
+        slack = floats.get(ident)
         task_rows.append({
             'task_id': task_ids[ident], 'proj_id': proj_id,
             'wbs_id': wbs_of_activity.get(ident, root_wbs),
-            'clndr_id': clndr_id, 'est_wt': 1, 'phys_complete_pct': 0,
+            'clndr_id': calendar_ids.get(
+                str(activity.get('calendar') or '').strip() or DEFAULT_CALENDAR,
+                clndr_id,
+            ),
+            'est_wt': 1, 'phys_complete_pct': 0,
             'rev_fdbk_flag': 'N', 'lock_plan_flag': 'N', 'auto_compute_act_flag': 'Y',
             'complete_pct_type': 'CP_Drtn', 'task_type': kind,
             'duration_type': 'DT_FixedDrtn', 'review_type': 'RV_OK',
             'status_code': 'TK_NotStart',
             'task_code': codes[ident], 'task_name': activity.get('name') or ident,
-            'total_float_hr_cnt': '', 'free_float_hr_cnt': '',
+            'total_float_hr_cnt': (
+                slack['total_float'] * HOURS_PER_DAY if slack else ''
+            ),
+            'free_float_hr_cnt': (
+                slack['free_float'] * HOURS_PER_DAY if slack else ''
+            ),
             'remain_drtn_hr_cnt': duration_hr, 'act_work_qty': 0, 'remain_work_qty': 0,
             'target_work_qty': 0, 'target_drtn_hr_cnt': duration_hr,
             'target_equip_qty': 0, 'act_equip_qty': 0, 'remain_equip_qty': 0,
             'early_start_date': _stamp(start), 'early_end_date': _stamp(finish),
+            'late_start_date': _stamp(at(slack['late_start'])) if slack else '',
+            'late_end_date': _stamp(at(slack['late_finish'])) if slack else '',
             'target_start_date': _stamp(start), 'target_end_date': _stamp(finish),
             'restart_date': _stamp(start), 'reend_date': _stamp(finish),
-            'priority_type': 'PT_Normal', 'driving_path_flag': 'N',
+            'priority_type': 'PT_Normal',
+            # BLANK WHEN UNKNOWN, never 'N'. Every activity used to assert it was NOT on the
+            # driving path, which is a false statement on any schedule that has one - and unlike a
+            # blank it reads as a computed answer. Now it says Y or N because the backward pass
+            # worked it out, or nothing at all because it could not.
+            'driving_path_flag': ('Y' if slack['critical'] else 'N') if slack else '',
             'act_this_per_work_qty': 0, 'act_this_per_equip_qty': 0,
             'create_date': now, 'update_date': now,
             'create_user': exported_by, 'update_user': exported_by,
