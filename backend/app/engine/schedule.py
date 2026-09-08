@@ -19,7 +19,7 @@ are the honest unit for a scrubber: they are exactly as precise as the data supp
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 #: Relationship types the forward pass understands, as emitted by the fragnet library.
 #: FS is the default; anything unrecognised is treated as FS, which is the conservative reading
@@ -116,6 +116,57 @@ def apply_schedule(activities: Sequence[Any]) -> int:
         activity.finish_day = finish
     return max((f for _, f in schedule.values()), default=0)
 
+
+
+#: The stage after which a zone carries live load. A hall is not energised because its walls are
+#: up or its gear is delivered; it is energised when its commissioning completes.
+ENERGISING_STAGE = 'commissioning'
+
+
+def energisation_days(activities: Iterable[Any]) -> Dict[str, int]:
+    """The day each zone goes live, for the zones whose plan establishes one.
+
+    Part of replacing name-keyword safety matching with a real condition: a concurrent-operations
+    control applies to work beside an ENERGISED hall, and that requires knowing when each hall
+    becomes live. Every day returned is a finish day the forward pass computed for real
+    commissioning activities in that zone - nothing here is assumed, and the phased-handover logic
+    already spreads those dates per hall on a phased brief.
+
+    A ZONE WITH NO COMMISSIONING WORK IS ABSENT FROM THE RESULT, deliberately. The plan does not
+    say when it energises, and both available guesses are dangerous in opposite directions: day
+    zero invents a live hazard beside every activity, and never-live silently removes controls
+    that a real site needs. Absence is the one answer a caller can act on, and callers are
+    expected to treat it as a reason to stop rather than a reason to proceed.
+    """
+    days: Dict[str, int] = {}
+    for activity in activities:
+        zone_id = _field(activity, 'zone_id')
+        if not zone_id or _field(activity, 'stage') != ENERGISING_STAGE:
+            continue
+        finish = int(_field(activity, 'finish_day') or 0)
+        days[zone_id] = max(days.get(zone_id, finish), finish)
+    return days
+
+
+def is_energised(zone_id: str, day: int, days: Dict[str, int]) -> Optional[bool]:
+    """Is this zone live on this day? None where the plan does not establish it.
+
+    None rather than False: False reads as "safe to work beside", which is exactly the wrong
+    thing to say about a hall whose energisation date nobody has established.
+
+    A zone energised on day N is live ON day N. The boundary matters - it decides whether the
+    work happening that day is concurrent-operations work or ordinary construction.
+    """
+    if zone_id not in days:
+        return None
+    return int(day) >= days[zone_id]
+
+
+def _field(activity: Any, name: str) -> Any:
+    """Read a field from either an object or a dict - callers have both."""
+    if isinstance(activity, dict):
+        return activity.get(name)
+    return getattr(activity, name, None)
 
 def zone_timeline(activities: Iterable[Any]) -> Dict[str, Dict[str, Any]]:
     """When each zone comes into existence and what is happening in it, day by day.
