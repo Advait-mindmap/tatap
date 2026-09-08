@@ -21,6 +21,7 @@ from typing import Any, Dict, Iterator, List, Optional, Sequence
 
 from backend.app.engine import assemble
 from backend.app.reasoning import reason_stage
+from backend.app.reasoning.loop import SITE_CONTEXT_FORK
 from backend.app.reasoning.stages import STAGES
 from backend.app.schemas import AssemblyResult, SimulationOutput, StageReasoning
 from backend.app.simulator.events import (
@@ -76,6 +77,36 @@ def read_delivery_mode(answer: str):
     for mode, words in DELIVERY_MODE_WORDS:
         if any(word in text for word in words):
             return mode
+    return None
+
+
+
+#: What a site-context answer means.
+#:
+#: Brownfield is listed first as a defensive habit, NOT because anything currently depends on it:
+#: the two words do not overlap as substrings, so swapping this order changes no behaviour and a
+#: mutation proving otherwise stayed alive. It matters only if an option is ever worded so that
+#: both words appear ("not greenfield - brownfield adjacent"), and then the safety-relevant
+#: reading is the one that must win.
+SITE_CONTEXT_WORDS = (
+    ('brownfield', ('brownfield', 'live hall', 'live facility', 'energised', 'energized')),
+    ('greenfield', ('greenfield',)),
+)
+
+
+def read_site_context(answer: str):
+    """The site context an answer names, or None if it names none.
+
+    None rather than a guess: the safety register gates a tier-1 rule on this value, and reading
+    an unclear answer as "greenfield" would silently drop that rule - which is the exact fault
+    this whole mechanism exists to close.
+    """
+    text = (answer or '').strip().lower()
+    if not text:
+        return None
+    for context, words in SITE_CONTEXT_WORDS:
+        if any(word in text for word in words):
+            return context
     return None
 
 
@@ -297,6 +328,7 @@ class Simulator:
             )
         pending = self.state.pending_decisions[answer.decision_point_id]
         self._apply_delivery_mode(answer)
+        self._apply_site_context(answer)
         self.state.answers[answer.decision_point_id] = {
             'answer': answer.answer,
             'answered_by': answer.answered_by,
@@ -387,6 +419,29 @@ class Simulator:
             return
         for discipline in blanks:
             self._set_delivery_mode(discipline, mode)
+
+
+    # ------------------------------------------------------------------ site context
+    #
+    # The other half of the tier-1 safety fix. The engine raises `dp.greenfield_brownfield`
+    # whenever the brief is silent; without this the answer would be recorded and discarded, the
+    # safety register would still match nothing, and the fork would be theatre - the same defect
+    # that made the delivery-mode fork worthless (CLAUDE.md rule 3).
+
+    def _apply_site_context(self, answer: DecisionAnswer) -> None:
+        """Write a site-context answer into the brief.
+
+        No "fills only the blanks" rule needed here, unlike delivery modes: the fork is raised
+        only when the brief is silent, so there is never stated content to overwrite. If a brief
+        did state it, the question is not asked at all.
+        """
+        if answer.decision_point_id != SITE_CONTEXT_FORK:
+            return
+        if str(self.brief.get('site_context') or '').strip():
+            return
+        context = read_site_context(answer.answer)
+        if context:
+            self.brief['site_context'] = context
 
     def _resolved_decisions(self) -> List[Dict[str, Any]]:
         """Answers so far, in the shape the reasoning prompt injects as [DECISIONS_JSON]."""

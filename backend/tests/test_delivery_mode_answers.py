@@ -24,6 +24,7 @@ import pytest
 
 from backend.app.llm_stub import StubAdapter
 from backend.app.simulator import DecisionAnswer, Simulator
+from backend.app.simulator.runner import DELIVERY_DISCIPLINES
 
 #: Deliberately silent about `bms` and `mechanical`, and explicit about `fire` and `civil`. The
 #: gap is what a bare answer may fill; the statements are what it must not touch.
@@ -63,18 +64,49 @@ def simulator():
 
 # ------------------------------------------------------------------ the write-back
 
-def test_a_bare_answer_fills_the_disciplines_the_brief_left_blank(simulator):
-    """The reported failure. Before the fix the brief was untouched and BMS stayed unstated."""
+def test_a_bare_answer_fills_the_disciplines_still_blank_when_it_is_asked(simulator):
+    """The reported failure: an answered fork that changed nothing.
+
+    ASSERTS THE RULE, NOT A SNAPSHOT. This used to name `bms` and `mechanical` directly, which
+    was only correct while `dp.delivery_mode` was the first thing to ask about delivery at all.
+    It no longer is: the engine now raises a per-discipline fork at the first stage that plans
+    work for a discipline the brief is silent about, which happens before this fork's stages. So
+    by the time a planner sees the general question, some disciplines have already been answered
+    specifically - and a bare answer must not overwrite those, for the same reason it must not
+    overwrite the brief. What is still true, and what this pins, is that every discipline STILL
+    blank at the moment of the answer takes it, and nothing else moves.
+    """
     assert walk_to(simulator, 'dp.delivery_mode'), 'the run never raised the delivery-mode fork'
-    assert 'bms' not in simulator.brief['delivery_mode_by_discipline']
+
+    before = dict(simulator.brief['delivery_mode_by_discipline'])
+    blank = [d for d in DELIVERY_DISCIPLINES if d not in before]
+    assert blank, 'every discipline was already settled; this test would prove nothing'
 
     simulator.answer(DecisionAnswer(decision_point_id='dp.delivery_mode', answer='Subcontract'))
 
     modes = simulator.brief['delivery_mode_by_discipline']
-    assert modes.get('bms') == 'subcontract', (
-        'the fork was answered and BMS is still unstated - the answer went nowhere'
-    )
-    assert modes.get('mechanical') == 'subcontract'
+    for discipline in blank:
+        assert modes.get(discipline) == 'subcontract', (
+            f'{discipline} was blank when the fork was answered and is still '
+            f'{modes.get(discipline)!r} - the answer went nowhere'
+        )
+    for discipline, settled in before.items():
+        assert modes[discipline] == settled, (
+            f'{discipline} was already settled as {settled!r} and the bare answer overwrote it '
+            f'with {modes[discipline]!r}'
+        )
+
+
+def test_a_specific_answer_outranks_a_later_bare_one(simulator):
+    """A planner who answered ONE discipline has stated something, and a later general answer is
+    an inference over what is left. The same rule that protects the brief protects that answer -
+    otherwise the more precise question would be the one that counts for less."""
+    assert walk_to(simulator, 'dp.delivery_mode')
+    simulator.brief['delivery_mode_by_discipline']['bms'] = 'self-perform'
+
+    simulator.answer(DecisionAnswer(decision_point_id='dp.delivery_mode', answer='Subcontract'))
+
+    assert simulator.brief['delivery_mode_by_discipline']['bms'] == 'self-perform'
 
 
 def test_a_bare_answer_never_overrides_what_the_brief_stated(simulator):

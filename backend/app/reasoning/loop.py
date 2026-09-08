@@ -57,6 +57,12 @@ from backend.app.schemas import (
 UNVERIFIED_CONFIDENCE_CAP = 0.5
 
 
+#: The fork that settles site context. Named once: the engine raises it and the simulator writes
+#: its answer back, and those two must never drift apart (which is how the delivery-mode fork came
+#: to be asked and then ignored).
+SITE_CONTEXT_FORK = 'dp.greenfield_brownfield'
+
+
 def conf_threshold() -> float:
     try:
         return float(os.getenv('CONF_THRESHOLD', '0.7'))
@@ -254,6 +260,7 @@ def reason_stage(
     return build_stage_reasoning(
         response, stage=stage, libs=libs, hits=hits,
         threshold=threshold, warnings=warnings, grounded=grounded, decisions=decisions,
+        brief=brief,
     )
 
 
@@ -267,6 +274,7 @@ def build_stage_reasoning(
     warnings: Optional[List[str]] = None,
     grounded: bool = False,
     decisions: Optional[List[Dict[str, Any]]] = None,
+    brief: Optional[Dict[str, Any]] = None,
 ) -> StageReasoning:
     """Validate a raw reasoning response into a StageReasoning.
 
@@ -388,6 +396,106 @@ def build_stage_reasoning(
             detection='curated',
         ))
         raised.add(ident)
+
+    # ---- delivery mode: ask about every discipline this stage plans work for ---------
+    #
+    # A GENUINE FORK MUST NOT BE THE MODEL'S TO SKIP. `dp.delivery_mode` is in the curated list
+    # above, which means it is raised only when the reasoner names it. On a real run it did not:
+    # every BMS activity was planned into "Controls and BMS subcontract package" and the planner
+    # was never asked, because `_delivery_mode_for` resolves a discipline the brief left blank to
+    # the mode of its STAGE's discipline - controls inherits fire - unconditionally and silently.
+    #
+    # Two mechanisms that looked like one. The fork was elective and probabilistic; the fallback
+    # was deterministic and unconditional, so the fork could simply not happen while the fallback
+    # always did. That is a decision point resolving itself, which CLAUDE.md rule 3 exists to
+    # prevent.
+    #
+    # This trigger keys off exactly what the write-back writes on: a discipline with work in this
+    # stage and no stated mode in the brief. Same condition, same identifier namespace, so the
+    # question asked and the answer applied cannot drift apart again.
+    #
+    # Deliberately per DISCIPLINE and not one blanket question: a fragnet bundles disciplines,
+    # and "how is this stage let" cannot answer for both the fire scope and the BMS scope inside
+    # the same fragnet - which is the ambiguity that started all of this.
+    from backend.app.engine.assemble import (  # noqa: PLC0415 - deferred: engine imports reasoning
+        BRIEF_DISCIPLINE,
+        _discipline_of,
+        _expand_steps,
+    )
+
+    # NO BRIEF, NO QUESTIONS. `brief is None` means the caller did not supply one - a unit test
+    # exercising validation, say - which is not the same thing as a brief that is SILENT about a
+    # field. Inventing forks for a caller who never described a project would make this function
+    # untestable in isolation and would say nothing true about any project. `reason_stage` always
+    # passes the brief, so nothing in a real run takes this exit.
+    stated_modes = {
+        str(k).lower() for k in ((brief or {}).get('delivery_mode_by_discipline') or {})
+    }
+    planned_disciplines = {
+        _discipline_of(spec, frag_idx[selection.fragnet_id])
+        for selection in packages
+        if selection.fragnet_id in frag_idx
+        for spec in _expand_steps(frag_idx[selection.fragnet_id].get('activities'))[0]
+    }
+    for discipline in (sorted(planned_disciplines) if brief is not None else []):
+        key = BRIEF_DISCIPLINE.get(discipline)
+        # Only disciplines the brief can actually speak about. Testing, compliance and management
+        # are not let as trade packages, and asking how they are delivered would be noise.
+        if not key or key in stated_modes:
+            continue
+        dyn_id = f'dyn.delivery_mode.{key}'
+        # `answered` as well as the brief: an answer that named no mode writes nothing back, and
+        # without this the same question would be asked again every stage forever.
+        if dyn_id in raised or dyn_id in answered:
+            continue
+        decision_points.append(RaisedDecisionPoint(
+            decision_point_id=dyn_id,
+            question=f'How is the {key} scope delivered on this project?',
+            why_stuck=(
+                f'The {stage} stage plans {key} work, and the brief does not say how that scope '
+                f'is let. Left alone it would inherit the mode of the stage it sits in, which is '
+                f'a different scope with a different contract. A self-performed discipline '
+                f'expands into a full fragnet of trade activities; a subcontracted one collapses '
+                f'to an interface package with award, mobilisation and milestone logic.'
+            ),
+            options=['Self-perform', 'Subcontract', 'Turnkey', 'Owner-furnished (OFE)'],
+            impact=f'Decides how every {key} activity is planned and resourced.',
+            blocking=True,
+            detection='dynamic',
+        ))
+        raised.add(dyn_id)
+
+    # ---- site context: a tier-1 safety rule cannot match a blank ---------------------
+    #
+    # `safety.live_hall_works` is tier_1, blocks_export, and gated on
+    # `applies_when_site_context: brownfield`. A brief that never states its site context leaves
+    # `site_context` as '', so the rule matches nothing and the plan carries no live-hall safety
+    # control at all. THE EXPORT GATE DOES NOT CATCH THIS: it keys on tier-1 activities being
+    # PRESENT, so with nothing to sign off, nothing blocks. A model that did not think to ask a
+    # question removes a safety control and the gate that should have caught its absence.
+    #
+    # `dp.greenfield_brownfield` exists to ask exactly this, and it is curated - raised only if
+    # the reasoner names it. That is not good enough for a tier-1 safety input, so the engine
+    # asks whenever the brief is silent and there is work to attach safety to.
+    if brief is not None and packages and not str(brief.get('site_context') or '').strip():
+        if SITE_CONTEXT_FORK not in raised and SITE_CONTEXT_FORK not in answered:
+            entry = _index(load_library('decision_points')['entries']).get(SITE_CONTEXT_FORK)
+            if entry:
+                decision_points.append(RaisedDecisionPoint(
+                    decision_point_id=SITE_CONTEXT_FORK,
+                    question=entry['question'],
+                    why_stuck=(
+                        f"{entry['why_stuck']} The brief does not say, and the {stage} stage is "
+                        'already instancing work. Left unanswered the safety register cannot '
+                        'match its live-facility rule, and the plan would omit a tier-1 control '
+                        'rather than show it unsigned.'
+                    ),
+                    options=list(entry.get('options', [])),
+                    impact=entry.get('impact', ''),
+                    blocking=True,
+                    detection='dynamic',
+                ))
+                raised.add(SITE_CONTEXT_FORK)
 
     # ---- dynamic decision points ----------------------------------------------------
     # ---- coverage: a stage that instances nothing must SAY SO ------------------------
