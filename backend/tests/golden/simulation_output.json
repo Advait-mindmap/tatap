@@ -31208,6 +31208,7 @@
         ],
         "stage": "procurement",
         "status": "resolved",
+        "technical_refs": [],
         "trail_ref": "trail.decision.dp.grid_position",
         "why_stuck": "Building a substation adds a long statutory and construction path ahead of energisation; a feeder-ready site does not. This shifts the critical path and the entire long-lead strategy, so the electrical sequence cannot be laid out until it is known.",
         "zone_id": null
@@ -31228,6 +31229,7 @@
         ],
         "stage": "procurement",
         "status": "resolved",
+        "technical_refs": [],
         "trail_ref": "trail.decision.dp.long_lead_unconfirmed",
         "why_stuck": "Lead time on the long-lead gear usually drives RFS. Guessing it is dangerous because the whole programme is built on it, and an unconfirmed guess looks identical to a confirmed date once it is in the plan.",
         "zone_id": null
@@ -31247,6 +31249,7 @@
         ],
         "stage": "procurement",
         "status": "resolved",
+        "technical_refs": [],
         "trail_ref": "trail.decision.dp.ofe",
         "why_stuck": "It changes who controls the delivery dates. Owner-furnished gear enters the plan as a delivery milestone constraint outside the contractor's control; contractor-supplied gear expands into a procurement fragnet the contractor owns. Getting this wrong misplaces the critical path.",
         "zone_id": null
@@ -31267,6 +31270,7 @@
         ],
         "stage": "design",
         "status": "resolved",
+        "technical_refs": [],
         "trail_ref": "trail.decision.dp.tier_topology",
         "why_stuck": "Redundancy drives equipment counts and the sequencing logic. N+1 and 2N produce materially different plant counts and different concurrent-maintainability constraints, so the equipment schedule and the commissioning structure cannot be derived until it is fixed.",
         "zone_id": null

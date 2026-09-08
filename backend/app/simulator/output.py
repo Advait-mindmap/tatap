@@ -43,6 +43,26 @@ DISCIPLINE_LABELS = {
     'management': 'Design and project management',
 }
 
+def _library_labels() -> Dict[str, str]:
+    """Identifier -> human label, from every library a plan can reference.
+
+    Built here rather than passed in because the questions and the reasoning trail both need it,
+    and a second copy would drift from the first.
+    """
+    sources = [
+        load_library('fragnets')['entries'],
+        load_library('decision_points')['entries'],
+        load_library('equipment_lead_times')['entries'],
+        load_library('safety_register')['entries'],
+    ]
+    for city in available_cities():
+        try:
+            sources.append(load_city_pathway(city)['entries'])
+        except Exception:
+            continue
+    return build_labels(*sources)
+
+
 def _decision_nodes(
     resolved: Dict[str, Dict[str, Any]], pending: Dict[str, Dict[str, Any]]
 ) -> List[Dict[str, Any]]:
@@ -52,6 +72,32 @@ def _decision_nodes(
     §4 requires resolved ones to stay visible with their answer, so the reasoning stays auditable
     rather than disappearing once answered.
     """
+    # TRANSLATED ON THE WAY OUT, not only where the text is written.
+    #
+    # Questions are generated once and stored on the run, so a fork raised by an older build keeps
+    # whatever wording that build produced - and a reopened run is exactly what a demo or an audit
+    # looks at. Measured on a real run after the generator was fixed: 14 of 21 forks still showed
+    # identifiers, because their text was written before the fix existed.
+    #
+    # Same treatment the reasoning trail already gets: identifiers become the names the libraries
+    # use for them, and the codes travel alongside in `technical_refs` rather than being lost.
+    labels = _library_labels()
+
+    def readable(payload: Dict[str, Any], decision_id: str) -> Dict[str, Any]:
+        question, question_refs = humanise(str(payload.get('question') or ''), labels)
+        why, why_refs = humanise(str(payload.get('why_stuck') or ''), labels)
+        impact, impact_refs = humanise(str(payload.get('impact') or ''), labels)
+        refs = [
+            ref for ref in dict.fromkeys(
+                list(payload.get('technical_refs') or [])
+                + question_refs + why_refs + impact_refs
+            )
+            # The fork's own id is not a reference the reasoning MADE; it is the thing being
+            # explained, and it already has its own field.
+            if ref != decision_id
+        ]
+        return {'question': question, 'why_stuck': why, 'impact': impact, 'technical_refs': refs}
+
     nodes: List[Dict[str, Any]] = []
     # A fork that has been ANSWERED but not yet popped is in both maps: `pending_decisions`
     # keeps its entry until run() emits decision_resolved. Emitting it from both produced two
@@ -67,15 +113,16 @@ def _decision_nodes(
             'id': f'decision.{decision_id}',
             'kind': 'decision_point',
             'stage': payload.get('stage', ''),
-            'label': payload.get('question') or decision_id,
+            'label': readable(payload, decision_id)['question'] or decision_id,
             'dept': None,
             'trail_ref': f'trail.decision.{decision_id}',
             'zone_id': None,
             'status': 'open',
             'blocking': bool(payload.get('blocking', True)),
-            'why_stuck': payload.get('why_stuck', ''),
+            'why_stuck': readable(payload, decision_id)['why_stuck'],
             'options': payload.get('options', []),
-            'impact': payload.get('impact', ''),
+            'impact': readable(payload, decision_id)['impact'],
+            'technical_refs': readable(payload, decision_id)['technical_refs'],
             'answer': None,
         })
     for decision_id, payload in sorted(resolved.items()):
@@ -83,7 +130,7 @@ def _decision_nodes(
             'id': f'decision.{decision_id}',
             'kind': 'decision_point',
             'stage': payload.get('stage', ''),
-            'label': payload.get('question') or decision_id,
+            'label': readable(payload, decision_id)['question'] or decision_id,
             'dept': None,
             'trail_ref': f'trail.decision.{decision_id}',
             'zone_id': None,
@@ -91,9 +138,10 @@ def _decision_nodes(
             'blocking': True,
             # Preserved through resolution: the answer alone is not auditable without the
             # reason the fork existed.
-            'why_stuck': payload.get('why_stuck', ''),
+            'why_stuck': readable(payload, decision_id)['why_stuck'],
             'options': list(payload.get('options', []) or []),
-            'impact': payload.get('impact', ''),
+            'impact': readable(payload, decision_id)['impact'],
+            'technical_refs': readable(payload, decision_id)['technical_refs'],
             'answer': payload.get('answer'),
         })
     return nodes
