@@ -96,16 +96,20 @@ test('a reattached client shows the plan the server actually holds', async ({ pa
 
   const runId = new URL(page.url()).searchParams.get('run')
   expect(runId).toMatch(/^run-/)
-  const before = await page.getByTestId('node-card').count()
+
+  // SETTLE BEFORE MEASURING. A halted run is not a still one - the event queue drains after the
+  // prompt appears, so counting immediately catches the client mid-draw. This test captured
+  // `before` the instant the prompt showed and passed on a fast machine and failed on CI with
+  // before=3, after=26: not a lost plan, a plan that had not finished arriving. The sibling test
+  // below already learned this; fixing it there and not here left the same flaw one test over.
+  const before = await settle(page)
 
   // Reload: the reported action, and the one the reconnect path imitates.
   await page.reload()
   await expect(page.getByTestId('run-status')).toHaveText(/needs your decision/i, {
     timeout: 300_000,
   })
-  await page.waitForTimeout(2_000)
-
-  const after = await page.getByTestId('node-card').count()
+  const after = await settle(page)
   console.log(
     `  nodes before reload ${before}, after ${after}; server sent ${seen.activities} activities, ` +
       `${seen.forks.size} fork(s)`,
@@ -157,8 +161,7 @@ test('two reattaches landing back to back still leave the run in the server stat
   await expect(page.getByTestId('run-status')).toHaveText(/needs your decision/i, {
     timeout: 300_000,
   })
-  await page.waitForTimeout(2_000)
-  const clean = await page.getByTestId('node-card').count()
+  const clean = await settle(page)
   console.log(`  clean reattach baseline: ${clean} nodes (${cleanSeen.attaches} attach)`)
 
   // Now the same thing again, with the stream dropped twice so reattaches overlap.
@@ -174,9 +177,7 @@ test('two reattaches landing back to back still leave the run in the server stat
   await expect(status, 'overlapping reattaches left the run stuck').not.toHaveText(/Simulating/, {
     timeout: 300_000,
   })
-  await page.waitForTimeout(3_000)
-
-  const nodes = await page.getByTestId('node-card').count()
+  const nodes = await settle(page)
   const text = (await status.textContent()) ?? ''
   console.log(
     `  after ${seen.attaches} attaches: status "${text.trim()}", ${nodes} nodes, ` +
