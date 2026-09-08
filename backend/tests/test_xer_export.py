@@ -885,3 +885,105 @@ def test_two_modes_that_resource_the_same_way_share_one_row():
     )
     assert len(rows) == 1, [r['rsrc_name'] for r in rows]
     assert by_key[('civil', 'self-perform')] == by_key[('civil', 'unknown')]
+
+
+# ------------------------------------------------------------ 8. activity codes
+
+"""Activity codes: the plan cut the other way.
+
+The WBS files every activity in exactly one branch - stage, then package, then zone - so it
+answers "what is in hall 3's fit-out" and cannot answer "show me all electrical work wherever it
+sits". That second question is what a discipline lead or a commercial manager opens the file to
+ask, and P6 answers it with activity codes.
+
+Nothing here is new modelling. Discipline, delivery mode, stage and zone are already on every
+activity; these tests exist to prove the export carries them faithfully and, in particular, that
+it never invents a value for an activity that has none.
+"""
+
+
+def _codes_by_task(parsed):
+    """task_id -> {code type name: code value}, read back from OUR file by the third-party parser."""
+    types = {row['actv_code_type_id']: row['actv_code_type'] for row in parsed['ACTVTYPE'].entries()}
+    values = {
+        row['actv_code_id']: (row['actv_code_type_id'], row['actv_code_name'])
+        for row in parsed['ACTVCODE'].entries()
+    }
+    out: dict = {}
+    for row in parsed['TASKACTV'].entries():
+        type_id, name = values[row['actv_code_id']]
+        assert type_id == row['actv_code_type_id'], 'an assignment names a code from another type'
+        out.setdefault(row['task_id'], {})[types[type_id]] = name
+    return out
+
+
+def test_the_export_carries_the_dimensions_a_planner_filters_by(parsed):
+    present = {row['actv_code_type'] for row in parsed['ACTVTYPE'].entries()}
+    assert {'Discipline', 'Delivery Mode', 'Stage'} <= present, (
+        f'the export offers no way to filter by these dimensions; it has {sorted(present)}'
+    )
+
+
+def test_every_code_value_traces_back_to_an_activity(real_output, parsed):
+    """No invented values. Every code in the file is a value some activity actually holds."""
+    from backend.app.p6.xer import ACTIVITY_CODE_TYPES, _code_label
+
+    types = {row['actv_code_type_id']: row['actv_code_type'] for row in parsed['ACTVTYPE'].entries()}
+    field_of = dict(ACTIVITY_CODE_TYPES)
+    for row in parsed['ACTVCODE'].entries():
+        dimension = types[row['actv_code_type_id']]
+        field = field_of[dimension]
+        held = {_code_label(dimension, a.get(field)) for a in real_output['activities']}
+        assert row['actv_code_name'] in held, (
+            f'{dimension} code {row["actv_code_name"]!r} matches no activity in the plan'
+        )
+
+
+def test_each_activity_carries_its_own_discipline_as_a_code(real_output, parsed, row_for):
+    """The assignment is the activity's own value - not its neighbour's, and not the first one."""
+    by_task = _codes_by_task(parsed)
+    checked = 0
+    for activity in real_output['activities']:
+        if not str(activity.get('discipline') or '').strip():
+            continue
+        task_id = row_for(activity['id'])['task_id']
+        expected = str(activity['discipline']).replace('_', ' ').title()
+        assert by_task.get(task_id, {}).get('Discipline') == expected, (
+            f'{activity["name"]} is {activity["discipline"]!r} but its Discipline code reads '
+            f'{by_task.get(task_id, {}).get("Discipline")!r}'
+        )
+        checked += 1
+    assert checked > 20, f'only {checked} activities carried a discipline; this proves little'
+
+
+def test_an_activity_with_no_value_gets_no_code(real_output, parsed, row_for):
+    """Absence stays absence. Filing a blank under a plausible default is the fault this whole
+    session has been about, and it would be just as wrong in an export."""
+    by_task = _codes_by_task(parsed)
+    blank = [a for a in real_output['activities'] if not str(a.get('discipline') or '').strip()]
+    if not blank:
+        pytest.skip('every activity in this run carries a discipline')
+    for activity in blank:
+        task_id = row_for(activity['id'])['task_id']
+        assert 'Discipline' not in by_task.get(task_id, {}), (
+            f'{activity["name"]} has no discipline but was given the code '
+            f'{by_task[task_id]["Discipline"]!r}'
+        )
+
+
+def test_delivery_mode_reaches_the_export_as_a_filterable_code(real_output, parsed, row_for):
+    """The dimension the WBS does not carry at all, and the one this session's regression was about."""
+    by_task = _codes_by_task(parsed)
+    modes = {
+        by_task.get(row_for(a['id'])['task_id'], {}).get('Delivery Mode')
+        for a in real_output['activities']
+    }
+    assert modes - {None}, 'no activity carries a delivery-mode code'
+
+
+def test_the_codes_survive_a_re_export_unchanged(real_output):
+    """Same plan, same file - codes included. Ids are assigned by iteration order, so anything
+    non-deterministic here would show up as a diff between two exports of one plan."""
+    first = export_xer(real_output, start_date=ANCHOR)
+    second = export_xer(real_output, start_date=ANCHOR)
+    assert first == second

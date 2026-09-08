@@ -128,9 +128,86 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Without a backend every browser test skips itself, and the job reports green having
-      # tested nothing. LLM_PROVIDER=stub answers the same schemas mechanically, so the full
-      # path - intake, simulation, decision prompts - runs offline and without spending credits.
+  # Every browser spec on its own runner, in parallel.
+  #
+  # These ran as nineteen sequential steps in the job above, which was right about one thing and
+  # wrong about the cost. The right part: one step per spec means a failure names the spec in
+  # public step titles, and GitHub requires a token to read job LOGS - diagnosing a red build
+  # should not depend on privileged access. A matrix keeps that exactly, because each leg is
+  # named too.
+  #
+  # The cost it was paying: every spec drives a complete thirteen-stage simulation from intake,
+  # so the specs are minutes each and nineteen of them in series ran past twenty minutes. That is
+  # long enough to change how often anyone pushes, and this session has already spent three CI
+  # cycles chasing failures that a faster loop would have surfaced one at a time.
+  #
+  # In parallel the wall clock is the slowest single spec, about four minutes. It costs more
+  # runner-minutes - each leg installs its own dependencies - which is the trade being made
+  # deliberately: runner minutes are cheap and the feedback loop is not.
+  browser:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    needs: frontend
+    defaults:
+      run:
+        working-directory: frontend
+    strategy:
+      # Every leg reports. `fail-fast: true` would cancel the others on the first red and hide
+      # whether one spec broke or all of them did, which is the difference between a flake and a
+      # regression.
+      fail-fast: false
+      matrix:
+        include:
+          - spec: flow.spec
+            name: "2D flow view"
+          - spec: live.spec
+            name: "live path (intake, simulation, decisions)"
+          - spec: view3d.spec
+            name: "3D build model"
+          - spec: playback.spec
+            name: "playback controls (play, pause, step, replay)"
+          - spec: decision-visibility.spec
+            name: "decision point reachability"
+          - spec: scrubber.spec
+            name: "4D time scrubber"
+          - spec: linked-hover.spec
+            name: "linked hover (2D <-> 3D)"
+          - spec: live-3d.spec
+            name: "progressive 3D build during a live run"
+          - spec: viewport.spec
+            name: "canvas pan and zoom after completion"
+          - spec: export.spec
+            name: "P6 export download"
+          - spec: zoom-scale.spec
+            name: "one graph at every zoom, and a derived zoom floor"
+          - spec: run-state.spec
+            name: "open forks are one fact, not two"
+          - spec: run-recovery.spec
+            name: "a halted run is recoverable by URL"
+          - spec: decision-desync.spec
+            name: "answering fast never orphans the decision card"
+          - spec: stream-drop.spec
+            name: "a dropped stream never leaves a run stuck"
+          - spec: reattach-race.spec
+            name: "reattaching lands on the server's state"
+          - spec: unplanned-stages.spec
+            name: "an incomplete plan says so"
+          - spec: zone-lanes.spec
+            name: "a campus of halls stays readable"
+          - spec: intake-upload.spec
+            name: "document upload, and refusing one out loud"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install from the lockfile
+        run: npm ci
+
       - name: Set up Python for the API
         uses: actions/setup-python@v5
         with:
@@ -140,15 +217,16 @@ jobs:
         working-directory: .
         run: python -m pip install -r backend/requirements.txt
 
+      # Without a backend every browser test skips itself and reports green having tested
+      # nothing. LLM_PROVIDER=stub answers the same schemas mechanically, so the full path runs
+      # offline and spends no credits.
       - name: Start the API with the stub provider
         working-directory: .
         env:
           LLM_PROVIDER: stub
           # The usage caps protect a deployment's credits; here they would only throttle the
-          # suite. The browser tests start more simulations than one client is allowed per day
-          # (RUNS_PER_CLIENT_DAILY defaults to 5), and every test arrives from the same
-          # 127.0.0.1 — so the sixth run would be refused and the job would fail on a guard
-          # doing exactly its job. The stub spends nothing, so there is nothing to protect.
+          # suite. Every test arrives from the same 127.0.0.1, so the sixth run of the day would
+          # be refused and the job would fail on a guard doing exactly its job.
           LLM_DAILY_CALL_CAP: '0'
           RUNS_PER_CLIENT_DAILY: '0'
         run: |
@@ -160,110 +238,26 @@ jobs:
           curl -sf http://127.0.0.1:8000/health || (echo "API failed to start" && exit 1)
 
       - name: Install Chromium
-        # Only the browser the suite uses. --with-deps pulls the system libraries the runner
-        # lacks; without it Chromium installs and then fails to launch.
         run: npx playwright install --with-deps chromium
 
-      # Split by spec on purpose. GitHub requires authentication to read job LOGS, but step
-      # names and their pass/fail are public — so running each suite as its own step means a
-      # failure says WHICH suite broke without anyone having to hold a token. Diagnosing a red
-      # CI run should not depend on privileged access.
-      #
-      # playwright.config.ts starts Vite itself, and CI=true stops it reusing a server that
-      # is not there.
-      - name: Browser tests - 2D flow view
-        run: npx playwright test flow.spec
+      - name: ${{ matrix.name }}
+        run: npx playwright test ${{ matrix.spec }}
 
-      - name: Browser tests - live path (intake, simulation, decisions)
-        if: always()
-        run: npx playwright test live.spec
-
-      - name: Browser tests - 3D build model
-        if: always()
-        run: npx playwright test view3d.spec
-
-      # Naming specs individually buys legible failures but costs this: a new spec file runs
-      # nowhere until it is listed. playback.spec was invisible to CI until this line existed.
-      - name: Browser tests - playback controls (play, pause, step, replay)
-        if: always()
-        run: npx playwright test playback.spec
-
-      - name: Browser tests - decision point reachability
-        if: always()
-        run: npx playwright test decision-visibility.spec
-
-      - name: Browser tests - 4D time scrubber
-        if: always()
-        run: npx playwright test scrubber.spec
-
-      - name: Browser tests - linked hover (2D <-> 3D)
-        if: always()
-        run: npx playwright test linked-hover.spec
-
-      - name: Browser tests - progressive 3D build during a live run
-        if: always()
-        run: npx playwright test live-3d.spec
-
-      - name: Browser tests - canvas pan and zoom after completion
-        if: always()
-        run: npx playwright test viewport.spec
-
-      - name: Browser tests - P6 export download
-        if: always()
-        run: npx playwright test export.spec
-
-      - name: Browser tests - one graph at every zoom, and a derived zoom floor
-        if: always()
-        run: npx playwright test zoom-scale.spec
-
-      - name: Reducer - open forks are one fact, not two
-        if: always()
-        run: npx playwright test run-state.spec
-
-      - name: Browser tests - a halted run is recoverable by URL
-        if: always()
-        run: npx playwright test run-recovery.spec
-
-      - name: Browser tests - answering fast never orphans the decision card
-        if: always()
-        run: npx playwright test decision-desync.spec
-
-      - name: Browser tests - a dropped stream never leaves a run stuck
-        if: always()
-        run: npx playwright test stream-drop.spec
-
-      - name: Browser tests - reattaching lands on the server's state
-        if: always()
-        run: npx playwright test reattach-race.spec
-
-      - name: Browser tests - an incomplete plan says so
-        if: always()
-        run: npx playwright test unplanned-stages.spec
-
-      - name: Browser tests - a campus of halls stays readable
-        if: always()
-        run: npx playwright test zone-lanes.spec
-
-      - name: Browser tests - document upload, and refusing one out loud
-        if: always()
-        run: npx playwright test intake-upload.spec
-
+      # Artifact names must be unique across a matrix, or the upload fails on the second leg.
       - name: Upload rendered screenshots
-        # Always, not just on failure: these are how the rendered flow gets reviewed without
-        # anyone opening a browser, which is the point of capturing them at all.
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: flow-screenshots
+          name: screenshots-${{ matrix.spec }}
           path: frontend/e2e/screenshots/
-          if-no-files-found: warn
+          if-no-files-found: ignore
           retention-days: 14
 
       - name: Upload failure traces
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-artifacts
+          name: traces-${{ matrix.spec }}
           path: |
             frontend/e2e/.artifacts/
             frontend/playwright-report/

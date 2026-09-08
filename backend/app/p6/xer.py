@@ -69,6 +69,15 @@ COLUMNS: Dict[str, Tuple[str, ...]] = {
         'intg_proj_type', 'loaded_scope_level', 'export_flag', 'new_fin_dates_id',
         'next_data_date', 'close_period_flag', 'trsrcsum_loaded',
     ),
+    'ACTVTYPE': (
+        'actv_code_type_id', 'actv_short_len', 'seq_num', 'actv_code_type', 'proj_id', 'wbs_id',
+        'actv_code_type_scope',
+    ),
+    'ACTVCODE': (
+        'actv_code_id', 'parent_actv_code_id', 'actv_code_type_id', 'actv_code_name',
+        'short_name', 'seq_num',
+    ),
+    'TASKACTV': ('task_id', 'actv_code_type_id', 'actv_code_id', 'proj_id'),
     'CALENDAR': (
         'clndr_id', 'default_flag', 'clndr_name', 'proj_id', 'base_clndr_id', 'last_chng_date',
         'clndr_type', 'day_hr_cnt', 'week_hr_cnt', 'month_hr_cnt', 'year_hr_cnt', 'clndr_data',
@@ -127,8 +136,8 @@ COLUMNS: Dict[str, Tuple[str, ...]] = {
 #: The order tables appear in the file. P6 reads a table's foreign keys as it goes, so a table
 #: must not precede the one it points at.
 TABLE_ORDER = (
-    'CURRTYPE', 'OBS', 'PROJECT', 'CALENDAR', 'RSRC', 'PROJWBS', 'TASK', 'TASKPRED',
-    'TASKRSRC',
+    'CURRTYPE', 'OBS', 'PROJECT', 'CALENDAR', 'RSRC', 'PROJWBS', 'ACTVTYPE', 'TASK', 'ACTVCODE',
+    'TASKPRED', 'TASKRSRC', 'TASKACTV',
 )
 
 #: Our activity types, mapped to P6's. A milestone has no duration, which is what P6 means by
@@ -439,6 +448,17 @@ DELIVERY_RESOURCE = {
 #: rather than a new claim about it.
 CREWS_PER_ACTIVITY = 1
 
+#: How a delivery mode reads on a code, where 'unknown' is a real answer rather than a gap: it
+#: means no mode was ever settled for that discipline, and a planner filtering for exactly those
+#: is asking a useful question.
+DELIVERY_MODE_LABELS = {
+    'self-perform': 'Self-perform',
+    'subcontract': 'Subcontract',
+    'turnkey': 'Turnkey',
+    'owner-furnished': 'Owner-furnished (OFE)',
+    'unknown': 'Not yet settled',
+}
+
 
 def resource_key(activity: Dict[str, Any]) -> Tuple[str, str]:
     """The (discipline, delivery mode) an activity is resourced under.
@@ -472,6 +492,87 @@ def _crew_code(discipline: str, mode: str) -> str:
     tail = {'self-perform': '', 'unknown': '', 'turnkey': '-TK',
             'subcontract': '-SC', 'owner-furnished': '-OF'}.get(mode, '')
     return ((discipline or 'general')[:8].upper() + tail)[:20]
+
+
+#: The dimensions a planner filters and reports by, and the activity field each reads.
+#:
+#: WHY CODES WHEN THERE IS ALREADY A WBS. The WBS puts every activity in exactly one branch -
+#: stage, then package, then zone - so it can answer "what is in hall 3's fit-out" and cannot
+#: answer "show me all electrical work wherever it sits". Codes cut the same plan the other way,
+#: which is what a discipline lead or a commercial manager actually opens the file to do.
+#:
+#: Every one of these is data the engine already carries. Nothing here is new modelling, and
+#: nothing is inferred: an activity with no value for a dimension simply gets no code for it,
+#: rather than being filed under a plausible-looking default.
+ACTIVITY_CODE_TYPES = (
+    ('Discipline', 'discipline'),
+    ('Delivery Mode', 'delivery_mode'),
+    ('Stage', 'stage'),
+    ('Area', 'zone_id'),
+)
+
+#: P6's own limit on a code's short name. Names are truncated to it rather than rejected.
+ACTV_SHORT_LEN = 20
+
+
+def _code_label(dimension: str, value: str) -> str:
+    """A value as a planner would read it, not as the engine stores it."""
+    text = str(value or '').strip()
+    if not text:
+        return ''
+    if dimension == 'Delivery Mode':
+        return DELIVERY_MODE_LABELS.get(text, text.replace('-', ' ').title())
+    if dimension == 'Area':
+        return text  # zone ids are already readable: zone.data-hall.01
+    return text.replace('_', ' ').title()
+
+
+def build_activity_codes(activities, task_ids, proj_id):
+    """The three activity-code tables: the dimensions, their values, and the assignments.
+
+    Returns (types, codes, assignments) ready for `table()`.
+    """
+    types, codes, assignments = [], [], []
+    code_id = 1
+
+    for type_index, (dimension, field) in enumerate(ACTIVITY_CODE_TYPES, start=1):
+        values = []
+        for activity in activities:
+            label = _code_label(dimension, activity.get(field))
+            if label and label not in values:
+                values.append(label)
+        if not values:
+            # A dimension nothing in this plan carries is not written at all. An empty code type
+            # in P6 is a filter that returns nothing, which reads as a fault in the plan.
+            continue
+
+        types.append({
+            'actv_code_type_id': type_index, 'actv_short_len': ACTV_SHORT_LEN,
+            'seq_num': type_index, 'actv_code_type': dimension, 'proj_id': proj_id,
+            'wbs_id': '', 'actv_code_type_scope': 'AS_Project',
+        })
+
+        ids_for_value = {}
+        for seq, label in enumerate(sorted(values)):
+            ids_for_value[label] = code_id
+            codes.append({
+                'actv_code_id': code_id, 'parent_actv_code_id': '',
+                'actv_code_type_id': type_index, 'actv_code_name': label,
+                'short_name': label[:ACTV_SHORT_LEN], 'seq_num': seq,
+            })
+            code_id += 1
+
+        for activity in activities:
+            label = _code_label(dimension, activity.get(field))
+            ident = str(activity.get('id'))
+            if not label or ident not in task_ids:
+                continue
+            assignments.append({
+                'task_id': task_ids[ident], 'actv_code_type_id': type_index,
+                'actv_code_id': ids_for_value[label], 'proj_id': proj_id,
+            })
+
+    return types, codes, assignments
 
 
 def build_resources(activities, proj_id, calendar_id, currency_id):
@@ -719,7 +820,18 @@ def export_xer(
             'create_date': now, 'update_date': now,
             'create_user': exported_by, 'update_user': exported_by,
         })
+    code_types, code_values, code_assignments = build_activity_codes(
+        activities, task_ids, proj_id
+    )
+    # ACTVTYPE before TASK and ACTVCODE after it, as the reference orders them: a row must never
+    # precede the one it points at, and TASKACTV therefore comes last of all.
+    if code_types:
+        table('ACTVTYPE', code_types)
+
     table('TASK', task_rows)
+
+    if code_values:
+        table('ACTVCODE', code_values)
 
     pred_rows: List[Dict[str, Any]] = []
     pred_id = 1
@@ -745,6 +857,9 @@ def export_xer(
         # stringifies with seconds, which the format does not carry and a reader rejects.
         dates=lambda a: (_stamp(at(a.get('start_day'))), _stamp(at(a.get('finish_day')))),
     ))
+
+    if code_assignments:
+        table('TASKACTV', code_assignments)
 
     lines.append('%E')
     return '\n'.join(lines) + '\n'
