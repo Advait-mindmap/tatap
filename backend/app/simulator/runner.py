@@ -452,6 +452,38 @@ class Simulator:
 
     # ------------------------------------------------------------------ assembly
 
+
+    # ------------------------------------------------------------------ replaying answers
+    #
+    # THE ANSWERS ARE THE RECORD; the brief fields a write-back sets are a derived convenience.
+    #
+    # Found on a real run: `dp.greenfield_brownfield` was answered "Brownfield - inside a live
+    # hall", the answer is still in the run's stored decisions, and `site_context` is None -
+    # because the write-back that sets it shipped after that run was answered. The delivery-mode
+    # write-back had shipped earlier, so the same run carries a complete
+    # `delivery_mode_by_discipline`. One answer applied and one dropped, on one run, for no reason
+    # visible to anyone reading the plan.
+    #
+    # Re-assembling cannot rescue that: it faithfully re-reads a brief that never received the
+    # value. So the write-backs are replayed from the stored answers before assembly, whenever the
+    # brief is still silent about what an answer settles.
+    #
+    # This removes the class rather than the instance. A write-back added tomorrow will apply to
+    # every run that already answered its question, instead of only to runs started afterwards.
+    # Replay is safe to repeat because every write-back fills blanks only - a discipline the brief
+    # states keeps what the brief said, and a site context already set is left alone.
+
+    def _replay_answers(self) -> None:
+        """Apply recorded answers to the brief where it is still silent."""
+        for decision_id, record in sorted(self.state.answers.items()):
+            answer = DecisionAnswer(
+                decision_point_id=decision_id,
+                answer=str((record or {}).get('answer') or ''),
+                answered_by=str((record or {}).get('answered_by') or 'planner'),
+            )
+            self._apply_delivery_mode(answer)
+            self._apply_site_context(answer)
+
     def _assemble_so_far(self) -> AssemblyResult:
         """Assemble every stage reasoned so far.
 
@@ -460,6 +492,7 @@ class Simulator:
         incremental append would leave earlier stages missing constraints a later stage
         introduces. Assembly is pure and cheap, so recomputing is the honest option.
         """
+        self._replay_answers()
         ordered = [self.stage_reasonings[s] for s in self.stages if s in self.stage_reasonings]
         return assemble(ordered, self.brief, libraries=self.libraries)
 
