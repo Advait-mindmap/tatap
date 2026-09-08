@@ -121,7 +121,8 @@
       "type": "gate",
       "unverified_dependencies": [],
       "wbs_id": "00.de.ion",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -244,7 +245,8 @@
       "type": "gate",
       "unverified_dependencies": [],
       "wbs_id": "00.de.ued",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -279,7 +281,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.01.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -314,7 +317,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.02.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -349,7 +353,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.02.002",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -384,7 +389,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.03.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -419,7 +425,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.04.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -454,7 +461,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.05.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -484,7 +492,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -519,7 +528,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -554,7 +564,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.002",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -589,7 +600,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.003",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -624,7 +636,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.004",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -659,7 +672,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.005",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -694,7 +708,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.006",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -729,7 +744,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.007",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -764,7 +780,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.008",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -799,7 +816,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.009",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -836,7 +854,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.010",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -871,7 +890,8 @@
         "frag.design.engineering"
       ],
       "wbs_id": "01.06.010",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -970,7 +990,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl._hv",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1069,7 +1090,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl._hv",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1168,7 +1190,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl._hv",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1267,7 +1290,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl._hv",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1366,7 +1390,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl._hv",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1465,7 +1490,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl._hv",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1564,7 +1590,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl._hv",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1663,7 +1690,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ear",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1762,7 +1790,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ear",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1861,7 +1890,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ear",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -1960,7 +1990,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ear",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2059,7 +2090,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ear",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2158,7 +2190,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ear",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2257,7 +2290,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ear",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2356,7 +2390,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ler",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2455,7 +2490,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.rah",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2554,7 +2590,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.tor",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2653,7 +2690,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ups",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2752,7 +2790,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ups",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2851,7 +2890,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ups",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -2950,7 +2990,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ups",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3049,7 +3090,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ups",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3148,7 +3190,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ups",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3247,7 +3290,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.ups",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3346,7 +3390,8 @@
       "type": "milestone",
       "unverified_dependencies": [],
       "wbs_id": "00.dl.way",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3381,7 +3426,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3422,7 +3468,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.002",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3463,7 +3510,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.003",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3504,7 +3552,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.004",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3545,7 +3594,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.005",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3586,7 +3636,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.006",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3627,7 +3678,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.007",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3668,7 +3720,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.008",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3709,7 +3762,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.009",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3750,7 +3804,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.010",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3785,7 +3840,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.011",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3828,7 +3884,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.011",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3869,7 +3926,8 @@
         "frag.procurement.long_lead"
       ],
       "wbs_id": "03.01.012",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -3904,7 +3962,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.01.001",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -3945,7 +4004,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.01.002",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -3986,7 +4046,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.01.003",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4027,7 +4088,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.01.004",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4068,7 +4130,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.01.005",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4109,7 +4172,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.01.006",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4150,7 +4214,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.01.007",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4191,7 +4256,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.01.008",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4226,7 +4292,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.02.001",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4267,7 +4334,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.02.001",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4308,7 +4376,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.02.002",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4349,7 +4418,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.02.003",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4392,7 +4462,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.03.001",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4433,7 +4504,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.04.001",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4468,7 +4540,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.04.002",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -4511,7 +4584,8 @@
         "frag.substructure.raft"
       ],
       "wbs_id": "05.04.002",
-      "zone_id": "zone.shell.01"
+      "zone_id": "zone.shell.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -5564,7 +5638,8 @@
       "type": "gate",
       "unverified_dependencies": [],
       "wbs_id": "00.re.led",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -5594,7 +5669,8 @@
         "path.nm.peso_hsd"
       ],
       "wbs_id": "00.st.hsd",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -5631,7 +5707,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.01.001",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -5668,7 +5745,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.01.002",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -5705,7 +5783,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.01.003",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -5742,7 +5821,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.01.004",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -5779,7 +5859,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.01.005",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -5816,7 +5897,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.01.006",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -5853,7 +5935,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.01.007",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": true,
@@ -5890,7 +5973,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.02.001",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -5941,7 +6025,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.02.001",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -5984,7 +6069,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.001",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6027,7 +6113,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.002",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6070,7 +6157,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.003",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6113,7 +6201,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.004",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6156,7 +6245,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.005",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6199,7 +6289,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.006",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6242,7 +6333,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.007",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6291,7 +6383,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.008",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6340,7 +6433,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.009",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6389,7 +6483,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.010",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6438,7 +6533,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.011",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6487,7 +6583,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.012",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6536,7 +6633,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.013",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6585,7 +6683,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.014",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6628,7 +6727,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.015",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6671,7 +6771,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.016",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6714,7 +6815,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.017",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6757,7 +6859,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.018",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6800,7 +6903,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.019",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6843,7 +6947,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.020",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6886,7 +6991,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.021",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6929,7 +7035,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.022",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -6972,7 +7079,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.023",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7015,7 +7123,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.024",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7058,7 +7167,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.025",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7101,7 +7211,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.026",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7144,7 +7255,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.027",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7187,7 +7299,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.028",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7230,7 +7343,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.029",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7273,7 +7387,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.030",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7316,7 +7431,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.031",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7359,7 +7475,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.032",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7402,7 +7519,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.033",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7445,7 +7563,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.034",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7488,7 +7607,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.035",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7531,7 +7651,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.036",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7574,7 +7695,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.037",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7617,7 +7739,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.038",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7660,7 +7783,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.039",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7703,7 +7827,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.040",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7746,7 +7871,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.041",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7789,7 +7915,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.042",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7832,7 +7959,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.043",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7875,7 +8003,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.044",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7918,7 +8047,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.045",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -7961,7 +8091,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.046",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8004,7 +8135,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.047",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8047,7 +8179,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.048",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8090,7 +8223,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.049",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8139,7 +8273,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.050",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8188,7 +8323,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.051",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8237,7 +8373,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.052",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8286,7 +8423,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.053",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8335,7 +8473,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.054",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8384,7 +8523,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.055",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8433,7 +8573,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.056",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8476,7 +8617,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.057",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8519,7 +8661,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.058",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8562,7 +8705,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.059",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8605,7 +8749,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.060",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8648,7 +8793,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.061",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8691,7 +8837,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.062",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8734,7 +8881,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.063",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8777,7 +8925,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.064",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8820,7 +8969,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.065",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8863,7 +9013,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.066",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8906,7 +9057,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.067",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8949,7 +9101,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.068",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -8992,7 +9145,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.069",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9035,7 +9189,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.070",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9078,7 +9233,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.071",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9121,7 +9277,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.072",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9164,7 +9321,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.073",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9207,7 +9365,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.074",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9250,7 +9409,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.075",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9293,7 +9453,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.076",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9336,7 +9497,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.077",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9379,7 +9541,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.078",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9422,7 +9585,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.079",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9465,7 +9629,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.080",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9508,7 +9673,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.081",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9551,7 +9717,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.082",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9594,7 +9761,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.083",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9637,7 +9805,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.084",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9674,7 +9843,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.085",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9719,7 +9889,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.085",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9756,7 +9927,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.086",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9801,7 +9973,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.086",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9838,7 +10011,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.087",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9883,7 +10057,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.087",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9920,7 +10095,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.088",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -9965,7 +10141,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.088",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10002,7 +10179,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.089",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10047,7 +10225,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.089",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10084,7 +10263,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.090",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10129,7 +10309,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.090",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10166,7 +10347,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.091",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10211,7 +10393,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.091",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10254,7 +10437,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.092",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10297,7 +10481,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.093",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10340,7 +10525,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.094",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10383,7 +10569,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.095",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10426,7 +10613,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.096",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10469,7 +10657,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.097",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10512,7 +10701,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.098",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10555,7 +10745,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.099",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10598,7 +10789,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.100",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10641,7 +10833,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.101",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10684,7 +10877,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.102",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10727,7 +10921,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.103",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10770,7 +10965,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.104",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10813,7 +11009,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.105",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10862,7 +11059,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.106",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10911,7 +11109,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.107",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -10960,7 +11159,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.108",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11009,7 +11209,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.109",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11058,7 +11259,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.110",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11107,7 +11309,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.111",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11156,7 +11359,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.112",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11199,7 +11403,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.113",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11242,7 +11447,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.114",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11285,7 +11491,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.115",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11328,7 +11535,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.116",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11371,7 +11579,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.117",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11414,7 +11623,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.118",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11457,7 +11667,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.119",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11500,7 +11711,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.120",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11543,7 +11755,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.121",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11586,7 +11799,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.122",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11629,7 +11843,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.123",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11672,7 +11887,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.124",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11715,7 +11931,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.125",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11758,7 +11975,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.126",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11801,7 +12019,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.127",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11844,7 +12063,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.128",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11887,7 +12107,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.129",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11930,7 +12151,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.130",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -11973,7 +12195,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.131",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12016,7 +12239,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.132",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12059,7 +12283,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.133",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12102,7 +12327,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.134",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12145,7 +12371,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.135",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12188,7 +12415,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.136",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12231,7 +12459,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.137",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12274,7 +12503,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.138",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12317,7 +12547,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.139",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12360,7 +12591,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.140",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12403,7 +12635,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.141",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12446,7 +12679,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.142",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12489,7 +12723,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.143",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12532,7 +12767,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.144",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12575,7 +12811,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.145",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12618,7 +12855,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.146",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12661,7 +12899,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.147",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12710,7 +12949,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.148",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12759,7 +12999,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.149",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12808,7 +13049,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.150",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12857,7 +13099,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.151",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12906,7 +13149,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.152",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -12955,7 +13199,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.153",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13004,7 +13249,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.154",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13047,7 +13293,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.155",
-      "zone_id": "zone.electrical-room.01"
+      "zone_id": "zone.electrical-room.01",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13090,7 +13337,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.156",
-      "zone_id": "zone.electrical-room.02"
+      "zone_id": "zone.electrical-room.02",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13133,7 +13381,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.157",
-      "zone_id": "zone.electrical-room.03"
+      "zone_id": "zone.electrical-room.03",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13176,7 +13425,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.158",
-      "zone_id": "zone.electrical-room.04"
+      "zone_id": "zone.electrical-room.04",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13219,7 +13469,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.159",
-      "zone_id": "zone.electrical-room.05"
+      "zone_id": "zone.electrical-room.05",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13262,7 +13513,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.160",
-      "zone_id": "zone.electrical-room.06"
+      "zone_id": "zone.electrical-room.06",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13305,7 +13557,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.161",
-      "zone_id": "zone.electrical-room.07"
+      "zone_id": "zone.electrical-room.07",
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13396,7 +13649,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.162",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": true,
@@ -13487,7 +13741,8 @@
         "frag.mep.power_train"
       ],
       "wbs_id": "08.03.163",
-      "zone_id": null
+      "zone_id": null,
+      "zone_inferred": false
     },
     {
       "blocks_export": false,
@@ -13610,7 +13865,8 @@
       "type": "gate",
       "unverified_dependencies": [],
       "wbs_id": "00.re.led",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13645,7 +13901,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.01.001",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13686,7 +13943,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.01.002",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13727,7 +13985,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.001",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13774,7 +14033,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.002",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13815,7 +14075,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.003",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13856,7 +14117,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.004",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13897,7 +14159,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.005",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13938,7 +14201,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.006",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -13979,7 +14243,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.007",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14020,7 +14285,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.008",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14061,7 +14327,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.009",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14108,7 +14375,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.010",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14149,7 +14417,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.011",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14190,7 +14459,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.02.012",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14231,7 +14501,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.03.001",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14266,7 +14537,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.04.001",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14309,7 +14581,8 @@
         "frag.mep.cooling"
       ],
       "wbs_id": "09.04.001",
-      "zone_id": "zone.cooling-plant.01"
+      "zone_id": "zone.cooling-plant.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14350,7 +14623,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.001",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14397,7 +14671,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.002",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14444,7 +14719,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.003",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14491,7 +14767,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.004",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14538,7 +14815,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.005",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14585,7 +14863,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.006",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -14632,7 +14911,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.007",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14679,7 +14959,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.008",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14726,7 +15007,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.009",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14773,7 +15055,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.010",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": false,
@@ -14820,7 +15103,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.011",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -14867,7 +15151,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.012",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -14914,7 +15199,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.013",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -14961,7 +15247,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.014",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -15008,7 +15295,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.015",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -15057,7 +15345,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.016",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -15092,7 +15381,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.016",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     },
     {
       "blocks_export": true,
@@ -15139,7 +15429,8 @@
         "frag.commissioning.ladder"
       ],
       "wbs_id": "12.01.017",
-      "zone_id": "zone.data-hall.01"
+      "zone_id": "zone.data-hall.01",
+      "zone_inferred": true
     }
   ],
   "commissioning": [

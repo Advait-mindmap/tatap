@@ -340,6 +340,16 @@ class AssembledActivity(BaseModel):
     delivery_mode: str = 'unknown'
     stage: str = ''
     zone_id: Optional[str] = None
+    #: True when `zone_id` was FILLED IN FOR DISPLAY rather than earned by zone instancing.
+    #:
+    #: The 4D model needs every activity to sit somewhere, so work that is genuinely project-wide
+    #: is given its stage's first zone to draw it in. That is a drawing decision, and it must
+    #: never be read as a statement that the work happens in that zone. It was: the commissioning
+    #: ladder is instanced once for the campus, the fallback labelled all twenty activities
+    #: `zone.data-hall.01`, and a later reader - me - concluded hall 1 was commissioned and
+    #: computed an energisation date from it. Anything reasoning about WHERE work happens must
+    #: skip these; anything drawing a picture may use them.
+    zone_inferred: bool = False
     predecessors: List[Dict[str, Any]] = Field(default_factory=list)
     hold_points: List[str] = Field(default_factory=list)
     safety_flag: bool = False

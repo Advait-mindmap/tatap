@@ -1376,6 +1376,10 @@ def _attach_zones(
         kind = STAGE_ZONE_KIND.get(activity.stage)
         if kind:
             activity.zone_id = f'zone.{kind.replace("_", "-")}.01'
+            # SAY THAT THIS WAS A GUESS. Without the marker the result is indistinguishable from
+            # real zone instancing, and the difference matters to anything that reasons about
+            # where work physically happens rather than merely drawing it.
+            activity.zone_inferred = True
 
 
 def _apply_predecessors(

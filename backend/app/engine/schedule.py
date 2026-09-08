@@ -143,6 +143,11 @@ def energisation_days(activities: Iterable[Any]) -> Dict[str, int]:
         zone_id = _field(activity, 'zone_id')
         if not zone_id or _field(activity, 'stage') != ENERGISING_STAGE:
             continue
+        # An INFERRED zone is a drawing position, not a place work happens. Reading one as real
+        # is how this function first reported that hall 1 energised on day 960 when the campus
+        # commissioning that produced the date was never hall 1's at all.
+        if _field(activity, 'zone_inferred'):
+            continue
         finish = int(_field(activity, 'finish_day') or 0)
         days[zone_id] = max(days.get(zone_id, finish), finish)
     return days
